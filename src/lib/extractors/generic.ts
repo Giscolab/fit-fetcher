@@ -78,8 +78,8 @@ function buildRows(headers: string[], rows: string[][], unit: Unit): SizeRow[] {
       const parsed = parseRangeCm(r[i] ?? "", unit === "unknown" ? "cm" : unit);
       if (!parsed) continue;
       const [minF, maxF] = FIELD_PAIRS[baseField] ?? [baseField, baseField];
-      (row as Record<string, number>)[minF as string] = parsed[0];
-      (row as Record<string, number>)[maxF as string] = parsed[1];
+      (row as unknown as Record<string, number>)[minF as string] = parsed[0];
+      (row as unknown as Record<string, number>)[maxF as string] = parsed[1];
       hasMeasure = true;
     }
     if (hasMeasure || isSizeLabel(row.label)) result.push(row);
@@ -183,8 +183,8 @@ function extractFromText(text: string, pageUnit: Unit): ExtractedTable[] {
       if (!parsed) continue;
       const slot = order[placed];
       if (!slot) break;
-      (row as Record<string, number>)[slot[0] as string] = parsed[0];
-      (row as Record<string, number>)[slot[1] as string] = parsed[1];
+      (row as unknown as Record<string, number>)[slot[0] as string] = parsed[0];
+      (row as unknown as Record<string, number>)[slot[1] as string] = parsed[1];
       placed++;
     }
     if (placed > 0) rows.push(row);
