@@ -12,8 +12,12 @@ export interface ScrapeOutput {
 }
 
 export async function scrapeWithFirecrawl(url: string, attempt = 1): Promise<ScrapeOutput> {
-  const apiKey = process.env.FIRECRAWL_API_KEY;
-  if (!apiKey) throw new Error("FIRECRAWL_API_KEY is not configured");
+  const apiKey = process.env.FIRECRAWL_API_KEY?.trim();
+  if (!apiKey || apiKey === "fc-YOUR_FIRECRAWL_API_KEY") {
+    throw new Error(
+      "FIRECRAWL_API_KEY is not configured. Add it to .env.local for local development or set it as a Cloudflare Worker secret with `npx wrangler secret put FIRECRAWL_API_KEY`.",
+    );
+  }
 
   const res = await fetch(ENDPOINT, {
     method: "POST",
