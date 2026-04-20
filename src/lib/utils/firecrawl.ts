@@ -4,7 +4,7 @@
  */
 
 const ENDPOINT = "https://api.firecrawl.dev/v2/scrape";
-const PLACEHOLDER_API_KEYS = new Set(["fc-YOUR_FIRECRAWL_API_KEY", "fc-ta-vraie-cle-firecrawl"]);
+const PLACEHOLDER_API_KEYS = new Set(["fc-YOUR_FIRECRAWL_API_KEY", "fc-5df7edd96b4c49199944b774bcfdc954"]);
 
 export interface ScrapeOutput {
   html: string;
