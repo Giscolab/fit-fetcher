@@ -1,5 +1,5 @@
 /**
- * Firecrawl scrape helper. Server-only — uses FIRECRAWL_API_KEY from env.
+ * Scrape helper. Server-only — uses FIRECRAWL_API_KEY from env.
  * Returns html + markdown for downstream extraction.
  */
 
@@ -14,9 +14,8 @@ export interface ScrapeOutput {
 export async function scrapeWithFirecrawl(url: string, attempt = 1): Promise<ScrapeOutput> {
   const apiKey = process.env.FIRECRAWL_API_KEY?.trim();
   if (!apiKey || apiKey === "fc-YOUR_FIRECRAWL_API_KEY") {
-    throw new Error(
-      "FIRECRAWL_API_KEY is not configured. Add it to .env.local for local development or set it as a Cloudflare Worker secret with `npx wrangler secret put FIRECRAWL_API_KEY`.",
-    );
+    console.error("[scrape] FIRECRAWL_API_KEY is not configured");
+    throw new Error("Scraping service is not configured");
   }
 
   const res = await fetch(ENDPOINT, {
@@ -35,11 +34,13 @@ export async function scrapeWithFirecrawl(url: string, attempt = 1): Promise<Scr
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    // Log full detail server-side only
+    console.error(`[scrape] upstream error ${res.status} for ${url}: ${text.slice(0, 500)}`);
     if (res.status >= 500 && attempt < 2) {
       await new Promise((r) => setTimeout(r, 1500));
       return scrapeWithFirecrawl(url, attempt + 1);
     }
-    throw new Error(`Firecrawl ${res.status}: ${text.slice(0, 300)}`);
+    throw new Error("Scraping failed. Please try again later.");
   }
 
   const json = (await res.json()) as {
@@ -51,12 +52,13 @@ export async function scrapeWithFirecrawl(url: string, attempt = 1): Promise<Scr
   };
 
   if (json.success === false) {
-    throw new Error(`Firecrawl error: ${json.error ?? "unknown"}`);
+    console.error(`[scrape] upstream returned success=false for ${url}: ${json.error ?? "unknown"}`);
+    throw new Error("Scraping failed. Please try again later.");
   }
 
   const html = json.data?.html ?? json.html ?? "";
   const markdown = json.data?.markdown ?? json.markdown ?? "";
-  if (!html && !markdown) throw new Error("Firecrawl returned no content");
+  if (!html && !markdown) throw new Error("No content could be retrieved from the page");
 
   return {
     html,
