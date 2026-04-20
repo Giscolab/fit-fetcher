@@ -4,6 +4,7 @@
  */
 
 const ENDPOINT = "https://api.firecrawl.dev/v2/scrape";
+const PLACEHOLDER_API_KEYS = new Set(["fc-YOUR_FIRECRAWL_API_KEY", "fc-ta-vraie-cle-firecrawl"]);
 
 export interface ScrapeOutput {
   html: string;
@@ -13,7 +14,7 @@ export interface ScrapeOutput {
 
 export async function scrapeWithFirecrawl(url: string, attempt = 1): Promise<ScrapeOutput> {
   const apiKey = process.env.FIRECRAWL_API_KEY?.trim();
-  if (!apiKey || apiKey === "fc-YOUR_FIRECRAWL_API_KEY") {
+  if (!apiKey || PLACEHOLDER_API_KEYS.has(apiKey)) {
     console.error("[scrape] FIRECRAWL_API_KEY is not configured");
     throw new Error("Scraping service is not configured");
   }

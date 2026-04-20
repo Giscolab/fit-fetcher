@@ -5,5 +5,13 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { loadEnv } from "vite";
 
-export default defineConfig();
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  if (env.FIRECRAWL_API_KEY && !process.env.FIRECRAWL_API_KEY) {
+    process.env.FIRECRAWL_API_KEY = env.FIRECRAWL_API_KEY;
+  }
+
+  return {};
+});
