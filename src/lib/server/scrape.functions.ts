@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrapeWithFirecrawl } from "@/lib/utils/firecrawl";
 import { extractSizeGuide } from "@/lib/extractors/generic";
+import { extractSizeGuideLLM } from "@/lib/extractors/llm";
 import { buildGeneratedGuide } from "@/lib/normalizers/guideBuilder";
 import type { BrandSource, GeneratedGuide } from "@/lib/types";
 
@@ -84,14 +85,36 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         `Extraction strategy=${ext.strategy} unit=${ext.unit} rows=${ext.rows.length} score=${ext.score}`,
       );
 
-      if (!ext.rows.length) {
+      let finalRows = ext.rows;
+      let finalStrategy: string = ext.strategy;
+      let finalUnit: string = ext.unit;
+
+      if (!finalRows.length) {
+        logs.push("Heuristic extraction empty — trying Firecrawl LLM fallback…");
+        try {
+          const llm = await extractSizeGuideLLM(source.size_guide_url);
+          logs.push(
+            `LLM extraction unit=${llm.unit} rows=${llm.rows.length} score=${llm.score}`,
+          );
+          if (llm.rows.length) {
+            finalRows = llm.rows;
+            finalStrategy = llm.strategy;
+            finalUnit = llm.unit;
+          }
+        } catch (llmErr) {
+          const m = llmErr instanceof Error ? llmErr.message : String(llmErr);
+          logs.push(`LLM fallback failed: ${m}`);
+        }
+      }
+
+      if (!finalRows.length) {
         return { error: "No size table found on the page", logs };
       }
 
-      const guide = buildGeneratedGuide({ source, rows: ext.rows });
+      const guide = buildGeneratedGuide({ source, rows: finalRows });
       logs.push(`Built guide ${guide.guide.id} with ${guide.guide.rows.length} rows`);
 
-      return { guide, logs, meta: { strategy: ext.strategy, unit: ext.unit } };
+      return { guide, logs, meta: { strategy: finalStrategy, unit: finalUnit } };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logs.push(`ERROR: ${message}`);
