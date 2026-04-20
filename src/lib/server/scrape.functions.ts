@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeader } from "@tanstack/react-start/server";
 import { scrapeWithFirecrawl } from "@/lib/utils/firecrawl";
 import { extractSizeGuide } from "@/lib/extractors/generic";
 import { buildGeneratedGuide } from "@/lib/normalizers/guideBuilder";
@@ -48,32 +47,6 @@ function validateExternalUrl(raw: string): URL {
   return parsed;
 }
 
-// Very small in-memory rate limiter, scoped per server instance.
-// Not a security boundary on its own, but reduces casual abuse of the
-// unauthenticated scraping endpoint.
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 20;
-const rateBuckets = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(key: string) {
-  const now = Date.now();
-  const bucket = rateBuckets.get(key);
-  if (!bucket || bucket.resetAt < now) {
-    rateBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return;
-  }
-  bucket.count += 1;
-  if (bucket.count > RATE_LIMIT_MAX) {
-    throw new Error("Rate limit exceeded — please slow down and try again shortly");
-  }
-}
-
-function getCallerKey(): string {
-  const fwd = getRequestHeader("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0]!.trim();
-  return getRequestHeader("cf-connecting-ip") ?? getRequestHeader("x-real-ip") ?? "anonymous";
-}
-
 /** Server function: scrape a single brand source via Firecrawl + extract guide. */
 export const scrapeBrandSource = createServerFn({ method: "POST" })
   .inputValidator((input: { source: BrandSource }) => {
@@ -100,9 +73,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
     const { source } = data;
     const logs: string[] = [];
     try {
-      checkRateLimit(getCallerKey());
-
-      logs.push(`Fetching ${source.size_guide_url} via Firecrawl…`);
+      logs.push(`Fetching ${source.size_guide_url}…`);
       const scraped = await scrapeWithFirecrawl(source.size_guide_url);
       logs.push(
         `Got ${scraped.html.length} chars HTML, ${scraped.markdown.length} chars markdown`,
