@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Upload, FileJson } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { normalizeBrandSourceInput } from "@/lib/normalizers/sourceInput";
 import type { BrandSource } from "@/lib/types";
 
 interface Props {
@@ -21,9 +22,7 @@ export function UploadBox({ onLoaded }: Props) {
         const parsed = JSON.parse(String(reader.result));
         const sources: unknown = parsed.sources ?? parsed;
         if (!Array.isArray(sources)) throw new Error("Expected an array under `sources`");
-        const valid = (sources as BrandSource[]).filter(
-          (s) => s && typeof s.brand === "string" && typeof s.size_guide_url === "string",
-        );
+        const valid = sources.map(normalizeBrandSourceInput).filter(Boolean) as BrandSource[];
         if (!valid.length) throw new Error("No valid sources found");
         setFilename(file.name);
         onLoaded(valid, file.name);
@@ -53,7 +52,7 @@ export function UploadBox({ onLoaded }: Props) {
           <p className="mt-1 text-sm text-muted-foreground">
             Format:{" "}
             <code className="break-words rounded bg-muted px-1.5 py-0.5 text-[0.72rem] text-foreground">
-              {"{ sources: [{ brand, size_guide_url, garmentCategory, sizeSystem }] }"}
+              {"{ sources: [{ brand, entry_url, target: { category, sizeSystem } }] }"}
             </code>
           </p>
         </div>

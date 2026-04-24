@@ -2,6 +2,7 @@
 
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
+import "../styles.css";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -57,7 +58,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>

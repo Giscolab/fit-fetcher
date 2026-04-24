@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
+import { normalizeBrandSourceInput } from "@/lib/normalizers/sourceInput";
 import { scrapeWithFirecrawl } from "@/lib/utils/firecrawl";
 import type {
   BrandSource,
@@ -49,23 +50,19 @@ function validateExternalUrl(raw: string): URL {
 
 export const scrapeBrandSource = createServerFn({ method: "POST" })
   .inputValidator((input: { source: BrandSource }) => {
-    if (
-      !input ||
-      !input.source ||
-      typeof input.source.brand !== "string" ||
-      typeof input.source.size_guide_url !== "string"
-    ) {
-      throw new Error("Invalid source: brand and size_guide_url are required");
+    const source = normalizeBrandSourceInput(input?.source);
+    if (!source) {
+      throw new Error("Invalid source: brand and size_guide_url or entry_url are required");
     }
-    if (input.source.brand.length > 200) {
+    if (source.brand.length > 200) {
       throw new Error("brand is too long");
     }
-    if (input.source.size_guide_url.length > 2048) {
+    if (source.size_guide_url.length > 2048) {
       throw new Error("size_guide_url is too long");
     }
-    const url = validateExternalUrl(input.source.size_guide_url);
+    const url = validateExternalUrl(source.size_guide_url);
     return {
-      source: { ...input.source, size_guide_url: url.toString() },
+      source: { ...source, size_guide_url: url.toString() },
     };
   })
   .handler(async ({ data }): Promise<ScrapeResponse> => {

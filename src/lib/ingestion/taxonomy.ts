@@ -102,6 +102,9 @@ function detectAxisSizeSystem(labels: string[]): DetectedSizeSystem {
 export function mapRequestedGarmentCategory(raw?: string): GarmentCategory | null {
   const text = normalizeToken(raw ?? "");
   if (!text) return null;
+  if (text === "top" || text === "tops") {
+    return "tshirts";
+  }
   if (containsAny(text, ["t shirt", "tshirt", "tshirts", "tee", "tees"])) {
     return "tshirts";
   }
