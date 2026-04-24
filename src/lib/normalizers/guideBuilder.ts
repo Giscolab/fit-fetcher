@@ -8,6 +8,7 @@ import type {
   Guide,
   SizeRow,
   SizeSystem,
+  StrictSizeGuideOutput,
   ValidationIssue,
   ValidationStatus,
 } from "@/lib/types";
@@ -33,6 +34,37 @@ function safeWebsite(url: string): string | null {
   } catch {
     return null;
   }
+}
+
+function strictScalarValue(min?: number, max?: number): number | null {
+  if (min == null && max == null) return null;
+  return max ?? min ?? null;
+}
+
+function buildStrictGuide(args: {
+  source: BrandSource;
+  rows: SizeRow[];
+  garmentCategory: GarmentCategory;
+  sizeSystem: SizeSystem;
+  candidate: CandidateSection;
+  extraction: CandidateExtraction;
+}): StrictSizeGuideOutput {
+  if (args.garmentCategory !== "tshirts" || args.sizeSystem !== "INT") {
+    throw new Error("NO_VALID_SIZE_GUIDE: strict export only supports tshirts / INT.");
+  }
+
+  return {
+    brand: args.source.brand,
+    garmentCategory: "tshirts",
+    sizeSystem: "INT",
+    sizes: args.rows.map((row) => ({
+      label: row.canonicalLabel,
+      chest_cm: strictScalarValue(row.chestCmMin, row.chestCmMax),
+      waist_cm: strictScalarValue(row.waistCmMin, row.waistCmMax),
+    })),
+    source_url: args.candidate.sourceUrl,
+    confidence: Math.round(args.extraction.extractionConfidence * 100) / 100,
+  };
 }
 
 export function buildGeneratedGuide(args: {
@@ -101,7 +133,18 @@ export function buildGeneratedGuide(args: {
     rawCandidateId: args.candidate.id,
   };
 
-  return { brand, guide };
+  return {
+    brand,
+    guide,
+    strictGuide: buildStrictGuide({
+      source: args.source,
+      rows: args.rows,
+      garmentCategory: args.garmentCategory,
+      sizeSystem: args.sizeSystem,
+      candidate: args.candidate,
+      extraction: args.extraction,
+    }),
+  };
 }
 
 export function guideFilename(g: GeneratedGuide): string {

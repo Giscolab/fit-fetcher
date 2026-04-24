@@ -24,7 +24,7 @@ const FIELD_PATTERNS: Array<{ field: MeasurementField; pattern: RegExp }> = [
   { field: "hips", pattern: /(hip|hips|hanche|hanches|tour de hanche)/i },
   { field: "inseam", pattern: /(inseam|inside leg|entrejambe)/i },
   { field: "outseam", pattern: /(outseam|outside leg)/i },
-  { field: "height", pattern: /(height|stature|hauteur|taille corporelle)/i },
+  { field: "height", pattern: /(height|stature|hauteur|taille corporelle|torso|body length|front length|back length|garment length)/i },
   { field: "sleeve", pattern: /(sleeve|manche)/i },
   { field: "neck", pattern: /(neck|collar|encolure|cou)/i },
   { field: "shoulder", pattern: /(shoulder|epaule|epaules|épaule|épaules)/i },

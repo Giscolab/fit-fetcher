@@ -55,7 +55,7 @@ export const DOCUMENT_KINDS = [
   "direct-guide-page",
   "multi-guide-page",
   "guide-hub-page",
-  "unrelated-page",
+  "irrelevant",
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
@@ -173,6 +173,26 @@ export interface SizeRow {
   footWidthCmMax?: number;
 }
 
+export interface StrictSizeGuideSize {
+  label: string;
+  chest_cm: number | null;
+  waist_cm: number | null;
+}
+
+export interface StrictSizeGuideOutput {
+  brand: string;
+  garmentCategory: "tshirts";
+  sizeSystem: "INT";
+  sizes: StrictSizeGuideSize[];
+  source_url: string;
+  confidence: number;
+}
+
+export interface StrictSizeGuideFailure {
+  error: "NO_VALID_SIZE_GUIDE";
+  reason: string;
+}
+
 export interface ValidationIssue {
   code: string;
   message: string;
@@ -246,7 +266,7 @@ export interface CandidateSection {
 
 export interface CandidateExtraction {
   candidateId: string;
-  strategy: "table" | "aria-grid" | "markdown-table" | "llm" | "none";
+  strategy: "table" | "aria-grid" | "markdown-table" | "none";
   rows: SizeRow[];
   extractedFieldKeys: MeasurementField[];
   extractionConfidence: number;
@@ -294,6 +314,7 @@ export interface Guide {
 export interface GeneratedGuide {
   brand: Brand;
   guide: Guide;
+  strictGuide: StrictSizeGuideOutput;
 }
 
 export interface IngestionPipelineReport {

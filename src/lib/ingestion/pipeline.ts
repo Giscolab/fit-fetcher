@@ -4,7 +4,7 @@ import {
   buildFollowTraceStep,
   classifyDocument,
   discoverLinkCandidates,
-  selectNavigableLink,
+  selectHubFollowLinks,
 } from "@/lib/ingestion/navigation";
 import { selectCandidate } from "@/lib/ingestion/selection";
 import {
@@ -61,16 +61,48 @@ function requestedTraceStep(source: BrandSource, fetchedUrl: string): SourceTrac
   };
 }
 
-export async function runIngestionPipeline(args: {
-  source: BrandSource;
-  fetchedUrl: string;
+type FetchDocument = (url: string) => Promise<{
+  sourceUrl: string;
   html: string;
   markdown: string;
-  fetchDocument?: (url: string) => Promise<{
-    sourceUrl: string;
-    html: string;
-    markdown: string;
-  }>;
+}>;
+
+function appendError(
+  report: IngestionPipelineReport,
+  issue: ValidationIssue,
+  validationStatus: ValidationStatus = "rejected",
+): IngestionPipelineReport {
+  return {
+    ...report,
+    validationStatus,
+    validationErrors: [...report.validationErrors, issue],
+    manualReviewRecommended: true,
+  };
+}
+
+function distinctDetectedFamilies(candidates: IngestionPipelineReport["discoveredCandidates"]): string[] {
+  return Array.from(
+    new Set(
+      candidates
+        .filter((candidate) => candidate.isTabular && candidate.garmentFamily !== "unknown")
+        .map((candidate) => candidate.garmentFamily),
+    ),
+  );
+}
+
+async function processResolvedDocument(args: {
+  source: BrandSource;
+  originalFetchedUrl: string;
+  currentUrl: string;
+  html: string;
+  markdown: string;
+  fetchDocument?: FetchDocument;
+  sourceTraceChain: SourceTraceStep[];
+  followedUrl?: string;
+  linkOriginId?: string;
+  navigationConfidence?: number;
+  allowHubFollow: boolean;
+  priorReasoning?: string[];
 }): Promise<{
   guide?: GeneratedGuide;
   report: IngestionPipelineReport;
@@ -79,164 +111,229 @@ export async function runIngestionPipeline(args: {
   const requestedSizeSystem = mapRequestedSizeSystem(args.source.sizeSystem);
   const initialIssues = deriveInitialIssues(args.source);
   const initialWarnings: ValidationIssue[] = [];
-  const traceChain = [requestedTraceStep(args.source, args.fetchedUrl)];
-
-  const initialLinks = discoverLinkCandidates({
+  const linkCandidates = discoverLinkCandidates({
     html: args.html,
     markdown: args.markdown,
-    sourceUrl: args.fetchedUrl,
+    sourceUrl: args.currentUrl,
     requestedCategory,
     requestedSizeSystem,
   });
-  const initialClassification = classifyDocument({
+  const classification = classifyDocument({
     html: args.html,
     markdown: args.markdown,
-    sourceUrl: args.fetchedUrl,
-    linkCandidates: initialLinks,
+    sourceUrl: args.currentUrl,
+    linkCandidates,
   });
-  let resolvedTraceChain = traceChain;
-  let resolvedSourceUrl = args.fetchedUrl;
-  let documentKind = initialClassification.documentKind;
-  let sourceType = initialClassification.sourceType;
-  let documentReasoning = [...initialClassification.reasoning];
-  let linkCandidates = initialLinks;
-  let navigationConfidence = 0;
-  let followedUrl: string | undefined;
+  const documentReasoning = [
+    ...(args.priorReasoning ?? []),
+    ...classification.reasoning,
+  ];
 
-  let discoveredCandidates = discoverCandidateSections({
+  if (classification.documentKind === "guide-hub-page") {
+    const navigation = selectHubFollowLinks({ linkCandidates });
+    const hubReport: IngestionPipelineReport = {
+      fetchedUrl: args.originalFetchedUrl,
+      resolvedSourceUrl: args.currentUrl,
+      requestedCategory,
+      requestedSizeSystem,
+      sourceType: classification.sourceType,
+      documentKind: classification.documentKind,
+      documentReasoning: [...documentReasoning, ...navigation.reasoning],
+      sourceTraceChain: args.sourceTraceChain,
+      followedUrl: args.followedUrl,
+      linkCandidates: navigation.linkCandidates,
+      navigationConfidence: navigation.navigationConfidence,
+      discoveredCandidates: [],
+      rejectedCandidateIds: [],
+      selectionReasoning: navigation.reasoning,
+      candidateExtractions: [],
+      validationStatus: statusFromIssues(initialIssues, "rejected"),
+      validationErrors: initialIssues,
+      warnings: initialWarnings,
+      manualReviewRecommended: true,
+    };
+
+    if (!args.allowHubFollow || !args.fetchDocument) {
+      return {
+        report: appendError(hubReport, {
+          code: "unresolved-guide-hub",
+          message:
+            "NO_VALID_SIZE_GUIDE: guide hub pages must resolve to one concrete guide page within one internal hop.",
+          severity: "error",
+        }),
+      };
+    }
+
+    if (!navigation.selected.length) {
+      return {
+        report: appendError(hubReport, {
+          code: "no-followable-guide-link",
+          message:
+            "NO_VALID_SIZE_GUIDE: no same-domain internal guide link scored high enough for a one-hop follow.",
+          severity: "error",
+        }),
+      };
+    }
+
+    const followedResults: Array<{
+      guide?: GeneratedGuide;
+      report: IngestionPipelineReport;
+    }> = [];
+
+    for (const link of navigation.selected) {
+      const followed = await args.fetchDocument(link.url);
+      const child = await processResolvedDocument({
+        source: args.source,
+        originalFetchedUrl: args.originalFetchedUrl,
+        currentUrl: followed.sourceUrl,
+        html: followed.html,
+        markdown: followed.markdown,
+        fetchDocument: undefined,
+        sourceTraceChain: [...args.sourceTraceChain, buildFollowTraceStep(link)],
+        followedUrl: followed.sourceUrl,
+        linkOriginId: link.id,
+        navigationConfidence: Math.min(0.98, 0.35 + link.score / 10),
+        allowHubFollow: false,
+        priorReasoning: [...documentReasoning, ...navigation.reasoning],
+      });
+
+      followedResults.push({
+        guide: child.guide,
+        report: {
+          ...child.report,
+          fetchedUrl: args.originalFetchedUrl,
+          followedUrl: followed.sourceUrl,
+          linkCandidates: navigation.linkCandidates,
+          navigationConfidence: Math.min(0.98, 0.35 + link.score / 10),
+          documentReasoning: child.report.documentReasoning,
+        },
+      });
+    }
+
+    const accepted = followedResults.filter(
+      (result) => result.guide && result.report.validationStatus === "accepted",
+    );
+
+    if (accepted.length === 1) {
+      return accepted[0]!;
+    }
+
+    const details = followedResults.flatMap((result) =>
+      result.report.validationErrors.map((issue) => issue.message),
+    );
+    return {
+      report: appendError(
+        {
+          ...hubReport,
+          validationErrors: [...hubReport.validationErrors],
+          warnings: followedResults.flatMap((result) => result.report.warnings),
+        },
+        {
+          code: accepted.length > 1 ? "ambiguous-followed-guides" : "no-valid-followed-guide",
+          message:
+            accepted.length > 1
+              ? "NO_VALID_SIZE_GUIDE: multiple followed internal guide pages validated, so the source is ambiguous."
+              : "NO_VALID_SIZE_GUIDE: no followed internal guide page validated as a single tshirts / INT table.",
+          severity: "error",
+          details: details.slice(0, 8),
+        },
+        accepted.length > 1 ? "ambiguous" : "rejected",
+      ),
+    };
+  }
+
+  const discoveredCandidates = discoverCandidateSections({
     html: args.html,
     markdown: args.markdown,
-    sourceUrl: args.fetchedUrl,
-    sourceType,
-    documentKind,
-    sourceTraceChain: traceChain,
+    sourceUrl: args.currentUrl,
+    sourceType: classification.sourceType,
+    documentKind: classification.documentKind,
+    sourceTraceChain: args.sourceTraceChain,
+    linkOriginId: args.linkOriginId,
+    navigationConfidence: args.navigationConfidence ?? 0,
   });
-  let selection = selectCandidate({
+  const selection = selectCandidate({
     requestedCategory,
     requestedSizeSystem,
     candidates: discoveredCandidates,
   });
 
-  const navigation = selectNavigableLink({
-    linkCandidates: initialLinks,
-    documentKind: initialClassification.documentKind,
-  });
-  linkCandidates = navigation.linkCandidates;
-
-  const shouldFollow =
-    Boolean(args.fetchDocument && navigation.selected) &&
-    (
-      initialClassification.documentKind === "guide-hub-page" ||
-      !selection.selectedCandidateId ||
-      !discoveredCandidates.length
-    );
-
-  if (shouldFollow && args.fetchDocument && navigation.selected) {
-    const followTrace = [...traceChain, buildFollowTraceStep(navigation.selected)];
-    resolvedTraceChain = followTrace;
-    const followed = await args.fetchDocument(navigation.selected.url);
-    resolvedSourceUrl = followed.sourceUrl;
-    followedUrl = followed.sourceUrl;
-    navigationConfidence = navigation.navigationConfidence;
-    documentReasoning = [...documentReasoning, ...navigation.reasoning];
-
-    const followedLinks = discoverLinkCandidates({
-      html: followed.html,
-      markdown: followed.markdown,
-      sourceUrl: followed.sourceUrl,
-      requestedCategory,
-      requestedSizeSystem,
-    });
-    const followedClassification = classifyDocument({
-      html: followed.html,
-      markdown: followed.markdown,
-      sourceUrl: followed.sourceUrl,
-      linkCandidates: followedLinks,
-    });
-    documentKind = followedClassification.documentKind;
-    sourceType = followedClassification.sourceType;
-    documentReasoning = [...documentReasoning, ...followedClassification.reasoning];
-
-    discoveredCandidates = discoverCandidateSections({
-      html: followed.html,
-      markdown: followed.markdown,
-      sourceUrl: followed.sourceUrl,
-      sourceType,
-      documentKind,
-      sourceTraceChain: followTrace,
-      linkOriginId: navigation.selected.id,
-      navigationConfidence,
-    });
-    selection = selectCandidate({
-      requestedCategory,
-      requestedSizeSystem,
-      candidates: discoveredCandidates,
-    });
-  } else {
-    documentReasoning = [...documentReasoning, ...navigation.reasoning];
-  }
-
   let report: IngestionPipelineReport = {
-    fetchedUrl: args.fetchedUrl,
-    resolvedSourceUrl,
+    fetchedUrl: args.originalFetchedUrl,
+    resolvedSourceUrl: args.currentUrl,
     requestedCategory,
     requestedSizeSystem,
-    sourceType,
-    documentKind,
+    sourceType: classification.sourceType,
+    documentKind: classification.documentKind,
     documentReasoning,
-    sourceTraceChain:
-      discoveredCandidates[0]?.sourceTraceChain ?? resolvedTraceChain,
-    followedUrl,
+    sourceTraceChain: discoveredCandidates[0]?.sourceTraceChain ?? args.sourceTraceChain,
+    followedUrl: args.followedUrl,
     linkCandidates,
-    navigationConfidence,
+    navigationConfidence: args.navigationConfidence ?? 0,
     discoveredCandidates: selection.candidates,
     selectedCandidateId: selection.selectedCandidateId,
     rejectedCandidateIds: selection.rejectedCandidateIds,
     selectionReasoning: selection.selectionReasoning,
     candidateExtractions: [],
-    validationStatus: statusFromIssues(initialIssues, "warning"),
+    validationStatus: statusFromIssues(initialIssues, "rejected"),
     validationErrors: initialIssues,
     warnings: initialWarnings,
     manualReviewRecommended: selection.manualReviewRecommended,
   };
 
-  if (!selection.candidates.length) {
-    report = {
-      ...report,
-      validationStatus: "rejected",
-      validationErrors: [
-        ...report.validationErrors,
-        {
-          code: "no-candidates-discovered",
-          message: "No candidate guide sections were discovered on the page.",
-          severity: "error",
-        },
-      ],
-      manualReviewRecommended: true,
+  if (classification.documentKind === "irrelevant") {
+    return {
+      report: appendError(report, {
+        code: "irrelevant-document",
+        message: "NO_VALID_SIZE_GUIDE: fetched document is not a usable size guide.",
+        severity: "error",
+      }),
     };
-    return { report };
+  }
+
+  if (!selection.candidates.length) {
+    return {
+      report: appendError(report, {
+        code: "no-candidates-discovered",
+        message: "NO_VALID_SIZE_GUIDE: no structured candidate size table was discovered.",
+        severity: "error",
+      }),
+    };
+  }
+
+  const detectedFamilies = distinctDetectedFamilies(selection.candidates);
+  if (detectedFamilies.length > 1) {
+    return {
+      report: appendError(
+        report,
+        {
+          code: "multiple-categories-detected",
+          message:
+            "NO_VALID_SIZE_GUIDE: more than one garment category was detected on the resolved page.",
+          severity: "error",
+          details: detectedFamilies,
+        },
+        "ambiguous",
+      ),
+    };
   }
 
   if (!selection.selectedCandidateId || report.validationErrors.length > 0) {
-    report = {
-      ...report,
-      validationStatus: report.validationErrors.length > 0 ? "rejected" : "ambiguous",
-      validationErrors: [
-        ...report.validationErrors,
-        ...(selection.selectedCandidateId
-          ? []
-          : [
-              {
-                code: "no-unique-section-match",
-                message:
-                  "No candidate section matched the requested garment category and size system strongly enough to extract safely.",
-                severity: "error" as const,
-              },
-            ]),
-      ],
-      manualReviewRecommended: true,
+    return {
+      report: appendError(
+        report,
+        {
+          code: selection.selectedCandidateId
+            ? "invalid-request"
+            : "no-unique-section-match",
+          message: selection.selectedCandidateId
+            ? "NO_VALID_SIZE_GUIDE: source request is invalid for strict extraction."
+            : "NO_VALID_SIZE_GUIDE: no single candidate matched tshirts / INT strongly enough.",
+          severity: "error",
+        },
+        selection.selectedCandidateId ? "rejected" : "ambiguous",
+      ),
     };
-    return { report };
   }
 
   const selectedCandidate = selection.candidates.find(
@@ -244,20 +341,13 @@ export async function runIngestionPipeline(args: {
   );
 
   if (!selectedCandidate) {
-    report = {
-      ...report,
-      validationStatus: "rejected",
-      validationErrors: [
-        ...report.validationErrors,
-        {
-          code: "selected-candidate-missing",
-          message: "The selected candidate section could not be resolved.",
-          severity: "error",
-        },
-      ],
-      manualReviewRecommended: true,
+    return {
+      report: appendError(report, {
+        code: "selected-candidate-missing",
+        message: "NO_VALID_SIZE_GUIDE: selected candidate section could not be resolved.",
+        severity: "error",
+      }),
     };
-    return { report };
   }
 
   const extraction = await extractCandidate({
@@ -290,12 +380,13 @@ export async function runIngestionPipeline(args: {
     validationStatus: validation.validationStatus,
     validationErrors: [...report.validationErrors, ...validation.validationErrors],
     warnings: validation.warnings,
-    manualReviewRecommended:
-      report.manualReviewRecommended || validation.validationStatus !== "accepted",
+    manualReviewRecommended: validation.validationStatus !== "accepted",
   };
 
   if (
+    validation.validationStatus !== "accepted" ||
     validation.validationErrors.length > 0 ||
+    validation.warnings.length > 0 ||
     !validation.resolvedCategory ||
     !validation.resolvedSizeSystem
   ) {
@@ -315,4 +406,26 @@ export async function runIngestionPipeline(args: {
   });
 
   return { guide, report };
+}
+
+export async function runIngestionPipeline(args: {
+  source: BrandSource;
+  fetchedUrl: string;
+  html: string;
+  markdown: string;
+  fetchDocument?: FetchDocument;
+}): Promise<{
+  guide?: GeneratedGuide;
+  report: IngestionPipelineReport;
+}> {
+  return processResolvedDocument({
+    source: args.source,
+    originalFetchedUrl: args.fetchedUrl,
+    currentUrl: args.fetchedUrl,
+    html: args.html,
+    markdown: args.markdown,
+    fetchDocument: args.fetchDocument,
+    sourceTraceChain: [requestedTraceStep(args.source, args.fetchedUrl)],
+    allowHubFollow: true,
+  });
 }

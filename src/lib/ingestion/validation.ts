@@ -1,5 +1,6 @@
 import { FIELD_TO_ROW_KEYS } from "@/lib/ingestion/measurements";
 import {
+  canonicalizeSizeLabel,
   isBottomCategory,
   isTopCategory,
   resolveRequestedCategoryMatch,
@@ -45,6 +46,21 @@ function getPresentFields(extraction: CandidateExtraction): MeasurementField[] {
 
 function hasField(extraction: CandidateExtraction, field: MeasurementField): boolean {
   return getPresentFields(extraction).includes(field);
+}
+
+function missingBaseSizeSequence(rows: CandidateExtraction["rows"]): string[] {
+  const sequence = ["XS", "S", "M", "L", "XL"];
+  const present = new Set(
+    rows.map((row) => canonicalizeSizeLabel(row.originalLabel).canonicalLabel),
+  );
+  const indexes = sequence
+    .map((label, index) => (present.has(label) ? index : -1))
+    .filter((index) => index >= 0);
+
+  if (indexes.length < 2) return [];
+  const min = Math.min(...indexes);
+  const max = Math.max(...indexes);
+  return sequence.slice(min, max + 1).filter((label) => !present.has(label));
 }
 
 function buildIssue(
@@ -185,6 +201,28 @@ export function validateExtraction(args: {
     );
   }
 
+  if (args.candidate.originalUnitSystem === "mixed") {
+    validationErrors.push(
+      buildIssue(
+        candidateId,
+        "error",
+        "mixed-units",
+        "Rejected because the selected section mixes cm and inches in the same candidate.",
+      ),
+    );
+  }
+
+  if (args.candidate.originalUnitSystem === "unknown") {
+    validationErrors.push(
+      buildIssue(
+        candidateId,
+        "error",
+        "unknown-units",
+        "Rejected because measurement units were not explicit in the selected section.",
+      ),
+    );
+  }
+
   if (args.candidate.linkOriginId && args.candidate.navigationConfidence < 0.55) {
     validationErrors.push(
       buildIssue(
@@ -214,6 +252,19 @@ export function validateExtraction(args: {
         "error",
         "empty-extraction",
         "Rejected because no rows could be extracted from the selected section.",
+      ),
+    );
+  }
+
+  const missingSequentialSizes = missingBaseSizeSequence(args.extraction.rows);
+  if (missingSequentialSizes.length > 0) {
+    validationErrors.push(
+      buildIssue(
+        candidateId,
+        "error",
+        "missing-size-sequence",
+        "Rejected because the international size sequence has gaps between XS and XL.",
+        missingSequentialSizes,
       ),
     );
   }
@@ -294,6 +345,16 @@ export function validateExtraction(args: {
             "error",
             "top-has-inseam",
             `Rejected because ${resolvedCategory} guide contained inseam fields.`,
+          ),
+        );
+      }
+      if (!hasField(args.extraction, "chest") && !hasField(args.extraction, "height")) {
+        validationErrors.push(
+          buildIssue(
+            candidateId,
+            "error",
+            "top-missing-chest",
+            `Rejected because ${resolvedCategory} guide did not contain a chest, bust, or torso measurement.`,
           ),
         );
       }

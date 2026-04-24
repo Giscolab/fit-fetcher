@@ -5,11 +5,15 @@ import type {
   BrandSource,
   GeneratedGuide,
   IngestionPipelineReport,
+  StrictSizeGuideFailure,
+  StrictSizeGuideOutput,
 } from "@/lib/types";
 
 export interface ScrapeResponse {
   guide?: GeneratedGuide;
   error?: string;
+  reason?: string;
+  strictJson?: StrictSizeGuideOutput | StrictSizeGuideFailure;
   logs: string[];
   pipeline: IngestionPipelineReport;
 }
@@ -125,10 +129,16 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
       }
 
       if (!guide) {
+        const reason =
+          report.validationErrors[0]?.message ??
+          "The page could not be converted into a validated size guide.";
         return {
-          error:
-            report.validationErrors[0]?.message ??
-            "The page could not be converted into a validated size guide.",
+          error: "NO_VALID_SIZE_GUIDE",
+          reason,
+          strictJson: {
+            error: "NO_VALID_SIZE_GUIDE",
+            reason,
+          },
           logs,
           pipeline: report,
         };
@@ -140,6 +150,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
 
       return {
         guide,
+        strictJson: guide.strictGuide,
         logs,
         pipeline: report,
       };
@@ -147,7 +158,12 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
       const message = err instanceof Error ? err.message : String(err);
       logs.push(`ERROR: ${message}`);
       return {
-        error: message,
+        error: "NO_VALID_SIZE_GUIDE",
+        reason: message,
+        strictJson: {
+          error: "NO_VALID_SIZE_GUIDE",
+          reason: message,
+        },
         logs,
         pipeline: {
           fetchedUrl: source.size_guide_url,
@@ -155,7 +171,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
           requestedCategory: null,
           requestedSizeSystem: null,
           sourceType: "category-specific-page",
-          documentKind: "unrelated-page",
+          documentKind: "irrelevant",
           documentReasoning: [],
           sourceTraceChain: [
             {

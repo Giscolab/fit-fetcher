@@ -640,7 +640,6 @@ function dedupeCandidates(candidates: CandidateSection[]): CandidateSection[] {
 
   for (const candidate of candidates) {
     const signature = [
-      candidate.kind,
       candidate.sectionTitle,
       candidate.matrixOrientation,
       candidate.rawHeaders.join("||"),

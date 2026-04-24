@@ -1,4 +1,3 @@
-import { extractCandidateGuideWithLLM } from "@/lib/extractors/llm";
 import {
   FIELD_TO_ROW_KEYS,
   fieldFromHeader,
@@ -214,26 +213,22 @@ export async function extractCandidate(args: {
     };
   }
 
-  const llm = await extractCandidateGuideWithLLM({
-    url: args.sourceUrl,
-    candidate: args.candidate,
-    requestedCategory: args.requestedCategory,
-    requestedSizeSystem: args.requestedSizeSystem,
-  });
-
   return {
     candidateId: args.candidate.id,
-    strategy: llm.rows.length ? "llm" : "none",
-    rows: llm.rows,
-    extractedFieldKeys: llm.extractedFieldKeys,
-    extractionConfidence: llm.rows.length ? Math.max(0.2, llm.score) : 0.1,
-    validationStatus: llm.rows.length ? "warning" : "rejected",
+    strategy: "none",
+    rows: [],
+    extractedFieldKeys: [],
+    extractionConfidence: 0.1,
+    validationStatus: "rejected",
     validationErrors: [],
-    warnings: llm.warnings.map((message) => ({
-      code: "llm-warning",
-      message,
-      severity: "warning" as const,
-      candidateId: args.candidate.id,
-    })),
+    warnings: [
+      {
+        code: "deterministic-extraction-only",
+        message:
+          "Rejected because the table could not be extracted deterministically without guessing.",
+        severity: "warning" as const,
+        candidateId: args.candidate.id,
+      },
+    ],
   };
 }

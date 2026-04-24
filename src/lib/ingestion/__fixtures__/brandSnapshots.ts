@@ -89,6 +89,47 @@ export const fixtures = {
 | L | 92-99 | 82-83 |
 `,
   },
+  adidasHub: {
+    url: "https://www.adidas.com/size-chart",
+    html: `<!doctype html><html><body>
+      <h1>Size Chart</h1>
+      <a href="/size-chart/men-tops">Men's Tops Size Guide</a>
+      <a href="/size-chart/men-bottoms">Men's Pants Size Guide</a>
+      <a href="/size-chart/men-shoes">Men's Shoes Size Guide</a>
+    </body></html>`,
+    markdown: `
+# Size Chart
+[Men's Tops Size Guide](/size-chart/men-tops)
+[Men's Pants Size Guide](/size-chart/men-bottoms)
+[Men's Shoes Size Guide](/size-chart/men-shoes)
+`,
+    followed: {
+      "https://www.adidas.com/size-chart/men-tops": {
+        sourceUrl: "https://www.adidas.com/size-chart/men-tops",
+        html: `<!doctype html><html><body>${adidasTopTable}</body></html>`,
+        markdown: `
+## Men's Shirts & Tops
+| Measure | XXS | XS | S | M | L | XL | XXL | 3XL | 4XL |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Chest (cm) | 79-83 | 84-89 | 90-95 | 96-103 | 104-111 | 112-119 | 120-127 | 128-135 | 136-143 |
+| Waist (cm) | 67-71 | 72-77 | 78-83 | 84-91 | 92-99 | 100-107 | 108-115 | 116-123 | 124-131 |
+| Hips (cm) | 82-86 | 87-92 | 93-98 | 99-106 | 107-114 | 115-122 | 123-130 | 131-138 | 139-146 |
+`,
+      },
+      "https://www.adidas.com/size-chart/men-bottoms": {
+        sourceUrl: "https://www.adidas.com/size-chart/men-bottoms",
+        html: `<!doctype html><html><body>${adidasBottomsTable}</body></html>`,
+        markdown: `
+## Men's Bottoms
+| Size | Waist (cm) | Inseam (cm) |
+| --- | --- | --- |
+| S | 78-83 | 80-81 |
+| M | 84-91 | 81-82 |
+| L | 92-99 | 82-83 |
+`,
+      },
+    },
+  },
   reebokMulti: {
     url: "https://www.reebok.com/size-guides",
     html: `<!doctype html><html><body>${shoeTable}${reebokTopTable}</body></html>`,
@@ -111,6 +152,48 @@ export const fixtures = {
 | 5XL | 138-144 | 123-129 | 138-144 |
 `,
   },
+  reebokHub: {
+    url: "https://www.reebok.com/size-chart",
+    html: `<!doctype html><html><body>
+      <h1>Size Chart</h1>
+      <a href="/size-chart/mens-shoes">Men's Shoes Size Guide</a>
+      <a href="/size-chart/mens-tops">Men's Tops Size Guide</a>
+    </body></html>`,
+    markdown: `
+# Size Chart
+[Men's Shoes Size Guide](/size-chart/mens-shoes)
+[Men's Tops Size Guide](/size-chart/mens-tops)
+`,
+    followed: {
+      "https://www.reebok.com/size-chart/mens-tops": {
+        sourceUrl: "https://www.reebok.com/size-chart/mens-tops",
+        html: `<!doctype html><html><body>${reebokTopTable}</body></html>`,
+        markdown: `
+## Men's Tops Size Guide
+| Size | Chest (cm) | Waist (cm) | Hips (cm) |
+| --- | --- | --- | --- |
+| M | 96-102 | 81-87 | 96-102 |
+| L | 103-109 | 88-94 | 103-109 |
+| XL | 110-116 | 95-101 | 110-116 |
+| 2XL | 117-123 | 102-108 | 117-123 |
+| 3XL | 124-130 | 109-115 | 124-130 |
+| 4XL | 131-137 | 116-122 | 131-137 |
+| 5XL | 138-144 | 123-129 | 138-144 |
+`,
+      },
+      "https://www.reebok.com/size-chart/mens-shoes": {
+        sourceUrl: "https://www.reebok.com/size-chart/mens-shoes",
+        html: `<!doctype html><html><body>${shoeTable}</body></html>`,
+        markdown: `
+## Footwear Size Guide
+| US | Foot Length (cm) |
+| --- | --- |
+| 8 | 26 |
+| 9 | 27 |
+`,
+      },
+    },
+  },
   underArmourHub: {
     url: "https://www.underarmour.com/en-us/t/size-guide/",
     html: `<!doctype html><html><body>
@@ -132,10 +215,24 @@ export const fixtures = {
 ## Men's Tops Size Guide
 | Size | Chest (cm) | Waist (cm) | Hips (cm) |
 | --- | --- | --- | --- |
-| S | 86-91 | 71-76 | 86-91 |
 | M | 96-102 | 81-87 | 96-102 |
 | L | 103-109 | 88-94 | 103-109 |
 | XL | 110-116 | 95-101 | 110-116 |
+| 2XL | 117-123 | 102-108 | 117-123 |
+| 3XL | 124-130 | 109-115 | 124-130 |
+| 4XL | 131-137 | 116-122 | 131-137 |
+| 5XL | 138-144 | 123-129 | 138-144 |
+`,
+      },
+      "https://www.underarmour.com/en-us/t/size-guide/mens-shoes/": {
+        sourceUrl: "https://www.underarmour.com/en-us/t/size-guide/mens-shoes/",
+        html: `<!doctype html><html><body>${shoeTable}</body></html>`,
+        markdown: `
+## Footwear Size Guide
+| US | Foot Length (cm) |
+| --- | --- |
+| 8 | 26 |
+| 9 | 27 |
 `,
       },
     },

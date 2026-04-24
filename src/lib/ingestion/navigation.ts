@@ -115,6 +115,48 @@ function isGuideLikeLink(text: string): boolean {
   ]);
 }
 
+function scoreOneHopGuideLink(text: string): {
+  score: number;
+  reasons: string[];
+  rejections: string[];
+} {
+  const normalized = ` ${normalizeToken(text)} `;
+  const reasons: string[] = [];
+  const rejections: string[] = [];
+  let score = 0;
+
+  if (/\b(men|mens)\b/.test(normalized)) {
+    score += 3;
+    reasons.push("One-hop score +3 for men's context.");
+  }
+  if (/\b(top|tops|shirt|shirts|tee|tees)\b/.test(normalized)) {
+    score += 3;
+    reasons.push("One-hop score +3 for tops/shirts/tees context.");
+  }
+  if (/\bsize\b/.test(normalized)) {
+    score += 2;
+    reasons.push("One-hop score +2 for size context.");
+  }
+  if (/\b(chart|guide)\b/.test(normalized)) {
+    score += 2;
+    reasons.push("One-hop score +2 for chart/guide context.");
+  }
+  if (/\b(shoe|shoes|footwear)\b/.test(normalized)) {
+    score -= 3;
+    rejections.push("One-hop score -3 for footwear context.");
+  }
+  if (/\b(pant|pants|bottom|bottoms)\b/.test(normalized)) {
+    score -= 3;
+    rejections.push("One-hop score -3 for bottoms context.");
+  }
+  if (/\b(kid|kids|baby|infant|toddler)\b/.test(normalized)) {
+    score -= 5;
+    rejections.push("One-hop score -5 for kids/baby context.");
+  }
+
+  return { score, reasons, rejections };
+}
+
 function scoreSizeSystemHint(
   requestedSizeSystem: SizeSystem | null,
   text: string,
@@ -232,10 +274,12 @@ function createLinkCandidate(args: {
 
   const reasons: string[] = [];
   const rejectionReasons: string[] = [];
-  let score = 0;
+  const oneHop = scoreOneHopGuideLink(context);
+  let score = oneHop.score;
+  reasons.push(...oneHop.reasons);
+  rejectionReasons.push(...oneHop.rejections);
 
   if (isSameBrandUrl(args.currentUrl, args.url)) {
-    score += 2;
     reasons.push("Link stays on the same brand domain.");
   } else {
     score -= 5;
@@ -433,6 +477,78 @@ export function discoverLinkCandidates(args: {
   ]).sort((a, b) => b.score - a.score);
 }
 
+export function selectHubFollowLinks(args: {
+  linkCandidates: LinkCandidate[];
+}): {
+  linkCandidates: LinkCandidate[];
+  selected: LinkCandidate[];
+  reasoning: string[];
+  navigationConfidence: number;
+} {
+  const rescored = args.linkCandidates.map((candidate) => {
+    const isInternal = candidate.reasons.includes("Link stays on the same brand domain.");
+    const isNewUrl = !candidate.rejectionReasons.includes(
+      "Link resolves to the same URL that was already fetched.",
+    );
+    const oneHop = scoreOneHopGuideLink(
+      [
+        candidate.label,
+        candidate.headingPath.join(" "),
+        candidate.nearbyText,
+        candidate.url,
+      ].join(" "),
+    );
+    return {
+      ...candidate,
+      score: isInternal && isNewUrl ? oneHop.score : -99,
+      reasons: oneHop.reasons,
+      rejectionReasons:
+        isInternal && isNewUrl
+          ? oneHop.rejections
+          : [
+              ...oneHop.rejections,
+              isInternal
+                ? "Rejected because one-hop links must not point to the current page."
+                : "Rejected because one-hop links must stay on the same domain.",
+            ],
+    };
+  });
+  const eligible = rescored
+    .filter((candidate) => candidate.score >= 3)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 2);
+  const selectedIds = new Set(eligible.map((candidate) => candidate.id));
+  const reasoning: string[] = [];
+
+  if (eligible.length) {
+    reasoning.push(
+      `Selected ${eligible.length} one-hop internal guide link(s) with score >= 3.`,
+    );
+    for (const link of eligible) {
+      reasoning.push(`One-hop candidate "${link.label}" scored ${link.score}.`);
+    }
+  } else {
+    const top = args.linkCandidates[0];
+    reasoning.push(
+      top
+        ? `No one-hop internal guide link reached score >= 3. Best link "${top.label}" scored ${top.score}.`
+        : "No one-hop internal guide links were discovered.",
+    );
+  }
+
+  return {
+    linkCandidates: rescored.map((candidate) => ({
+      ...candidate,
+      selected: selectedIds.has(candidate.id),
+    })),
+    selected: eligible,
+    reasoning,
+    navigationConfidence: eligible.length
+      ? Math.min(0.98, 0.35 + eligible[0]!.score / 10)
+      : 0,
+  };
+}
+
 function countTableLikeSignals(html: string, markdown: string): number {
   const tableCount =
     (html.match(/<table\b/gi) ?? []).length +
@@ -441,6 +557,39 @@ function countTableLikeSignals(html: string, markdown: string): number {
   const measurementSignals = (markdown.match(/\b(chest|waist|hips|inseam|foot length)\b/gi) ?? [])
     .length;
   return tableCount + Math.floor(markdownCount / 2) + Math.min(measurementSignals, 4);
+}
+
+function countMarkdownTableBlocks(markdown: string): number {
+  const lines = markdown.split(/\r?\n/);
+  let count = 0;
+  for (let index = 0; index < lines.length - 1; index++) {
+    const line = lines[index]?.trim() ?? "";
+    const next = lines[index + 1]?.trim() ?? "";
+    if (line.includes("|") && /^[:|\-\s]+$/.test(next)) {
+      count++;
+      index += 2;
+      while (index < lines.length && (lines[index] ?? "").includes("|")) index++;
+    }
+  }
+  return count;
+}
+
+function countStructuredGuideBlocks(html: string, markdown: string): number {
+  const $ = cheerio.load(html);
+  const htmlTableCount = $("table, [role='table']").length;
+  if (htmlTableCount > 0) return htmlTableCount;
+  return countMarkdownTableBlocks(markdown);
+}
+
+function countDistinctCategorySignals(text: string): number {
+  const normalized = normalizeToken(text);
+  let count = 0;
+  if (containsAny(normalized, ["top", "tops", "shirt", "shirts", "tee", "tees"])) count++;
+  if (containsAny(normalized, ["bottom", "bottoms", "pant", "pants", "inseam"])) count++;
+  if (containsAny(normalized, ["shoe", "shoes", "footwear", "foot length"])) count++;
+  if (containsAny(normalized, ["bra", "cup size"])) count++;
+  if (containsAny(normalized, ["kid", "kids", "baby"])) count++;
+  return count;
 }
 
 export function classifyDocument(args: {
@@ -454,11 +603,23 @@ export function classifyDocument(args: {
   reasoning: string[];
 } {
   const reasoning: string[] = [];
-  const linkCount = args.linkCandidates.filter((candidate) => candidate.score > 1).length;
+  const rawLinkCount = args.linkCandidates.length;
   const tableLikeSignals = countTableLikeSignals(args.html, args.markdown);
+  const structuredBlockCount = countStructuredGuideBlocks(args.html, args.markdown);
   const lowerUrl = args.sourceUrl.toLowerCase();
+  const text = cleanText(args.markdown || cheerio.load(args.html)("body").text()).slice(0, 20000);
+  const categorySignalCount = countDistinctCategorySignals(text);
 
-  if (tableLikeSignals === 0 && linkCount >= 2) {
+  if (rawLinkCount >= 6 && structuredBlockCount === 0) {
+    reasoning.push("Many internal guide links were found, so this document is a guide hub.");
+    return {
+      documentKind: "guide-hub-page",
+      sourceType: "guide-hub-page",
+      reasoning,
+    };
+  }
+
+  if (structuredBlockCount === 0 && tableLikeSignals === 0 && rawLinkCount >= 2) {
     reasoning.push("Guide-related links were found, but no table-like guide blocks were present.");
     return {
       documentKind: "guide-hub-page",
@@ -467,11 +628,7 @@ export function classifyDocument(args: {
     };
   }
 
-  if (
-    tableLikeSignals >= 3 ||
-    linkCount >= 3 ||
-    /(size-fit-guide|size-guide|size-chart|guide-des-tailles)/.test(lowerUrl)
-  ) {
+  if (structuredBlockCount > 1 || categorySignalCount >= 2) {
     reasoning.push("Multiple guide/table signals suggest a multi-guide document.");
     return {
       documentKind: "multi-guide-page",
@@ -480,7 +637,7 @@ export function classifyDocument(args: {
     };
   }
 
-  if (tableLikeSignals > 0) {
+  if (structuredBlockCount === 1 || tableLikeSignals > 0) {
     reasoning.push("Table-like guide content was detected directly on the fetched page.");
     return {
       documentKind: "direct-guide-page",
@@ -493,7 +650,7 @@ export function classifyDocument(args: {
 
   reasoning.push("No usable guide blocks or strong guide navigation were found.");
   return {
-    documentKind: "unrelated-page",
+    documentKind: "irrelevant",
     sourceType: "category-specific-page",
     reasoning,
   };

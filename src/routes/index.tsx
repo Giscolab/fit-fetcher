@@ -48,6 +48,7 @@ function summarizeRun(result: ScrapeResponse) {
     return `${result.guide.guide.sourceSectionTitle} · ${result.guide.guide.validationStatus}`;
   }
   return (
+    result.reason ??
     result.pipeline.validationErrors[0]?.message ??
     result.pipeline.selectionReasoning[0] ??
     "No validated guide was generated."

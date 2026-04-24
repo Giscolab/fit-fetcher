@@ -259,7 +259,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
 
   function downloadOne() {
     if (!guide) return;
-    const blob = new Blob([JSON.stringify(guide, null, 2)], {
+    const blob = new Blob([JSON.stringify(guide.strictGuide, null, 2)], {
       type: "application/json",
     });
     const anchor = document.createElement("a");

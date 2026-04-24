@@ -1,8 +1,14 @@
-import { resolveRequestedCategoryMatch } from "@/lib/ingestion/taxonomy";
+import { fieldFromHeader } from "@/lib/ingestion/measurements";
+import {
+  containsAny,
+  normalizeToken,
+  resolveRequestedCategoryMatch,
+} from "@/lib/ingestion/taxonomy";
 import type {
   CandidateSection,
   GarmentCategory,
   IngestionPipelineReport,
+  MeasurementField,
   SizeSystem,
 } from "@/lib/types";
 
@@ -141,6 +147,95 @@ function orientationBonus(candidate: CandidateSection): {
   };
 }
 
+function candidateMeasurementFields(candidate: CandidateSection): MeasurementField[] {
+  const fields = new Set<MeasurementField>();
+  for (const label of [
+    ...candidate.rawHeaders,
+    ...candidate.rawStubColumn,
+    ...candidate.visibleColumnLabels,
+    ...candidate.visibleRowLabels,
+    ...candidate.matrix.flat(),
+  ]) {
+    const field = fieldFromHeader(label);
+    if (field) fields.add(field);
+  }
+  return Array.from(fields);
+}
+
+function strictCandidateRejections(args: {
+  requestedCategory: GarmentCategory | null;
+  requestedSizeSystem: SizeSystem | null;
+  candidate: CandidateSection;
+}): string[] {
+  const { candidate } = args;
+  const rejections: string[] = [];
+  const fields = candidateMeasurementFields(candidate);
+  const text = normalizeToken(
+    [
+      candidate.sectionTitle,
+      candidate.subheading ?? "",
+      candidate.headingPath.join(" "),
+      candidate.nearbyAdvisoryText,
+      candidate.rawHeaders.join(" "),
+      candidate.rawStubColumn.join(" "),
+      candidate.matrix.flat().join(" "),
+    ].join(" "),
+  );
+  const categoryMatch = resolveRequestedCategoryMatch({
+    requestedCategory: args.requestedCategory,
+    detectedCategory: candidate.detectedCategory,
+    categoryMappingMode: candidate.categoryMappingMode,
+  });
+
+  if (candidate.documentKind === "guide-hub-page") {
+    rejections.push("Guide hub pages cannot be extracted directly.");
+  }
+
+  if (!candidate.isTabular) {
+    rejections.push("Candidate is not a structured table or grid.");
+  }
+
+  if (candidate.rawSizeAxisLabels.length < 2) {
+    rejections.push("Candidate does not expose at least two visible size labels.");
+  }
+
+  if (fields.length < 2) {
+    rejections.push("Candidate does not expose at least two measurement fields.");
+  }
+
+  if (
+    candidate.matrixOrientation === "unknown" ||
+    candidate.matrixOrientation === "conversion-grid"
+  ) {
+    rejections.push("Candidate matrix orientation is ambiguous or a conversion grid.");
+  }
+
+  if (args.requestedSizeSystem === "INT" && candidate.detectedSizeSystem !== "INT") {
+    rejections.push("Candidate is not an international alpha-size table.");
+  }
+
+  if (args.requestedCategory === "tshirts") {
+    if (categoryMatch.mode === "none" || candidate.garmentFamily !== "tops") {
+      rejections.push("Candidate is not a tops/tshirts guide.");
+    }
+    if (!fields.includes("chest") && !fields.includes("height")) {
+      rejections.push("Candidate lacks a chest, bust, or torso measurement.");
+    }
+    if (fields.includes("inseam") || containsAny(text, ["inseam", "inside leg", "entrejambe"])) {
+      rejections.push("Candidate contains inseam evidence, which belongs to bottoms.");
+    }
+    if (
+      fields.includes("footLength") ||
+      fields.includes("footWidth") ||
+      containsAny(text, ["shoe size", "footwear", "foot length", "chaussure"])
+    ) {
+      rejections.push("Candidate contains shoe or footwear evidence.");
+    }
+  }
+
+  return rejections;
+}
+
 export function selectCandidate(args: {
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
@@ -153,17 +248,24 @@ export function selectCandidate(args: {
   manualReviewRecommended: boolean;
 } {
   const scored = args.candidates.map((candidate) => {
+    const strictRejections = strictCandidateRejections({
+      requestedCategory: args.requestedCategory,
+      requestedSizeSystem: args.requestedSizeSystem,
+      candidate,
+    });
     const category = scoreCategoryMatch(args.requestedCategory, candidate);
     const sizeSystem = scoreSizeSystemMatch(args.requestedSizeSystem, candidate);
     const orientation = orientationBonus(candidate);
     const score =
-      category.score +
-      sizeSystem.score +
-      orientation.score +
-      (candidate.isTabular ? 2 : -2) +
-      Math.min(candidate.rawSizeAxisLabels.length, 10) * 0.15 +
-      candidate.extractionConfidence * 2 +
-      Math.min(0.5, candidate.navigationConfidence);
+      strictRejections.length > 0
+        ? -20 - strictRejections.length
+        : category.score +
+          sizeSystem.score +
+          orientation.score +
+          (candidate.isTabular ? 2 : -2) +
+          Math.min(candidate.rawSizeAxisLabels.length, 10) * 0.15 +
+          candidate.extractionConfidence * 2 +
+          Math.min(0.5, candidate.navigationConfidence);
     const warnings = [...candidate.warnings];
 
     if (candidate.kind === "advisory-text") {
@@ -180,6 +282,7 @@ export function selectCandidate(args: {
         ...orientation.reasons,
       ],
       rejectionReasons: [
+        ...strictRejections,
         ...candidate.rejectionReasons,
         ...category.rejections,
         ...sizeSystem.rejections,
@@ -197,7 +300,7 @@ export function selectCandidate(args: {
     top.selectionScore >= 7 &&
     top.isTabular &&
     top.matrixOrientation !== "conversion-grid" &&
-    (!runnerUp || top.selectionScore - runnerUp.selectionScore >= 1.5)
+    (!runnerUp || top.selectionScore - runnerUp.selectionScore >= 2)
       ? top
       : undefined;
 
@@ -213,7 +316,7 @@ export function selectCandidate(args: {
     );
     if (runnerUp) {
       selectionReasoning.push(
-        `The next best candidate ${runnerUp.sectionTitle} scored ${runnerUp.selectionScore}, so the match was not unique enough.`,
+        `The next best candidate ${runnerUp.sectionTitle} scored ${runnerUp.selectionScore}, so the match was not unique enough under strict validation.`,
       );
     }
     selectionReasoning.push(...top.rejectionReasons.slice(0, 5));

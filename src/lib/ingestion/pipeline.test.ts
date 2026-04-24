@@ -64,26 +64,52 @@ test("Nike transposed tops table extracts all visible INT rows without collapsin
   ]);
 });
 
-test("Adidas multi-guide page isolates shirts and tops instead of bottoms", async () => {
+test("Adidas multi-guide page fails instead of extracting from a mixed category page", async () => {
   const result = await runFixture({
     brand: "Adidas",
     fixture: fixtures.adidasMulti,
   });
 
-  assert.ok(result.guide);
-  assert.equal(result.guide.guide.sourceSectionTitle, "Men's Shirts & Tops");
-  assert.equal(result.guide.guide.garmentCategory, "tshirts");
-  assert.equal(result.guide.guide.rows.length, 9);
-  assert.equal(
-    result.guide.guide.rows.some((row) => row.inseamCmMin != null || row.inseamCmMax != null),
-    false,
+  assert.equal(result.guide, undefined);
+  assert.ok(
+    result.report.validationErrors.some(
+      (issue) => issue.code === "multiple-categories-detected",
+    ),
   );
 });
 
-test("Reebok tops guide preserves extended size breadth through 5XL", async () => {
+test("Adidas hub follows one-hop tops link before extraction", async () => {
+  const result = await runFixture({
+    brand: "Adidas",
+    fixture: fixtures.adidasHub,
+    followed: fixtures.adidasHub.followed,
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.report.followedUrl, "https://www.adidas.com/size-chart/men-tops");
+  assert.equal(result.guide.guide.sourceSectionTitle, "Men's Shirts & Tops");
+  assert.equal(result.guide.guide.garmentCategory, "tshirts");
+});
+
+test("Reebok mixed guide page fails until a one-hop tops page is resolved", async () => {
   const result = await runFixture({
     brand: "Reebok",
     fixture: fixtures.reebokMulti,
+  });
+
+  assert.equal(result.guide, undefined);
+  assert.ok(
+    result.report.validationErrors.some(
+      (issue) => issue.code === "multiple-categories-detected",
+    ),
+  );
+});
+
+test("Reebok hub follows tops link and preserves extended size breadth through 5XL", async () => {
+  const result = await runFixture({
+    brand: "Reebok",
+    fixture: fixtures.reebokHub,
+    followed: fixtures.reebokHub.followed,
   });
 
   assert.ok(result.guide);
@@ -204,7 +230,11 @@ test("Material size breadth loss is rejected", async () => {
   });
 
   assert.equal(result.guide, undefined);
-  assert.ok(result.report.validationErrors.some((issue) => issue.code === "size-breadth-loss"));
+  assert.ok(
+    result.report.validationErrors.some((issue) =>
+      ["size-breadth-loss", "no-unique-section-match"].includes(issue.code),
+    ),
+  );
 });
 
 test("Advisory-only pages stay in review instead of becoming guides", async () => {

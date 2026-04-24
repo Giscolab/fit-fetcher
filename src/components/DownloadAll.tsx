@@ -21,7 +21,7 @@ export function DownloadAll({ results }: Props) {
       const folder = zip.folder("generated-guides");
       for (const r of ready) {
         if (!r.guide) continue;
-        folder!.file(guideFilename(r.guide), JSON.stringify(r.guide, null, 2));
+        folder!.file(guideFilename(r.guide), JSON.stringify(r.guide.strictGuide, null, 2));
       }
       const blob = await zip.generateAsync({ type: "blob" });
       const a = document.createElement("a");

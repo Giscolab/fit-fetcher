@@ -88,7 +88,7 @@ function summaryMessage(result: BrandResult): string {
 export function BrandTable({ results, onPreview }: Props) {
   function downloadOne(result: BrandResult) {
     if (!result.guide) return;
-    const blob = new Blob([JSON.stringify(result.guide, null, 2)], {
+    const blob = new Blob([JSON.stringify(result.guide.strictGuide, null, 2)], {
       type: "application/json",
     });
     const anchor = document.createElement("a");
