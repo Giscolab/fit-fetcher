@@ -6,6 +6,7 @@ import { classifyDocument, discoverLinkCandidates } from "@/lib/ingestion/naviga
 import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
 import { selectCandidate } from "@/lib/ingestion/selection";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
+import { parseRangeCm } from "@/lib/normalizers/units";
 
 function makeSource(brand: string, url: string, garmentCategory = "tshirts", sizeSystem = "INT") {
   return {
@@ -62,6 +63,14 @@ test("Nike transposed tops table extracts all visible INT rows without collapsin
     "3XL",
     "4XL",
   ]);
+  assert.equal(result.guide.shoppingAssistantGuide.guide.garmentCategory, "tshirt");
+  assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.chestCm?.min, 76);
+  assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.seatHipsCm?.max, 85);
+});
+
+test("Adidas fractional inch ranges are converted without losing the upper bound", () => {
+  assert.deepEqual(parseRangeCm('32 1/2–34"', "in"), [82.6, 86.4]);
+  assert.deepEqual(parseRangeCm('43–46 1/2"', "in"), [109.2, 118.1]);
 });
 
 test("Nike hub filters product links before one-hop ranking", async () => {

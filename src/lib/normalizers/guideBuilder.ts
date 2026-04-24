@@ -6,6 +6,11 @@ import type {
   GeneratedGuide,
   GarmentCategory,
   Guide,
+  ShoppingAssistantDimension,
+  ShoppingAssistantGarmentCategory,
+  ShoppingAssistantImportPayload,
+  ShoppingAssistantMeasurementRange,
+  ShoppingAssistantSizeGuideRow,
   SizeRow,
   SizeSystem,
   StrictSizeGuideOutput,
@@ -48,9 +53,13 @@ function buildStrictGuide(args: {
   sizeSystem: SizeSystem;
   candidate: CandidateSection;
   extraction: CandidateExtraction;
-}): StrictSizeGuideOutput {
+}): StrictSizeGuideOutput | { error: "NO_VALID_SIZE_GUIDE"; reason: string } {
   if (args.garmentCategory !== "tshirts" || args.sizeSystem !== "INT") {
-    throw new Error("NO_VALID_SIZE_GUIDE: strict export only supports tops/tshirts / INT.");
+    return {
+      error: "NO_VALID_SIZE_GUIDE",
+      reason:
+        "L'export strict historique ne couvre que les hauts/t-shirts en tailles internationales.",
+    };
   }
 
   return {
@@ -64,6 +73,181 @@ function buildStrictGuide(args: {
     })),
     source_url: args.candidate.sourceUrl,
     confidence: Math.round(args.extraction.extractionConfidence * 100) / 100,
+  };
+}
+
+const SHOPPING_ASSISTANT_CATEGORY_MAP: Partial<
+  Record<GarmentCategory, ShoppingAssistantGarmentCategory>
+> = {
+  tshirts: "tshirt",
+  shirts: "chemise",
+  hoodies: "hoodie",
+  jackets: "veste_legere",
+  pants: "pantalon",
+  jeans: "jean",
+  shorts: "short",
+  shoes: "socks",
+  "generic-body-guide": "tshirt",
+};
+
+function shoppingAssistantCategory(
+  category: GarmentCategory,
+): ShoppingAssistantGarmentCategory {
+  return SHOPPING_ASSISTANT_CATEGORY_MAP[category] ?? "tshirt";
+}
+
+function shoppingAssistantSizeSystem(sizeSystem: SizeSystem): Exclude<SizeSystem, "BRA"> {
+  if (sizeSystem === "BRA") return "INT";
+  if (sizeSystem === "FOOTWEAR") return "FOOTWEAR";
+  return sizeSystem;
+}
+
+function range(
+  min: number | undefined,
+  max: number | undefined,
+  unit: "cm" | "mm",
+  sourceNote: string,
+): ShoppingAssistantMeasurementRange | null {
+  if (min == null && max == null) return null;
+  return {
+    min: min ?? null,
+    max: max ?? null,
+    target: null,
+    unit,
+    sourceNote,
+  };
+}
+
+function mmRangeFromCm(
+  min: number | undefined,
+  max: number | undefined,
+  sourceNote: string,
+): ShoppingAssistantMeasurementRange | null {
+  const toMm = (value: number | undefined) =>
+    value == null ? undefined : Math.round(value * 10);
+  return range(toMm(min), toMm(max), "mm", sourceNote);
+}
+
+function addDimension(
+  dimensions: Partial<
+    Record<ShoppingAssistantDimension, ShoppingAssistantMeasurementRange>
+  >,
+  key: ShoppingAssistantDimension,
+  value: ShoppingAssistantMeasurementRange | null,
+) {
+  if (value) dimensions[key] = value;
+}
+
+function buildShoppingAssistantGuide(args: {
+  brand: Brand;
+  source: BrandSource;
+  guide: Guide;
+  candidate: CandidateSection;
+  extraction: CandidateExtraction;
+}): {
+  payload: ShoppingAssistantImportPayload;
+  warnings: ValidationIssue[];
+} {
+  const warnings: ValidationIssue[] = [];
+  const now = args.guide.sourceTraceChain[0]?.url ? args.brand.updatedAt : new Date().toISOString();
+  const guideId = `sa-${args.guide.id}`;
+  const sourceNote = `Extraction Fit Fetcher depuis ${args.candidate.sourceUrl}`;
+  const rows = args.guide.rows.map((row, index) => {
+    const dimensions: ShoppingAssistantSizeGuideRow["dimensions"] = {};
+
+    addDimension(dimensions, "chestCm", range(row.chestCmMin, row.chestCmMax, "cm", sourceNote));
+    addDimension(dimensions, "waistCm", range(row.waistCmMin, row.waistCmMax, "cm", sourceNote));
+    addDimension(dimensions, "seatHipsCm", range(row.hipsCmMin, row.hipsCmMax, "cm", sourceNote));
+    addDimension(dimensions, "heightCm", range(row.heightCmMin, row.heightCmMax, "cm", sourceNote));
+    addDimension(dimensions, "footLengthMm", mmRangeFromCm(row.footLengthCmMin, row.footLengthCmMax, sourceNote));
+
+    const ignoredFields = [
+      row.inseamCmMin != null || row.inseamCmMax != null ? "inseam" : null,
+      row.outseamCmMin != null || row.outseamCmMax != null ? "outseam" : null,
+      row.neckCmMin != null || row.neckCmMax != null ? "neck" : null,
+      row.shoulderCmMin != null || row.shoulderCmMax != null ? "shoulder" : null,
+      row.sleeveCmMin != null || row.sleeveCmMax != null ? "sleeve" : null,
+      row.footWidthCmMin != null || row.footWidthCmMax != null ? "footWidth" : null,
+    ].filter((field): field is string => Boolean(field));
+
+    if (ignoredFields.length > 0) {
+      warnings.push({
+        code: "shopping-assistant-dimensions-ignored",
+        severity: "warning",
+        message: `Certaines mesures source ne sont pas dans le schéma actuel du logiciel principal: ${ignoredFields.join(", ")}.`,
+        candidateId: args.candidate.id,
+        details: ignoredFields,
+      });
+    }
+
+    return {
+      id: `${guideId}-row-${index + 1}`,
+      guideId,
+      label: row.canonicalLabel || row.originalLabel,
+      sortOrder: index,
+      dimensions,
+      notes: [
+        row.fitVariant !== "standard" ? `Variante: ${row.fitVariant}.` : "",
+        row.evidenceRowLabel && row.evidenceRowLabel !== row.canonicalLabel
+          ? `Libellé source: ${row.evidenceRowLabel}.`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
+    };
+  });
+  const isComplete =
+    rows.length > 0 &&
+    rows.every((row) => Object.keys(row.dimensions).length >= 2);
+
+  if (!SHOPPING_ASSISTANT_CATEGORY_MAP[args.guide.garmentCategory]) {
+    warnings.push({
+      code: "shopping-assistant-category-fallback",
+      severity: "warning",
+      message: `La catégorie source ${args.guide.garmentCategory} a été repliée vers tshirt pour cohabiter avec le schéma du logiciel principal.`,
+      candidateId: args.candidate.id,
+    });
+  }
+
+  return {
+    payload: {
+      brand: {
+        ...args.brand,
+        notes: [
+          args.brand.notes,
+          "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+        ]
+          .filter(Boolean)
+          .join(" "),
+      },
+      guide: {
+        id: guideId,
+        brandId: args.brand.id,
+        name: args.guide.name,
+        garmentCategory: shoppingAssistantCategory(args.guide.garmentCategory),
+        sizeSystem: shoppingAssistantSizeSystem(args.guide.sizeSystem),
+        fabricStretch: args.guide.fabricStretch,
+        fitNotes: [
+          `Section source: ${args.guide.sourceSectionTitle}.`,
+          `Audience détectée: ${args.guide.sourceAudience}.`,
+          `Statut validation Fit Fetcher: ${args.guide.validationStatus}.`,
+        ].join(" "),
+        fabricNotes: "Stretch textile non inféré depuis la page; valeur conservatrice.",
+        sourceType: "json_import",
+        sourceName: "Fit Fetcher",
+        sourceUrl: args.guide.sourceUrl,
+        isSample: false,
+        isComplete,
+        uncertainty: Math.max(
+          0.05,
+          Math.min(0.95, 1 - args.extraction.extractionConfidence),
+        ),
+        rows,
+        createdAt: now,
+        updatedAt: now,
+      },
+    },
+    warnings,
   };
 }
 
@@ -132,6 +316,13 @@ export function buildGeneratedGuide(args: {
     rawExtractedFields: args.extraction.extractedFieldKeys,
     rawCandidateId: args.candidate.id,
   };
+  const shoppingAssistant = buildShoppingAssistantGuide({
+    brand,
+    source: args.source,
+    guide,
+    candidate: args.candidate,
+    extraction: args.extraction,
+  });
 
   return {
     brand,
@@ -144,9 +335,15 @@ export function buildGeneratedGuide(args: {
       candidate: args.candidate,
       extraction: args.extraction,
     }),
+    shoppingAssistantGuide: shoppingAssistant.payload,
+    shoppingAssistantWarnings: shoppingAssistant.warnings,
   };
 }
 
 export function guideFilename(g: GeneratedGuide): string {
   return `${slug(g.brand.name)}_${slug(g.guide.garmentCategory)}_${slug(g.guide.sizeSystem)}.json`;
+}
+
+export function shoppingAssistantGuideFilename(g: GeneratedGuide): string {
+  return `${slug(g.brand.name)}_${slug(g.shoppingAssistantGuide.guide.garmentCategory)}_${slug(g.shoppingAssistantGuide.guide.sizeSystem)}_shopping-assistant.json`;
 }

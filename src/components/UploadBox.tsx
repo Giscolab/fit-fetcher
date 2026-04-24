@@ -21,13 +21,13 @@ export function UploadBox({ onLoaded }: Props) {
       try {
         const parsed = JSON.parse(String(reader.result));
         const sources: unknown = parsed.sources ?? parsed;
-        if (!Array.isArray(sources)) throw new Error("Expected an array under `sources`");
+        if (!Array.isArray(sources)) throw new Error("Un tableau est attendu dans `sources`");
         const valid = sources.map(normalizeBrandSourceInput).filter(Boolean) as BrandSource[];
-        if (!valid.length) throw new Error("No valid sources found");
+        if (!valid.length) throw new Error("Aucune source valide trouvée");
         setFilename(file.name);
         onLoaded(valid, file.name);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Invalid JSON");
+        setError(e instanceof Error ? e.message : "JSON invalide");
       }
     };
     reader.readAsText(file);
@@ -48,7 +48,7 @@ export function UploadBox({ onLoaded }: Props) {
           <Upload className="size-6" />
         </div>
         <div className="max-w-sm">
-          <h3 className="text-base font-semibold tracking-normal">Drop your brands.json</h3>
+          <h3 className="text-base font-semibold tracking-normal">Déposez votre fichier brands.json</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Format:{" "}
             <code className="break-words rounded bg-muted px-1.5 py-0.5 text-[0.72rem] text-foreground">
@@ -61,7 +61,7 @@ export function UploadBox({ onLoaded }: Props) {
           onClick={() => inputRef.current?.click()}
           className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
-          <FileJson /> Choose file
+          <FileJson /> Choisir un fichier
         </Button>
         <input
           ref={inputRef}
@@ -75,7 +75,7 @@ export function UploadBox({ onLoaded }: Props) {
         />
         {filename && (
           <p className="rounded-md bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
-            Loaded: {filename}
+            Chargé: {filename}
           </p>
         )}
         {error && (

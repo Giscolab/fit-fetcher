@@ -363,7 +363,7 @@ function createLinkCandidate(args: {
   const reasons: string[] = [];
   const rejectionReasons: string[] = [];
   const oneHop = scoreOneHopGuideLink(context);
-  const productPage = isProductPageLink(args.url, context);
+  const productPage = isProductPageLink(args.url, label);
   const utilityNavigation = isUtilityNavigationLink(label, args.url);
   let score = oneHop.score;
   reasons.push(...oneHop.reasons);
@@ -564,6 +564,81 @@ function discoverMarkdownLinks(args: {
   return links;
 }
 
+function officialBrandFallbackUrls(args: {
+  sourceUrl: string;
+  requestedCategory: GarmentCategory | null;
+  requestedSizeSystem: SizeSystem | null;
+}): Array<{ url: string; label: string }> {
+  let host = "";
+  try {
+    host = new URL(args.sourceUrl).hostname.toLowerCase();
+  } catch {
+    return [];
+  }
+
+  const category = args.requestedCategory;
+  const sizeSystem = args.requestedSizeSystem;
+  const isTop =
+    !category ||
+    ["tshirts", "shirts", "hoodies", "jackets"].includes(category);
+  const isBottom = category && ["pants", "jeans", "shorts", "leggings"].includes(category);
+  const isShoe = category === "shoes" || sizeSystem === "FOOTWEAR";
+
+  if (host.includes("nike.com")) {
+    if (isShoe) {
+      return [{ url: "https://www.nike.com/size-fit/mens-footwear", label: "Nike guide officiel chaussures homme" }];
+    }
+    if (isBottom) {
+      return [
+        {
+          url:
+            sizeSystem === "WAIST_INSEAM"
+              ? "https://www.nike.com/size-fit/mens-bottoms-numeric/"
+              : "https://www.nike.com/size-fit/mens_bottoms_alpha",
+          label: "Nike guide officiel bas homme",
+        },
+      ];
+    }
+    if (isTop) {
+      return [{ url: "https://www.nike.com/size-fit/mens-tops-alpha", label: "Nike guide officiel hauts homme" }];
+    }
+  }
+
+  if (host.includes("adidas.")) {
+    if (isShoe) {
+      return [{ url: "https://www.adidas.com/us/help/size_charts/men-shoes", label: "adidas guide officiel chaussures homme" }];
+    }
+    return [{ url: "https://www.adidas.com/us/help/size_charts", label: "adidas guide officiel vêtements homme" }];
+  }
+
+  if (host.includes("puma.")) {
+    return [{ url: "https://eu.puma.com/de/en/size-charts.html", label: "PUMA guide officiel tailles homme" }];
+  }
+
+  return [];
+}
+
+function discoverBrandFallbackLinks(args: {
+  sourceUrl: string;
+  requestedCategory: GarmentCategory | null;
+  requestedSizeSystem: SizeSystem | null;
+}): LinkCandidate[] {
+  return officialBrandFallbackUrls(args).map((fallback, index) =>
+    createLinkCandidate({
+      id: makeId("link-brand", index),
+      currentUrl: args.sourceUrl,
+      url: fallback.url,
+      label: fallback.label,
+      headingPath: ["Guide officiel connu"],
+      nearbyText:
+        "Lien de secours officiel utilisé lorsque la page fournie ne contient pas directement de tableau exploitable.",
+      requestedCategory: args.requestedCategory,
+      requestedSizeSystem: args.requestedSizeSystem,
+      resolver: "brand-fallback",
+    }),
+  );
+}
+
 export function discoverLinkCandidates(args: {
   html: string;
   markdown: string;
@@ -574,6 +649,7 @@ export function discoverLinkCandidates(args: {
   return dedupeLinks([
     ...discoverHtmlLinks(args),
     ...discoverMarkdownLinks(args),
+    ...discoverBrandFallbackLinks(args),
   ]).sort((a, b) => b.score - a.score);
 }
 
@@ -593,14 +669,15 @@ export function selectHubFollowLinks(args: {
       candidate.nearbyText,
       candidate.url,
     ].join(" ");
+    const primaryContext = [candidate.label, candidate.url].join(" ");
     const isInternal = candidate.reasons.includes("Link stays on the same brand domain.");
     const isNewUrl = !candidate.rejectionReasons.includes(
       "Link resolves to the same URL that was already fetched.",
     );
-    const isProductPage = isProductPageLink(candidate.url, context);
+    const isProductPage = isProductPageLink(candidate.url, candidate.label);
     const isUtilityNavigation = isUtilityNavigationLink(candidate.label, candidate.url);
-    const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, context);
-    const oneHop = scoreOneHopGuideLink(context);
+    const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, primaryContext);
+    const oneHop = scoreOneHopGuideLink(primaryContext);
     const disqualifications = [
       ...oneHop.rejections,
       ...(!isInternal ? ["Rejected because one-hop links must stay on the same domain."] : []),
@@ -629,10 +706,12 @@ export function selectHubFollowLinks(args: {
       rejectionReasons: disqualifications,
     };
   });
-  const eligible = rescored
+  const sortedEligible = rescored
     .filter((candidate) => candidate.score >= 3)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 2);
+    .sort((a, b) => b.score - a.score);
+  const eligibleGeneric = sortedEligible.filter((candidate) => candidate.resolver === "generic");
+  const eligibleFallback = sortedEligible.filter((candidate) => candidate.resolver === "brand-fallback");
+  const eligible = (eligibleGeneric.length ? eligibleGeneric : eligibleFallback).slice(0, 2);
   const topRescored = [...rescored].sort((a, b) => b.score - a.score)[0];
   const selectedIds = new Set(eligible.map((candidate) => candidate.id));
   const reasoning: string[] = [];

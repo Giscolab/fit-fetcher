@@ -1,11 +1,16 @@
 export const GARMENT_CATEGORIES = [
   "tshirts",
+  "polo",
   "shirts",
+  "sweaters",
   "hoodies",
   "jackets",
+  "coats",
   "pants",
   "jeans",
   "shorts",
+  "underwear",
+  "socks",
   "leggings",
   "bras",
   "shoes",
@@ -31,6 +36,7 @@ export const SIZE_SYSTEMS = [
   "INT",
   "WAIST_INSEAM",
   "FOOTWEAR",
+  "SOCK",
   "BRA",
 ] as const;
 export type SizeSystem = (typeof SIZE_SYSTEMS)[number];
@@ -193,6 +199,98 @@ export interface StrictSizeGuideFailure {
   reason: string;
 }
 
+export const SHOPPING_ASSISTANT_GARMENT_CATEGORIES = [
+  "tshirt",
+  "polo",
+  "chemise",
+  "pull",
+  "hoodie",
+  "veste_legere",
+  "manteau",
+  "jean",
+  "pantalon",
+  "chino",
+  "cargo",
+  "short",
+  "boxer",
+  "slip",
+  "chaussette",
+  "parka",
+  "doudoune",
+  "boxers_or_underwear",
+  "socks",
+  "tshirts",
+  "shirts",
+  "sweaters",
+  "hoodies",
+  "jackets",
+  "coats",
+  "jeans",
+  "trousers",
+  "shorts",
+] as const;
+export type ShoppingAssistantGarmentCategory =
+  (typeof SHOPPING_ASSISTANT_GARMENT_CATEGORIES)[number];
+
+export const SHOPPING_ASSISTANT_DIMENSIONS = [
+  "chestCm",
+  "waistCm",
+  "stomachCm",
+  "seatHipsCm",
+  "bicepsCm",
+  "forearmCm",
+  "thighCm",
+  "calfCm",
+  "footLengthMm",
+  "heightCm",
+] as const;
+export type ShoppingAssistantDimension =
+  (typeof SHOPPING_ASSISTANT_DIMENSIONS)[number];
+
+export interface ShoppingAssistantMeasurementRange {
+  min: number | null;
+  max: number | null;
+  target: number | null;
+  unit: "cm" | "mm";
+  sourceNote?: string;
+}
+
+export interface ShoppingAssistantSizeGuideRow {
+  id: string;
+  guideId: string;
+  label: string;
+  sortOrder: number;
+  dimensions: Partial<
+    Record<ShoppingAssistantDimension, ShoppingAssistantMeasurementRange>
+  >;
+  notes: string;
+}
+
+export interface ShoppingAssistantBrandSizeGuide {
+  id: string;
+  brandId: string;
+  name: string;
+  garmentCategory: ShoppingAssistantGarmentCategory;
+  sizeSystem: Exclude<SizeSystem, "BRA">;
+  fabricStretch: "none" | "low" | "medium" | "high";
+  fitNotes: string;
+  fabricNotes: string;
+  sourceType: "json_import";
+  sourceName: string;
+  sourceUrl: string | null;
+  isSample: false;
+  isComplete: boolean;
+  uncertainty: number;
+  rows: ShoppingAssistantSizeGuideRow[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShoppingAssistantImportPayload {
+  brand: Brand;
+  guide: ShoppingAssistantBrandSizeGuide;
+}
+
 export interface ValidationIssue {
   code: string;
   message: string;
@@ -314,7 +412,9 @@ export interface Guide {
 export interface GeneratedGuide {
   brand: Brand;
   guide: Guide;
-  strictGuide: StrictSizeGuideOutput;
+  strictGuide: StrictSizeGuideOutput | StrictSizeGuideFailure;
+  shoppingAssistantGuide: ShoppingAssistantImportPayload;
+  shoppingAssistantWarnings: ValidationIssue[];
 }
 
 export interface IngestionPipelineReport {

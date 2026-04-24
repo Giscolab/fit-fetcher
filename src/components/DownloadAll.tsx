@@ -3,7 +3,10 @@ import JSZip from "jszip";
 import { Download, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BrandResult } from "@/lib/types";
-import { guideFilename } from "@/lib/normalizers/guideBuilder";
+import {
+  guideFilename,
+  shoppingAssistantGuideFilename,
+} from "@/lib/normalizers/guideBuilder";
 
 interface Props {
   results: BrandResult[];
@@ -18,15 +21,20 @@ export function DownloadAll({ results }: Props) {
     setBusy(true);
     try {
       const zip = new JSZip();
-      const folder = zip.folder("generated-guides");
+      const folder = zip.folder("logiciel-principal");
+      const legacyFolder = zip.folder("export-strict-historique");
       for (const r of ready) {
         if (!r.guide) continue;
-        folder!.file(guideFilename(r.guide), JSON.stringify(r.guide.strictGuide, null, 2));
+        folder!.file(
+          shoppingAssistantGuideFilename(r.guide),
+          JSON.stringify(r.guide.shoppingAssistantGuide, null, 2),
+        );
+        legacyFolder!.file(guideFilename(r.guide), JSON.stringify(r.guide.strictGuide, null, 2));
       }
       const blob = await zip.generateAsync({ type: "blob" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "generated-guides.zip";
+      a.download = "guides-tailles-fit-fetcher.zip";
       a.click();
       URL.revokeObjectURL(a.href);
     } finally {
@@ -42,7 +50,7 @@ export function DownloadAll({ results }: Props) {
       className="w-full bg-card shadow-sm hover:bg-surface hover:text-foreground sm:w-auto"
     >
       {busy ? <Package className="animate-pulse" /> : <Download />}
-      Download ZIP ({ready.length})
+      Télécharger ZIP ({ready.length})
     </Button>
   );
 }

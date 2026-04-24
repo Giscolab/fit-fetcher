@@ -50,7 +50,7 @@ export function detectFields(headers: string[]): MeasurementField[] {
 export function detectMeasurementUnit(text: string): MeasurementUnit {
   const lower = text.toLowerCase();
   const hasCm = /\b(cm|centim)/i.test(lower);
-  const hasIn = /\b(in|inch|inches)\b|"/i.test(lower);
+  const hasIn = /\b(inch|inches)\b|\(\s*in\s*\)|\bin\.|"/i.test(lower);
   if (hasCm && hasIn) return "mixed";
   if (hasCm) return "cm";
   if (hasIn) return "in";

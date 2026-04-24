@@ -1,11 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
 import { normalizeBrandSourceInput } from "@/lib/normalizers/sourceInput";
-import { scrapeWithFirecrawl } from "@/lib/utils/firecrawl";
+import { scrapeSizeGuideDocument } from "@/lib/utils/firecrawl";
 import type {
   BrandSource,
   GeneratedGuide,
   IngestionPipelineReport,
+  ShoppingAssistantImportPayload,
   StrictSizeGuideFailure,
   StrictSizeGuideOutput,
 } from "@/lib/types";
@@ -14,6 +15,7 @@ export interface ScrapeResponse {
   guide?: GeneratedGuide;
   error?: string;
   reason?: string;
+  shoppingAssistantJson?: ShoppingAssistantImportPayload;
   strictJson?: StrictSizeGuideOutput | StrictSizeGuideFailure;
   logs: string[];
   pipeline: IngestionPipelineReport;
@@ -24,10 +26,10 @@ function validateExternalUrl(raw: string): URL {
   try {
     parsed = new URL(raw);
   } catch {
-    throw new Error("size_guide_url must be a valid URL");
+    throw new Error("size_guide_url doit être une URL valide");
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error("size_guide_url must use http or https");
+    throw new Error("size_guide_url doit utiliser http ou https");
   }
   const host = parsed.hostname.toLowerCase();
   const blocked =
@@ -43,7 +45,7 @@ function validateExternalUrl(raw: string): URL {
     /^169\.254\./.test(host) ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(host);
   if (blocked) {
-    throw new Error("size_guide_url points to a disallowed host");
+    throw new Error("size_guide_url pointe vers un hôte interdit");
   }
   return parsed;
 }
@@ -52,13 +54,13 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
   .inputValidator((input: { source: BrandSource }) => {
     const source = normalizeBrandSourceInput(input?.source);
     if (!source) {
-      throw new Error("Invalid source: brand and size_guide_url or entry_url are required");
+      throw new Error("Source invalide: brand et size_guide_url ou entry_url sont requis");
     }
     if (source.brand.length > 200) {
-      throw new Error("brand is too long");
+      throw new Error("brand est trop long");
     }
     if (source.size_guide_url.length > 2048) {
-      throw new Error("size_guide_url is too long");
+      throw new Error("size_guide_url est trop long");
     }
     const url = validateExternalUrl(source.size_guide_url);
     return {
@@ -70,37 +72,37 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
     const logs: string[] = [];
 
     try {
-      logs.push(`Stage 1/5 fetch: ${source.size_guide_url}`);
-      const scraped = await scrapeWithFirecrawl(source.size_guide_url);
+      logs.push(`Étape 1/5 récupération: ${source.size_guide_url}`);
+      const scraped = await scrapeSizeGuideDocument(source.size_guide_url);
       logs.push(
-        `Fetched ${scraped.html.length} chars HTML and ${scraped.markdown.length} chars markdown.`,
+        `Page récupérée: ${scraped.html.length} caractères HTML et ${scraped.markdown.length} caractères markdown.`,
       );
 
-      logs.push("Stage 2/5 normalize: preparing raw content for candidate discovery.");
-      logs.push("Stage 3/5 discovery: segmenting candidate guide sections.");
+      logs.push("Étape 2/5 normalisation: préparation du contenu brut.");
+      logs.push("Étape 3/5 découverte: segmentation des sections candidates.");
       const { guide, report } = await runIngestionPipeline({
         source,
         fetchedUrl: scraped.sourceUrl,
         html: scraped.html,
         markdown: scraped.markdown,
-        fetchDocument: scrapeWithFirecrawl,
+        fetchDocument: scrapeSizeGuideDocument,
       });
 
       logs.push(
-        `Discovered ${report.discoveredCandidates.length} candidate section(s).`,
+        `${report.discoveredCandidates.length} section(s) candidate(s) détectée(s).`,
       );
-      logs.push(`Document kind: ${report.documentKind}.`);
+      logs.push(`Type de document: ${report.documentKind}.`);
       const followedSteps = report.sourceTraceChain.filter(
         (step) => step.kind === "followed-link" || step.kind === "brand-fallback",
       );
       if (report.followedUrl || followedSteps.length > 0) {
-        logs.push(`Followed internal guide chain to ${report.followedUrl ?? followedSteps.at(-1)?.url}.`);
+        logs.push(`Chaîne de guide suivie jusqu'à ${report.followedUrl ?? followedSteps.at(-1)?.url}.`);
       }
       if (followedSteps.length > 1) {
         logs.push(`Trace: ${followedSteps.map((step) => step.url).join(" -> ")}`);
       }
       if (report.linkCandidates.length > 0) {
-        logs.push(`Discovered ${report.linkCandidates.length} internal guide link candidate(s).`);
+        logs.push(`${report.linkCandidates.length} lien(s) interne(s) candidat(s) détecté(s).`);
       }
 
       if (report.selectedCandidateId) {
@@ -115,26 +117,26 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
             `Selected orientation ${selected.matrixOrientation} with ${selected.rawSizeAxisLabels.length} visible source sizes.`,
           );
         }
-        logs.push("Stage 4/5 extraction: extracting only the selected candidate section.");
-        logs.push("Stage 5/5 validation: enforcing semantic and traceability checks.");
+        logs.push("Étape 4/5 extraction: extraction de la seule section sélectionnée.");
+        logs.push("Étape 5/5 validation: contrôles sémantiques et traçabilité.");
       } else {
-        logs.push("No candidate section was selected automatically.");
+        logs.push("Aucune section candidate n'a été sélectionnée automatiquement.");
       }
 
       for (const reason of report.selectionReasoning) {
         logs.push(reason);
       }
       for (const issue of report.validationErrors) {
-        logs.push(`Validation error: ${issue.message}`);
+        logs.push(`Erreur de validation: ${issue.message}`);
       }
       for (const warning of report.warnings) {
-        logs.push(`Warning: ${warning.message}`);
+        logs.push(`Avertissement: ${warning.message}`);
       }
 
       if (!guide) {
         const reason =
           report.validationErrors[0]?.message ??
-          "The page could not be converted into a validated size guide.";
+          "La page n'a pas pu être convertie en guide de tailles validé.";
         return {
           error: "NO_VALID_SIZE_GUIDE",
           reason,
@@ -147,19 +149,23 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         };
       }
 
-      logs.push(
-        `Accepted guide ${guide.guide.id} from section ${guide.guide.sourceSectionTitle}.`,
-      );
+      logs.push(`Guide accepté ${guide.guide.id} depuis la section ${guide.guide.sourceSectionTitle}.`);
+      if (guide.shoppingAssistantWarnings.length > 0) {
+        logs.push(
+          `${guide.shoppingAssistantWarnings.length} avertissement(s) de cohabitation avec le logiciel principal.`,
+        );
+      }
 
       return {
         guide,
+        shoppingAssistantJson: guide.shoppingAssistantGuide,
         strictJson: guide.strictGuide,
         logs,
         pipeline: report,
       };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      logs.push(`ERROR: ${message}`);
+      logs.push(`ERREUR: ${message}`);
       return {
         error: "NO_VALID_SIZE_GUIDE",
         reason: message,

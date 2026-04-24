@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { guideFilename } from "@/lib/normalizers/guideBuilder";
+import { shoppingAssistantGuideFilename } from "@/lib/normalizers/guideBuilder";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
 import type {
   BrandResult,
@@ -40,17 +40,17 @@ const MEASURE_COLS: Array<{
   min: keyof SizeRow;
   max: keyof SizeRow;
 }> = [
-  { label: "Chest", min: "chestCmMin", max: "chestCmMax" },
-  { label: "Waist", min: "waistCmMin", max: "waistCmMax" },
-  { label: "Hips", min: "hipsCmMin", max: "hipsCmMax" },
-  { label: "Inseam", min: "inseamCmMin", max: "inseamCmMax" },
-  { label: "Outseam", min: "outseamCmMin", max: "outseamCmMax" },
-  { label: "Height", min: "heightCmMin", max: "heightCmMax" },
-  { label: "Neck", min: "neckCmMin", max: "neckCmMax" },
-  { label: "Shoulder", min: "shoulderCmMin", max: "shoulderCmMax" },
-  { label: "Sleeve", min: "sleeveCmMin", max: "sleeveCmMax" },
-  { label: "Foot L.", min: "footLengthCmMin", max: "footLengthCmMax" },
-  { label: "Foot W.", min: "footWidthCmMin", max: "footWidthCmMax" },
+  { label: "Poitrine", min: "chestCmMin", max: "chestCmMax" },
+  { label: "Taille", min: "waistCmMin", max: "waistCmMax" },
+  { label: "Hanches", min: "hipsCmMin", max: "hipsCmMax" },
+  { label: "Entrejambe", min: "inseamCmMin", max: "inseamCmMax" },
+  { label: "Longueur externe", min: "outseamCmMin", max: "outseamCmMax" },
+  { label: "Stature", min: "heightCmMin", max: "heightCmMax" },
+  { label: "Cou", min: "neckCmMin", max: "neckCmMax" },
+  { label: "Épaules", min: "shoulderCmMin", max: "shoulderCmMax" },
+  { label: "Manche", min: "sleeveCmMin", max: "sleeveCmMax" },
+  { label: "Pied L.", min: "footLengthCmMin", max: "footLengthCmMax" },
+  { label: "Pied l.", min: "footWidthCmMin", max: "footWidthCmMax" },
 ];
 
 function fmt(row: SizeRow, min: keyof SizeRow, max: keyof SizeRow): string {
@@ -90,7 +90,7 @@ function TraceChain({ steps }: { steps: SourceTraceStep[] }) {
 
   return (
     <div className="rounded-lg border border-border bg-background p-4">
-      <h3 className="text-sm font-semibold">Source trace</h3>
+      <h3 className="text-sm font-semibold">Traçabilité de la source</h3>
       <div className="mt-3 space-y-3 text-sm">
         {steps.map((step, index) => (
           <div key={`${step.url}-${index}`} className="rounded border border-border/70 p-3">
@@ -98,7 +98,7 @@ function TraceChain({ steps }: { steps: SourceTraceStep[] }) {
               <Badge variant="outline">{step.kind}</Badge>
               <span className="font-medium">{step.label}</span>
               <span className="text-xs text-muted-foreground">
-                confidence {step.confidence.toFixed(2)}
+                confiance {step.confidence.toFixed(2)}
               </span>
             </div>
             <div className="mt-1 break-all text-xs text-muted-foreground">{step.url}</div>
@@ -126,21 +126,21 @@ function LinkCandidateCard({ candidate }: { candidate: LinkCandidate }) {
         <Badge variant="outline">{candidate.detectedCategory}</Badge>
         <Badge variant="outline">{candidate.detectedSizeSystem}</Badge>
         <Badge variant="outline">{candidate.categoryMappingMode}</Badge>
-        {candidate.selected && <Badge className="bg-primary text-primary-foreground">Followed</Badge>}
+        {candidate.selected && <Badge className="bg-primary text-primary-foreground">Suivi</Badge>}
       </div>
       <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
         <div>Score: {candidate.score}</div>
-        <div>Resolver: {candidate.resolver}</div>
+        <div>Résolution: {candidate.resolver}</div>
       </div>
       <div className="break-all text-xs text-muted-foreground">{candidate.url}</div>
       {!!candidate.reasons.length && (
         <div className="text-xs text-muted-foreground">
-          Navigation reasoning: {candidate.reasons.slice(0, 3).join(" ")}
+          Raisons de navigation: {candidate.reasons.slice(0, 3).join(" ")}
         </div>
       )}
       {!!candidate.rejectionReasons.length && (
         <div className="text-xs text-destructive/90">
-          Rejections: {candidate.rejectionReasons.slice(0, 3).join(" ")}
+          Rejets: {candidate.rejectionReasons.slice(0, 3).join(" ")}
         </div>
       )}
     </div>
@@ -170,45 +170,45 @@ function CandidateCard({
         <Badge variant="outline">{candidate.originalUnitSystem}</Badge>
         <Badge variant="outline">{candidate.matrixOrientation}</Badge>
         <Badge variant="outline">{candidate.categoryMappingMode}</Badge>
-        {selected && <Badge className="bg-primary text-primary-foreground">Selected</Badge>}
+        {selected && <Badge className="bg-primary text-primary-foreground">Sélectionné</Badge>}
       </div>
 
       <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-3">
         <div>Audience: {candidate.audience}</div>
-        <div>Fit: {candidate.fitVariant}</div>
+        <div>Coupe: {candidate.fitVariant}</div>
         <div>Score: {candidate.selectionScore}</div>
-        <div>Confidence: {candidate.extractionConfidence.toFixed(2)}</div>
+        <div>Confiance: {candidate.extractionConfidence.toFixed(2)}</div>
         <div>Document: {candidate.documentKind}</div>
         <div>Navigation: {candidate.navigationConfidence.toFixed(2)}</div>
       </div>
 
       {candidate.categoryMappingReason && (
         <div className="text-xs text-muted-foreground">
-          Category mapping: {candidate.categoryMappingReason}
+          Mapping catégorie: {candidate.categoryMappingReason}
         </div>
       )}
 
       {!!candidate.matchReasons.length && (
         <div className="text-xs text-muted-foreground">
-          Match reasoning: {candidate.matchReasons.slice(0, 3).join(" ")}
+          Raisons de correspondance: {candidate.matchReasons.slice(0, 3).join(" ")}
         </div>
       )}
 
       {!!candidate.rejectionReasons.length && (
         <div className="text-xs text-destructive/90">
-          Rejection reasoning: {candidate.rejectionReasons.slice(0, 3).join(" ")}
+          Raisons de rejet: {candidate.rejectionReasons.slice(0, 3).join(" ")}
         </div>
       )}
 
       {!!candidate.rawSizeAxisLabels.length && (
         <div className="text-xs text-muted-foreground">
-          Visible size axis: {candidate.rawSizeAxisLabels.join(", ")}
+          Axe tailles visible: {candidate.rawSizeAxisLabels.join(", ")}
         </div>
       )}
 
       {!!candidate.rawStubColumn.length && (
         <div className="text-xs text-muted-foreground">
-          Stub labels: {candidate.rawStubColumn.slice(0, 8).join(", ")}
+          Libellés de lignes: {candidate.rawStubColumn.slice(0, 8).join(", ")}
         </div>
       )}
 
@@ -244,7 +244,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>No result selected</DialogTitle>
+            <DialogTitle>Aucun résultat sélectionné</DialogTitle>
           </DialogHeader>
         </DialogContent>
       </Dialog>
@@ -259,12 +259,12 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
 
   function downloadOne() {
     if (!guide) return;
-    const blob = new Blob([JSON.stringify(guide.strictGuide, null, 2)], {
+    const blob = new Blob([JSON.stringify(guide.shoppingAssistantGuide, null, 2)], {
       type: "application/json",
     });
     const anchor = document.createElement("a");
     anchor.href = URL.createObjectURL(blob);
-    anchor.download = guideFilename(guide);
+    anchor.download = shoppingAssistantGuideFilename(guide);
     anchor.click();
     URL.revokeObjectURL(anchor.href);
   }
@@ -275,32 +275,32 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
         <DialogHeader>
           <DialogTitle>{result.source.brand}</DialogTitle>
           <DialogDescription>
-            Requested {requestedCategory ?? "—"} / {requestedSizeSystem ?? "—"}.
+            Demande {requestedCategory ?? "—"} / {requestedSizeSystem ?? "—"}.
             {guide
-              ? ` Accepted from ${guide.guide.sourceSectionTitle}.`
-              : " No validated guide was saved."}
+              ? ` Accepté depuis ${guide.guide.sourceSectionTitle}.`
+              : " Aucun guide validé n'a été sauvegardé."}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue={guide ? "guide" : "debug"}>
           <TabsList>
             {guide && <TabsTrigger value="guide">Guide</TabsTrigger>}
-            <TabsTrigger value="debug">Debug</TabsTrigger>
+            <TabsTrigger value="debug">Diagnostic</TabsTrigger>
           </TabsList>
 
           {guide && (
             <TabsContent value="guide" className="space-y-4">
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="text-muted-foreground">Category</div>
+                  <div className="text-muted-foreground">Catégorie</div>
                   <div className="font-medium">{guide.guide.garmentCategory}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="text-muted-foreground">Size System</div>
+                  <div className="text-muted-foreground">Système de taille</div>
                   <div className="font-medium">{guide.guide.sizeSystem}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="text-muted-foreground">Source Section</div>
+                  <div className="text-muted-foreground">Section source</div>
                   <div className="font-medium">{guide.guide.sourceSectionTitle}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
@@ -308,38 +308,39 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                   <div className="font-medium">{guide.guide.validationStatus}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="text-muted-foreground">Document Kind</div>
+                  <div className="text-muted-foreground">Type de document</div>
                   <div className="font-medium">{guide.guide.documentKind}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="text-muted-foreground">Matrix Orientation</div>
+                  <div className="text-muted-foreground">Orientation matrice</div>
                   <div className="font-medium">{guide.guide.matrixOrientation}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="text-muted-foreground">Category Mapping</div>
+                  <div className="text-muted-foreground">Mapping catégorie</div>
                   <div className="font-medium">{guide.guide.categoryMappingMode}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                  <div className="text-muted-foreground">Resolved Source URL</div>
+                  <div className="text-muted-foreground">URL source résolue</div>
                   <div className="break-all font-medium">{guide.guide.resolvedSourceUrl}</div>
                 </div>
               </div>
 
               <IssueList
-                title="Validation Errors"
+                title="Erreurs de validation"
                 issues={guide.guide.validationErrors}
                 destructive
               />
-              <IssueList title="Warnings" issues={guide.guide.warnings} />
+              <IssueList title="Avertissements" issues={guide.guide.warnings} />
+              <IssueList title="Cohabitation logiciel principal" issues={guide.shoppingAssistantWarnings} />
               <TraceChain steps={guide.guide.sourceTraceChain} />
 
               <div className="overflow-auto rounded border border-border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Original Label</TableHead>
-                      <TableHead>Canonical</TableHead>
-                      <TableHead>Fit</TableHead>
+                      <TableHead>Libellé source</TableHead>
+                      <TableHead>Canonique</TableHead>
+                      <TableHead>Coupe</TableHead>
                       {visibleCols.map((column) => (
                         <TableHead key={column.label}>{column.label} (cm)</TableHead>
                       ))}
@@ -374,7 +375,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                 </a>
                 <Button onClick={downloadOne} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <Download />
-                  Download this guide
+                  Télécharger ce guide
                 </Button>
               </div>
             </TabsContent>
@@ -385,54 +386,54 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
               <>
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                    <div className="text-muted-foreground">Fetched URL</div>
+                    <div className="text-muted-foreground">URL récupérée</div>
                     <div className="break-all font-medium">{pipeline.fetchedUrl}</div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                    <div className="text-muted-foreground">Resolved URL</div>
+                    <div className="text-muted-foreground">URL résolue</div>
                     <div className="break-all font-medium">{pipeline.resolvedSourceUrl}</div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                    <div className="text-muted-foreground">Source Type</div>
+                    <div className="text-muted-foreground">Type de source</div>
                     <div className="font-medium">{pipeline.sourceType}</div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                    <div className="text-muted-foreground">Document Kind</div>
+                    <div className="text-muted-foreground">Type de document</div>
                     <div className="font-medium">{pipeline.documentKind}</div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                    <div className="text-muted-foreground">Selected Section</div>
+                    <div className="text-muted-foreground">Section sélectionnée</div>
                     <div className="font-medium">
                       {pipeline.selectedCandidateId
                         ? pipeline.discoveredCandidates.find(
                             (candidate) => candidate.id === pipeline.selectedCandidateId,
                           )?.sectionTitle ?? pipeline.selectedCandidateId
-                        : "None"}
+                        : "Aucune"}
                     </div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                    <div className="text-muted-foreground">Review Needed</div>
+                    <div className="text-muted-foreground">Revue nécessaire</div>
                     <div className="font-medium">
-                      {pipeline.manualReviewRecommended ? "Yes" : "No"}
+                      {pipeline.manualReviewRecommended ? "Oui" : "Non"}
                     </div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
-                    <div className="text-muted-foreground">Navigation Confidence</div>
+                    <div className="text-muted-foreground">Confiance navigation</div>
                     <div className="font-medium">{pipeline.navigationConfidence.toFixed(2)}</div>
                   </div>
                 </div>
 
                 <IssueList
-                  title="Validation Errors"
+                  title="Erreurs de validation"
                   issues={pipeline.validationErrors}
                   destructive
                 />
-                <IssueList title="Warnings" issues={pipeline.warnings} />
+                <IssueList title="Avertissements" issues={pipeline.warnings} />
                 <TraceChain steps={pipeline.sourceTraceChain} />
 
                 {!!pipeline.documentReasoning.length && (
                   <div className="rounded-lg border border-border bg-background p-4">
-                    <h3 className="text-sm font-semibold">Document reasoning</h3>
+                    <h3 className="text-sm font-semibold">Raisonnement document</h3>
                     <div className="mt-2 space-y-2 text-sm text-muted-foreground">
                       {pipeline.documentReasoning.map((line, index) => (
                         <p key={index}>{line}</p>
@@ -443,7 +444,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
 
                 {!!pipeline.selectionReasoning.length && (
                   <div className="rounded-lg border border-border bg-background p-4">
-                    <h3 className="text-sm font-semibold">Selection reasoning</h3>
+                    <h3 className="text-sm font-semibold">Raisonnement sélection</h3>
                     <div className="mt-2 space-y-2 text-sm text-muted-foreground">
                       {pipeline.selectionReasoning.map((line, index) => (
                         <p key={index}>{line}</p>
@@ -455,7 +456,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                 {!!pipeline.linkCandidates.length && (
                   <div className="space-y-3">
                     <h3 className="text-sm font-semibold">
-                      Internal guide links ({pipeline.linkCandidates.length})
+                      Liens internes de guide ({pipeline.linkCandidates.length})
                     </h3>
                     {pipeline.linkCandidates.map((candidate) => (
                       <LinkCandidateCard key={candidate.id} candidate={candidate} />
@@ -465,7 +466,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
 
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold">
-                    Discovered candidate sections ({pipeline.discoveredCandidates.length})
+                    Sections candidates détectées ({pipeline.discoveredCandidates.length})
                   </h3>
                   {pipeline.discoveredCandidates.map((candidate) => (
                     <CandidateCard

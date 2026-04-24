@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { guideFilename } from "@/lib/normalizers/guideBuilder";
+import { shoppingAssistantGuideFilename } from "@/lib/normalizers/guideBuilder";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
 import type { BrandResult } from "@/lib/types";
 
@@ -33,27 +33,27 @@ const statusMeta: Record<
   { label: string; icon: ReactNode; cls: string }
 > = {
   pending: {
-    label: "Pending",
+    label: "En attente",
     icon: <Clock className="size-3" />,
     cls: "border-border bg-muted text-muted-foreground",
   },
   running: {
-    label: "Running",
+    label: "En cours",
     icon: <Loader2 className="size-3 animate-spin" />,
     cls: "border-info/25 bg-info/10 text-info",
   },
   done: {
-    label: "Accepted",
+    label: "Accepté",
     icon: <CheckCircle2 className="size-3" />,
     cls: "border-success/25 bg-success/10 text-success",
   },
   review: {
-    label: "Review",
+    label: "À revoir",
     icon: <AlertTriangle className="size-3" />,
     cls: "border-warning/35 bg-warning/15 text-warning-foreground",
   },
   error: {
-    label: "Rejected",
+    label: "Rejeté",
     icon: <XCircle className="size-3" />,
     cls: "border-destructive/25 bg-destructive/10 text-destructive",
   },
@@ -75,7 +75,7 @@ function summaryMessage(result: BrandResult): string {
       (candidate) => candidate.id === selectedId,
     );
     if (selected) {
-      const followed = result.pipeline?.followedUrl ? " · followed link" : "";
+      const followed = result.pipeline?.followedUrl ? " · lien suivi" : "";
       return `${selected.sectionTitle} · ${selected.matrixOrientation} · ${result.pipeline?.validationStatus}${followed}`;
     }
   }
@@ -88,12 +88,12 @@ function summaryMessage(result: BrandResult): string {
 export function BrandTable({ results, onPreview }: Props) {
   function downloadOne(result: BrandResult) {
     if (!result.guide) return;
-    const blob = new Blob([JSON.stringify(result.guide.strictGuide, null, 2)], {
+    const blob = new Blob([JSON.stringify(result.guide.shoppingAssistantGuide, null, 2)], {
       type: "application/json",
     });
     const anchor = document.createElement("a");
     anchor.href = URL.createObjectURL(blob);
-    anchor.download = guideFilename(result.guide);
+    anchor.download = shoppingAssistantGuideFilename(result.guide);
     anchor.click();
     URL.revokeObjectURL(anchor.href);
   }
@@ -102,9 +102,9 @@ export function BrandTable({ results, onPreview }: Props) {
     <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-panel)]">
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div>
-          <h2 className="text-sm font-semibold tracking-normal">Brand queue</h2>
+          <h2 className="text-sm font-semibold tracking-normal">File des marques</h2>
           <p className="text-xs text-muted-foreground">
-            {results.length ? `${results.length} sources loaded` : "No sources loaded"}
+            {results.length ? `${results.length} source(s) chargée(s)` : "Aucune source chargée"}
           </p>
         </div>
       </div>
@@ -112,19 +112,19 @@ export function BrandTable({ results, onPreview }: Props) {
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
             <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
-              Brand
+              Marque
             </TableHead>
             <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
-              Requested
+              Demande
             </TableHead>
             <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
-              Status
+              Statut
             </TableHead>
             <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
-              Rows
+              Lignes
             </TableHead>
             <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
-              Selection / Validation
+              Sélection / validation
             </TableHead>
             <TableHead className="h-11 px-4 text-right text-xs uppercase tracking-normal text-muted-foreground">
               Actions
@@ -160,8 +160,8 @@ export function BrandTable({ results, onPreview }: Props) {
                   {(result.pipeline || result.guide) && (
                     <div className="flex justify-end gap-1">
                       <Button
-                        aria-label={`Preview ${result.source.brand}`}
-                        title="Preview"
+                        aria-label={`Prévisualiser ${result.source.brand}`}
+                        title="Prévisualiser"
                         size="icon"
                         variant="ghost"
                         className="size-8"
@@ -171,8 +171,8 @@ export function BrandTable({ results, onPreview }: Props) {
                       </Button>
                       {result.guide && (
                         <Button
-                          aria-label={`Download ${result.source.brand}`}
-                          title="Download"
+                          aria-label={`Télécharger ${result.source.brand}`}
+                          title="Télécharger"
                           size="icon"
                           variant="ghost"
                           className="size-8"
@@ -195,7 +195,7 @@ export function BrandTable({ results, onPreview }: Props) {
               >
                 <div className="flex flex-col items-center gap-2">
                   <FileSearch className="size-5 text-muted-foreground/70" />
-                  <span>No brands loaded yet.</span>
+                  <span>Aucune marque chargée.</span>
                 </div>
               </TableCell>
             </TableRow>

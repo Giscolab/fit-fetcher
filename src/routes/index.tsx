@@ -26,17 +26,17 @@ import type { BrandResult, BrandSource } from "@/lib/types";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Size Intelligence Visual Scraper" },
+      { title: "Fit Fetcher - Scraper de guides de tailles" },
       {
         name: "description",
         content:
-          "Upload a brands catalog, discover size-guide sections, validate extractions, and export traceable JSON.",
+          "Importez un catalogue de marques, détectez les guides de tailles, validez les extractions et exportez un JSON traçable.",
       },
-      { property: "og:title", content: "Size Intelligence Visual Scraper" },
+      { property: "og:title", content: "Fit Fetcher - Scraper de guides de tailles" },
       {
         property: "og:description",
         content:
-          "Upload a brands catalog, discover size-guide sections, validate extractions, and export traceable JSON.",
+          "Importez un catalogue de marques, détectez les guides de tailles, validez les extractions et exportez un JSON traçable.",
       },
     ],
   }),
@@ -51,7 +51,7 @@ function summarizeRun(result: ScrapeResponse) {
     result.reason ??
     result.pipeline.validationErrors[0]?.message ??
     result.pipeline.selectionReasoning[0] ??
-    "No validated guide was generated."
+    "Aucun guide validé n'a été généré."
   );
 }
 
@@ -109,13 +109,13 @@ function HomePage() {
   function handleLoaded(sources: BrandSource[], name: string) {
     setFilename(name);
     setResults(sources.map((source) => ({ source, status: "pending", logs: [] })));
-    setLogs([`Loaded ${sources.length} brand sources from ${name}`]);
+    setLogs([`${sources.length} source(s) marque chargée(s) depuis ${name}`]);
   }
 
   async function runAll() {
     if (!results.length || running) return;
     setRunning(true);
-    pushLog(`Starting ingestion for ${results.length} brands…`);
+    pushLog(`Démarrage de l'ingestion pour ${results.length} marque(s)…`);
 
     for (let i = 0; i < results.length; i++) {
       setResults((previous) => {
@@ -148,7 +148,7 @@ function HomePage() {
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        pushLog(`   ERROR: ${message}`);
+        pushLog(`   ERREUR: ${message}`);
         setResults((previous) => {
           const next = [...previous];
           next[i] = { ...next[i], status: "error", message, logs: [message] };
@@ -159,7 +159,7 @@ function HomePage() {
       await new Promise((resolve) => setTimeout(resolve, 400));
     }
 
-    pushLog("Run finished.");
+    pushLog("Exécution terminée.");
     setRunning(false);
   }
 
@@ -173,19 +173,19 @@ function HomePage() {
             </div>
             <div>
               <h1 className="text-lg font-semibold tracking-normal">
-                Size Intelligence Scraper
+                Fit Fetcher
               </h1>
               <p className="text-xs text-muted-foreground">
-                Candidate discovery · constrained extraction · strict validation
+                Découverte des guides · extraction contrainte · validation stricte
               </p>
             </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <StatPill label="Queued" value={pendingCount} tone="neutral" />
-              <StatPill label="Accepted" value={acceptedCount} tone="success" />
-              <StatPill label="Review" value={reviewCount} tone="warning" />
-              <StatPill label="Rejected" value={errorCount} tone="destructive" />
+              <StatPill label="En file" value={pendingCount} tone="neutral" />
+              <StatPill label="Acceptés" value={acceptedCount} tone="success" />
+              <StatPill label="À revoir" value={reviewCount} tone="warning" />
+              <StatPill label="Rejetés" value={errorCount} tone="destructive" />
             </div>
             <DownloadAll results={results} />
           </div>
@@ -205,17 +205,17 @@ function HomePage() {
                   </div>
                   <div>
                     <h2 className="text-base font-semibold tracking-normal">
-                      Run ingestion pipeline
+                      Lancer le pipeline d'ingestion
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {filename
-                        ? `${results.length} brands ready from ${filename}`
-                        : "Upload a brands.json file to get started."}
+                        ? `${results.length} marque(s) prête(s) depuis ${filename}`
+                        : "Importez un fichier brands.json pour commencer."}
                     </p>
                   </div>
                 </div>
                 <div className="rounded-md border border-border bg-surface px-3 py-2 text-xs text-surface-foreground">
-                  {running ? "In progress" : results.length ? "Ready" : "Idle"}
+                  {running ? "En cours" : results.length ? "Prêt" : "En attente"}
                 </div>
               </div>
 
@@ -223,21 +223,21 @@ function HomePage() {
                 <div className="rounded-md border border-border bg-background p-3">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock3 className="size-3.5" />
-                    Pending
+                    En attente
                   </div>
                   <div className="mt-2 text-xl font-semibold">{pendingCount}</div>
                 </div>
                 <div className="rounded-md border border-success/25 bg-success/10 p-3">
                   <div className="flex items-center gap-2 text-xs text-success">
                     <CheckCircle2 className="size-3.5" />
-                    Accepted
+                    Acceptés
                   </div>
                   <div className="mt-2 text-xl font-semibold text-success">{acceptedCount}</div>
                 </div>
                 <div className="rounded-md border border-warning/35 bg-warning/15 p-3">
                   <div className="flex items-center gap-2 text-xs text-warning-foreground">
                     <AlertTriangle className="size-3.5" />
-                    Review
+                    À revoir
                   </div>
                   <div className="mt-2 text-xl font-semibold text-warning-foreground">
                     {reviewCount}
@@ -246,7 +246,7 @@ function HomePage() {
                 <div className="rounded-md border border-destructive/25 bg-destructive/10 p-3">
                   <div className="flex items-center gap-2 text-xs text-destructive">
                     <XCircle className="size-3.5" />
-                    Rejected
+                    Rejetés
                   </div>
                   <div className="mt-2 text-xl font-semibold text-destructive">{errorCount}</div>
                 </div>
@@ -260,7 +260,7 @@ function HomePage() {
                 style={{ boxShadow: results.length ? "var(--shadow-glow)" : undefined }}
               >
                 {running ? <Pause /> : <Play />}
-                {running ? "Running…" : "Start scraping"}
+                {running ? "Exécution…" : "Démarrer le scraping"}
               </Button>
             </div>
           </Card>
