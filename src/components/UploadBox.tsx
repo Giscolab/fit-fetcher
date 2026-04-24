@@ -36,7 +36,7 @@ export function UploadBox({ onLoaded }: Props) {
 
   return (
     <Card
-      className="border-dashed border-2 border-border bg-card/50 p-10 text-center transition-colors hover:border-accent"
+      className="flex h-full min-h-[260px] border-2 border-dashed border-border bg-card p-5 text-center shadow-[var(--shadow-panel)] transition-colors hover:border-primary/60"
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
@@ -44,20 +44,23 @@ export function UploadBox({ onLoaded }: Props) {
         if (f) handleFile(f);
       }}
     >
-      <div className="flex flex-col items-center gap-4">
-        <div className="rounded-full bg-accent/10 p-4">
-          <Upload className="size-8 text-accent" />
+      <div className="flex w-full flex-col items-center justify-center gap-4">
+        <div className="flex size-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <Upload className="size-6" />
         </div>
-        <div>
-          <h3 className="text-lg font-semibold">Drop your brands.json</h3>
-          <p className="text-sm text-muted-foreground">
-            Format: <code>{"{ sources: [{ brand, size_guide_url, garmentCategory, sizeSystem }] }"}</code>
+        <div className="max-w-sm">
+          <h3 className="text-base font-semibold tracking-normal">Drop your brands.json</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Format:{" "}
+            <code className="break-words rounded bg-muted px-1.5 py-0.5 text-[0.72rem] text-foreground">
+              {"{ sources: [{ brand, size_guide_url, garmentCategory, sizeSystem }] }"}
+            </code>
           </p>
         </div>
         <Button
           variant="default"
           onClick={() => inputRef.current?.click()}
-          className="bg-accent text-accent-foreground hover:bg-accent/90"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <FileJson /> Choose file
         </Button>
@@ -72,9 +75,15 @@ export function UploadBox({ onLoaded }: Props) {
           }}
         />
         {filename && (
-          <p className="text-xs text-muted-foreground">Loaded: {filename}</p>
+          <p className="rounded-md bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
+            Loaded: {filename}
+          </p>
         )}
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p className="rounded-md bg-destructive/10 px-2.5 py-1 text-sm text-destructive">
+            {error}
+          </p>
+        )}
       </div>
     </Card>
   );

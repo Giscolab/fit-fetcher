@@ -38,7 +38,8 @@ export function DownloadAll({ results }: Props) {
     <Button
       onClick={downloadZip}
       disabled={!ready.length || busy}
-      className="bg-accent text-accent-foreground hover:bg-accent/90"
+      variant="outline"
+      className="w-full bg-card shadow-sm hover:bg-surface hover:text-foreground sm:w-auto"
     >
       {busy ? <Package className="animate-pulse" /> : <Download />}
       Download ZIP ({ready.length})

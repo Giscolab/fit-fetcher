@@ -4,6 +4,7 @@ import {
   Clock,
   Download,
   Eye,
+  FileSearch,
   Loader2,
   XCircle,
 } from "lucide-react";
@@ -34,27 +35,27 @@ const statusMeta: Record<
   pending: {
     label: "Pending",
     icon: <Clock className="size-3" />,
-    cls: "bg-muted text-muted-foreground",
+    cls: "border-border bg-muted text-muted-foreground",
   },
   running: {
     label: "Running",
     icon: <Loader2 className="size-3 animate-spin" />,
-    cls: "bg-accent/20 text-accent",
+    cls: "border-info/25 bg-info/10 text-info",
   },
   done: {
     label: "Accepted",
     icon: <CheckCircle2 className="size-3" />,
-    cls: "bg-accent text-accent-foreground",
+    cls: "border-success/25 bg-success/10 text-success",
   },
   review: {
     label: "Review",
     icon: <AlertTriangle className="size-3" />,
-    cls: "bg-amber-500/15 text-amber-600",
+    cls: "border-warning/35 bg-warning/15 text-warning-foreground",
   },
   error: {
     label: "Rejected",
     icon: <XCircle className="size-3" />,
-    cls: "bg-destructive text-destructive-foreground",
+    cls: "border-destructive/25 bg-destructive/10 text-destructive",
   },
 };
 
@@ -98,16 +99,36 @@ export function BrandTable({ results, onPreview }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <Table>
+    <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-panel)]">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <div>
+          <h2 className="text-sm font-semibold tracking-normal">Brand queue</h2>
+          <p className="text-xs text-muted-foreground">
+            {results.length ? `${results.length} sources loaded` : "No sources loaded"}
+          </p>
+        </div>
+      </div>
+      <Table className="min-w-[860px]">
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
-            <TableHead className="text-muted-foreground">Brand</TableHead>
-            <TableHead className="text-muted-foreground">Requested</TableHead>
-            <TableHead className="text-muted-foreground">Status</TableHead>
-            <TableHead className="text-muted-foreground">Rows</TableHead>
-            <TableHead className="text-muted-foreground">Selection / Validation</TableHead>
-            <TableHead className="text-right text-muted-foreground">Actions</TableHead>
+            <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
+              Brand
+            </TableHead>
+            <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
+              Requested
+            </TableHead>
+            <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
+              Status
+            </TableHead>
+            <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
+              Rows
+            </TableHead>
+            <TableHead className="h-11 px-4 text-xs uppercase tracking-normal text-muted-foreground">
+              Selection / Validation
+            </TableHead>
+            <TableHead className="h-11 px-4 text-right text-xs uppercase tracking-normal text-muted-foreground">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -116,39 +137,45 @@ export function BrandTable({ results, onPreview }: Props) {
             return (
               <TableRow
                 key={`${result.source.brand}-${index}`}
-                className="border-border"
+                className="border-border hover:bg-surface/70"
               >
-                <TableCell className="font-medium">{result.source.brand}</TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="px-4 py-3 font-medium">{result.source.brand}</TableCell>
+                <TableCell className="px-4 py-3 text-muted-foreground">
                   {requestedCategoryLabel(result)} / {requestedSizeSystemLabel(result)}
                 </TableCell>
-                <TableCell>
-                  <Badge className={`gap-1 ${meta.cls}`}>
+                <TableCell className="px-4 py-3">
+                  <Badge className={`gap-1 shadow-none ${meta.cls}`}>
                     {meta.icon}
                     {meta.label}
                   </Badge>
                 </TableCell>
-                <TableCell>{result.rowsCount ?? "—"}</TableCell>
+                <TableCell className="px-4 py-3">{result.rowsCount ?? "—"}</TableCell>
                 <TableCell
-                  className="max-w-[360px] truncate text-xs text-muted-foreground"
+                  className="max-w-[360px] truncate px-4 py-3 text-xs text-muted-foreground"
                   title={summaryMessage(result)}
                 >
                   {summaryMessage(result)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="px-4 py-3 text-right">
                   {(result.pipeline || result.guide) && (
                     <div className="flex justify-end gap-1">
                       <Button
-                        size="sm"
+                        aria-label={`Preview ${result.source.brand}`}
+                        title="Preview"
+                        size="icon"
                         variant="ghost"
+                        className="size-8"
                         onClick={() => onPreview(index)}
                       >
                         <Eye />
                       </Button>
                       {result.guide && (
                         <Button
-                          size="sm"
+                          aria-label={`Download ${result.source.brand}`}
+                          title="Download"
+                          size="icon"
                           variant="ghost"
+                          className="size-8"
                           onClick={() => downloadOne(result)}
                         >
                           <Download />
@@ -164,9 +191,12 @@ export function BrandTable({ results, onPreview }: Props) {
             <TableRow>
               <TableCell
                 colSpan={6}
-                className="py-8 text-center text-muted-foreground"
+                className="px-4 py-10 text-center text-muted-foreground"
               >
-                No brands loaded yet.
+                <div className="flex flex-col items-center gap-2">
+                  <FileSearch className="size-5 text-muted-foreground/70" />
+                  <span>No brands loaded yet.</span>
+                </div>
               </TableCell>
             </TableRow>
           )}

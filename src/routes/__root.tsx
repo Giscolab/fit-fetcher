@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
@@ -29,15 +31,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "Fit Fetcher" },
       { name: "description", content: "Size Weaver scrapes and normalizes official brand size guides from the web into importable JSON files." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
+      { name: "author", content: "Fit Fetcher" },
+      { property: "og:title", content: "Fit Fetcher" },
       { property: "og:description", content: "Size Weaver scrapes and normalizes official brand size guides from the web into importable JSON files." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:title", content: "Fit Fetcher" },
       { name: "twitter:description", content: "Size Weaver scrapes and normalizes official brand size guides from the web into importable JSON files." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84e0d079-d7ed-43fd-ad89-2374564c8d07/id-preview-93333beb--b09818c5-f8d1-4f00-a816-72096c6e1911.lovable.app-1776593429781.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84e0d079-d7ed-43fd-ad89-2374564c8d07/id-preview-93333beb--b09818c5-f8d1-4f00-a816-72096c6e1911.lovable.app-1776593429781.png" },

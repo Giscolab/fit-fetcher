@@ -118,7 +118,7 @@ function LinkCandidateCard({ candidate }: { candidate: LinkCandidate }) {
   return (
     <div
       className={`space-y-3 rounded-lg border p-4 ${
-        candidate.selected ? "border-accent bg-accent/5" : "border-border bg-background"
+        candidate.selected ? "border-primary/40 bg-primary/5" : "border-border bg-background"
       }`}
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -126,7 +126,7 @@ function LinkCandidateCard({ candidate }: { candidate: LinkCandidate }) {
         <Badge variant="outline">{candidate.detectedCategory}</Badge>
         <Badge variant="outline">{candidate.detectedSizeSystem}</Badge>
         <Badge variant="outline">{candidate.categoryMappingMode}</Badge>
-        {candidate.selected && <Badge className="bg-accent text-accent-foreground">Followed</Badge>}
+        {candidate.selected && <Badge className="bg-primary text-primary-foreground">Followed</Badge>}
       </div>
       <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
         <div>Score: {candidate.score}</div>
@@ -159,7 +159,7 @@ function CandidateCard({
   return (
     <div
       className={`space-y-3 rounded-lg border p-4 ${
-        selected ? "border-accent bg-accent/5" : "border-border bg-background"
+        selected ? "border-primary/40 bg-primary/5" : "border-border bg-background"
       }`}
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -170,7 +170,7 @@ function CandidateCard({
         <Badge variant="outline">{candidate.originalUnitSystem}</Badge>
         <Badge variant="outline">{candidate.matrixOrientation}</Badge>
         <Badge variant="outline">{candidate.categoryMappingMode}</Badge>
-        {selected && <Badge className="bg-accent text-accent-foreground">Selected</Badge>}
+        {selected && <Badge className="bg-primary text-primary-foreground">Selected</Badge>}
       </div>
 
       <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-3">
@@ -271,7 +271,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl">
+      <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto bg-card">
         <DialogHeader>
           <DialogTitle>{result.source.brand}</DialogTitle>
           <DialogDescription>
@@ -372,7 +372,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                   <ExternalLink className="size-4" />
                   {guide.guide.sourceUrl}
                 </a>
-                <Button onClick={downloadOne} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Button onClick={downloadOne} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <Download />
                   Download this guide
                 </Button>
