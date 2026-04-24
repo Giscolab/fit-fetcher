@@ -47,8 +47,17 @@ export const SOURCE_TYPES = [
   "category-specific-page",
   "product-page-size-guide",
   "generic-body-guide",
+  "guide-hub-page",
 ] as const;
 export type SourceType = (typeof SOURCE_TYPES)[number];
+
+export const DOCUMENT_KINDS = [
+  "direct-guide-page",
+  "multi-guide-page",
+  "guide-hub-page",
+  "unrelated-page",
+] as const;
+export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
 export const AUDIENCES = ["men", "women", "kids", "unisex", "unknown"] as const;
 export type Audience = (typeof AUDIENCES)[number];
@@ -84,9 +93,27 @@ export const CANDIDATE_KINDS = [
   "html-table",
   "aria-grid",
   "markdown-table",
+  "div-grid",
+  "markdown-grid",
   "advisory-text",
 ] as const;
 export type CandidateKind = (typeof CANDIDATE_KINDS)[number];
+
+export const MATRIX_ORIENTATIONS = [
+  "size-rows",
+  "size-columns",
+  "conversion-grid",
+  "unknown",
+] as const;
+export type MatrixOrientation = (typeof MATRIX_ORIENTATIONS)[number];
+
+export const CATEGORY_MAPPING_MODES = [
+  "exact",
+  "curated-broad-top",
+  "generic-body",
+  "unknown",
+] as const;
+export type CategoryMappingMode = (typeof CATEGORY_MAPPING_MODES)[number];
 
 export const VALIDATION_STATUSES = [
   "accepted",
@@ -154,12 +181,41 @@ export interface ValidationIssue {
   details?: string[];
 }
 
+export interface SourceTraceStep {
+  kind: "requested-url" | "followed-link" | "brand-fallback";
+  url: string;
+  label: string;
+  confidence: number;
+  reasons: string[];
+}
+
+export interface LinkCandidate {
+  id: string;
+  url: string;
+  label: string;
+  headingPath: string[];
+  nearbyText: string;
+  detectedCategory: DetectedGarmentCategory;
+  detectedSizeSystem: DetectedSizeSystem;
+  categoryMappingMode: CategoryMappingMode;
+  categoryMappingReason?: string;
+  score: number;
+  reasons: string[];
+  rejectionReasons: string[];
+  selected: boolean;
+  resolver: "generic" | "brand-fallback";
+}
+
 export interface CandidateSection {
   id: string;
   kind: CandidateKind;
   isTabular: boolean;
   sourceUrl: string;
   sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
+  linkOriginId?: string;
+  navigationConfidence: number;
   sectionTitle: string;
   subheading?: string;
   headingPath: string[];
@@ -170,6 +226,12 @@ export interface CandidateSection {
   fitVariant: FitVariant;
   detectedSizeSystem: DetectedSizeSystem;
   originalUnitSystem: MeasurementUnit;
+  matrixOrientation: MatrixOrientation;
+  categoryMappingMode: CategoryMappingMode;
+  categoryMappingReason?: string;
+  rawHeaders: string[];
+  rawStubColumn: string[];
+  rawSizeAxisLabels: string[];
   visibleColumnLabels: string[];
   visibleRowLabels: string[];
   nearbyAdvisoryText: string;
@@ -202,19 +264,28 @@ export interface Guide {
   fabricStretch: "low" | "medium" | "high";
   rows: SizeRow[];
   sourceUrl: string;
+  originalRequestedUrl: string;
+  resolvedSourceUrl: string;
   sourceSectionTitle: string;
   sourceAudience: Audience;
   sourceCategoryLabel: string;
   sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
   originalUnitSystem: MeasurementUnit;
   extractionConfidence: number;
   validationStatus: ValidationStatus;
   validationErrors: ValidationIssue[];
   warnings: ValidationIssue[];
   fitVariantSupport: FitVariant[];
+  matrixOrientation: MatrixOrientation;
+  categoryMappingMode: CategoryMappingMode;
+  categoryMappingReason?: string;
   originalSizeLabels: string[];
   sourceHeaders: string[];
   sourceRowLabels: string[];
+  rawStubColumn: string[];
+  rawSizeAxisLabels: string[];
   rawEvidenceSnippet: string;
   rawExtractedFields: string[];
   rawCandidateId: string;
@@ -227,9 +298,16 @@ export interface GeneratedGuide {
 
 export interface IngestionPipelineReport {
   fetchedUrl: string;
+  resolvedSourceUrl: string;
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
   sourceType: SourceType;
+  documentKind: DocumentKind;
+  documentReasoning: string[];
+  sourceTraceChain: SourceTraceStep[];
+  followedUrl?: string;
+  linkCandidates: LinkCandidate[];
+  navigationConfidence: number;
   discoveredCandidates: CandidateSection[];
   selectedCandidateId?: string;
   rejectedCandidateIds: string[];

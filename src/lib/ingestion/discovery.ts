@@ -1,14 +1,24 @@
 import * as cheerio from "cheerio";
 import type { Element } from "domhandler";
-import { detectFields, detectMeasurementUnit } from "@/lib/ingestion/measurements";
+import { detectFields, detectMeasurementUnit, fieldFromHeader } from "@/lib/ingestion/measurements";
 import {
+  containsAny,
   detectAudience,
   detectCategory,
+  detectCategoryMapping,
   detectFitVariant,
   detectSizeSystem,
   isSizeLikeLabel,
+  normalizeToken,
 } from "@/lib/ingestion/taxonomy";
-import type { CandidateKind, CandidateSection, SourceType } from "@/lib/types";
+import type {
+  CandidateKind,
+  CandidateSection,
+  DocumentKind,
+  MatrixOrientation,
+  SourceTraceStep,
+  SourceType,
+} from "@/lib/types";
 
 function cleanText(raw: string): string {
   return raw.replace(/\s+/g, " ").trim();
@@ -18,48 +28,164 @@ function makeId(index: number): string {
   return `candidate-${index + 1}`;
 }
 
-function inferPageSourceType(url: string, candidateCount: number): SourceType {
-  const lower = url.toLowerCase();
-  if (candidateCount > 1 || /(size-fit-guide|size-guide|size-chart|guide-des-tailles)/.test(lower)) {
-    return "generic-multi-guide-page";
+function normalizeRow(row: string[], width: number): string[] {
+  const next = [...row];
+  while (next.length < width) next.push("");
+  return next.slice(0, width);
+}
+
+function normalizeMatrix(matrix: string[][]): string[][] {
+  const filtered = matrix
+    .map((row) => row.map((cell) => cleanText(cell)))
+    .filter((row) => row.some(Boolean));
+  if (!filtered.length) return [];
+  const width = Math.max(...filtered.map((row) => row.length));
+  return filtered.map((row) => normalizeRow(row, width));
+}
+
+function isExplicitSystemLabel(label: string): boolean {
+  return /\b(us|uk|eu|fr|it|int|international)\b/i.test(label);
+}
+
+function inferMatrixOrientation(matrix: string[][]): {
+  matrixOrientation: MatrixOrientation;
+  rawHeaders: string[];
+  rawStubColumn: string[];
+  rawSizeAxisLabels: string[];
+  visibleColumnLabels: string[];
+  visibleRowLabels: string[];
+} {
+  const normalized = normalizeMatrix(matrix);
+  const rawHeaders = normalized[0] ?? [];
+  const bodyRows = normalized.slice(1);
+  const rawStubColumn = bodyRows.map((row) => row[0] ?? "").filter(Boolean);
+  const headerSizeLabels = rawHeaders.slice(1).filter(isSizeLikeLabel);
+  const stubSizeLabels = rawStubColumn.filter(isSizeLikeLabel);
+  const headerSystemLabels = rawHeaders.filter(isExplicitSystemLabel);
+  const stubSystemLabels = rawStubColumn.filter(isExplicitSystemLabel);
+  const stubFieldCount = rawStubColumn.filter((cell) => Boolean(fieldFromHeader(cell))).length;
+  const headerFieldCount = rawHeaders.filter((cell) => Boolean(fieldFromHeader(cell))).length;
+
+  let matrixOrientation: MatrixOrientation = "unknown";
+  let rawSizeAxisLabels: string[] = [];
+
+  if (
+    headerSystemLabels.length >= 2 ||
+    stubSystemLabels.length >= 2 ||
+    (headerSizeLabels.length >= 2 && stubSizeLabels.length >= 2)
+  ) {
+    matrixOrientation = "conversion-grid";
+    rawSizeAxisLabels = stubSizeLabels.length >= headerSizeLabels.length ? stubSizeLabels : headerSizeLabels;
+  } else if (stubSizeLabels.length >= 2 && (headerFieldCount > 0 || headerSizeLabels.length === 0)) {
+    matrixOrientation = "size-rows";
+    rawSizeAxisLabels = stubSizeLabels;
+  } else if (headerSizeLabels.length >= 2 && (stubFieldCount > 0 || stubSizeLabels.length === 0)) {
+    matrixOrientation = "size-columns";
+    rawSizeAxisLabels = headerSizeLabels;
+  } else if (headerSizeLabels.length >= 2) {
+    matrixOrientation = "size-columns";
+    rawSizeAxisLabels = headerSizeLabels;
+  } else if (stubSizeLabels.length >= 2) {
+    matrixOrientation = "size-rows";
+    rawSizeAxisLabels = stubSizeLabels;
   }
-  if (/(product|sku|\/p\/|\/products\/)/.test(lower)) {
-    return "product-page-size-guide";
-  }
-  return "category-specific-page";
+
+  return {
+    matrixOrientation,
+    rawHeaders,
+    rawStubColumn,
+    rawSizeAxisLabels,
+    visibleColumnLabels: rawHeaders,
+    visibleRowLabels: rawSizeAxisLabels,
+  };
 }
 
 function extractHtmlTableMatrix(
   $: cheerio.CheerioAPI,
   table: Element,
 ): string[][] {
-  const rows = $(table)
-    .find("tr")
-    .toArray()
-    .map((row) =>
-      $(row)
-        .find("th, td")
-        .toArray()
-        .map((cell) => cleanText($(cell).text())),
-    )
-    .filter((row) => row.some(Boolean));
-  return rows;
+  return normalizeMatrix(
+    $(table)
+      .find("tr")
+      .toArray()
+      .map((row) =>
+        $(row)
+          .find("th, td")
+          .toArray()
+          .map((cell) => cleanText($(cell).text())),
+      ),
+  );
 }
 
 function extractAriaGridMatrix(
   $: cheerio.CheerioAPI,
   grid: Element,
 ): string[][] {
-  return $(grid)
-    .find('[role="row"]')
+  return normalizeMatrix(
+    $(grid)
+      .find('[role="row"]')
+      .toArray()
+      .map((row) =>
+        $(row)
+          .find('[role="cell"], [role="columnheader"], [role="rowheader"]')
+          .toArray()
+          .map((cell) => cleanText($(cell).text())),
+      ),
+  );
+}
+
+function splitLooseRow(text: string): string[] {
+  const raw = text.trim();
+  const compact = cleanText(text);
+  if (!compact) return [];
+  if (raw.includes("\t")) {
+    return raw.split(/\t+/).map((cell) => cleanText(cell)).filter(Boolean);
+  }
+  const byLargeWhitespace = raw.split(/\s{2,}/).map((cell) => cleanText(cell)).filter(Boolean);
+  if (byLargeWhitespace.length >= 2) return byLargeWhitespace;
+  return [];
+}
+
+function extractDivGridMatrix(
+  $: cheerio.CheerioAPI,
+  container: Element,
+): string[][] {
+  const rows: string[][] = [];
+  const children = $(container)
+    .children()
+    .filter((_, node) => !$(node).is("script, style, noscript"))
     .toArray()
-    .map((row) =>
-      $(row)
-        .find('[role="cell"], [role="columnheader"], [role="rowheader"]')
-        .toArray()
-        .map((cell) => cleanText($(cell).text())),
-    )
-    .filter((row) => row.some(Boolean));
+    .slice(0, 20);
+
+  for (const child of children) {
+    const directChildren = $(child)
+      .children()
+      .filter((_, node) => !$(node).is("script, style, noscript"))
+      .toArray();
+
+    let row: string[] = [];
+    if (directChildren.length >= 2) {
+      row = directChildren
+        .map((node) => cleanText($(node).text()))
+        .filter(Boolean)
+        .slice(0, 12);
+    } else {
+      row = splitLooseRow($(child).text());
+    }
+
+    if (row.length >= 2) {
+      rows.push(row);
+    }
+  }
+
+  const normalized = normalizeMatrix(rows);
+  const width = normalized[0]?.length ?? 0;
+  if (normalized.length < 2 || width < 2) return [];
+
+  const irregularRows = normalized.filter((row) => row.filter(Boolean).length < 2).length;
+  if (irregularRows > Math.floor(normalized.length / 3)) return [];
+
+  return normalized;
 }
 
 function collectHeadingPath(
@@ -123,63 +249,90 @@ function createCandidate(args: {
   kind: CandidateKind;
   sourceUrl: string;
   sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
+  linkOriginId?: string;
+  navigationConfidence: number;
   matrix: string[][];
   headingPath: string[];
   sectionTitle: string;
   subheading?: string;
   nearbyAdvisoryText: string;
 }): CandidateSection {
-  const visibleColumnLabels = args.matrix[0] ?? [];
-  const visibleRowLabels = args.matrix
-    .slice(1)
-    .map((row) => cleanText(row[0] ?? ""))
-    .filter(Boolean);
-  const fields = detectFields(visibleColumnLabels);
+  const matrix = normalizeMatrix(args.matrix);
+  const matrixMeta = inferMatrixOrientation(matrix);
+  const combinedLabels = [
+    ...matrixMeta.rawHeaders,
+    ...matrixMeta.rawStubColumn,
+    ...matrixMeta.rawSizeAxisLabels,
+  ];
+  const fields = detectFields(combinedLabels);
   const contextText = [
     args.sectionTitle,
     args.subheading ?? "",
     args.headingPath.join(" "),
     args.nearbyAdvisoryText,
-    ...visibleColumnLabels,
+    ...matrixMeta.rawHeaders,
+    ...matrixMeta.rawStubColumn,
   ].join(" ");
   const category = detectCategory({
     sectionTitle: args.sectionTitle,
     subheading: args.subheading,
-    headers: visibleColumnLabels,
-    rowLabels: visibleRowLabels,
+    headers: matrixMeta.rawHeaders,
+    rowLabels: matrixMeta.rawSizeAxisLabels,
+    stubColumn: matrixMeta.rawStubColumn,
     nearbyText: args.nearbyAdvisoryText,
     fields,
   });
-  const sizeLikeRows = visibleRowLabels.filter(isSizeLikeLabel);
+  const categoryMapping = detectCategoryMapping({
+    detectedCategory: category.detectedCategory,
+    detectedCategoryLabel: category.detectedCategoryLabel,
+    sectionTitle: args.sectionTitle,
+    subheading: args.subheading,
+    nearbyText: args.nearbyAdvisoryText,
+    fields,
+  });
   const extractionConfidence = Math.max(
-    0.1,
+    0.08,
     Math.min(
-      0.98,
-      0.2 +
+      0.99,
+      0.16 +
         (fields.length > 0 ? 0.2 : 0) +
-        Math.min(sizeLikeRows.length, 8) * 0.06 +
+        Math.min(matrixMeta.rawSizeAxisLabels.length, 10) * 0.05 +
         (args.kind === "advisory-text" ? -0.2 : 0) +
-        (category.detectedCategory !== "unknown" ? 0.15 : 0),
+        (matrixMeta.matrixOrientation !== "unknown" ? 0.18 : 0) +
+        (category.detectedCategory !== "unknown" ? 0.12 : 0) +
+        (args.navigationConfidence ? Math.min(0.1, args.navigationConfidence / 4) : 0),
     ),
   );
 
   const evidenceSnippet = [
     args.sectionTitle,
     args.subheading,
-    visibleColumnLabels.length ? `Columns: ${visibleColumnLabels.join(", ")}` : "",
-    sizeLikeRows.length ? `Rows: ${sizeLikeRows.slice(0, 8).join(", ")}` : "",
+    matrixMeta.rawHeaders.length ? `Headers: ${matrixMeta.rawHeaders.join(", ")}` : "",
+    matrixMeta.rawStubColumn.length ? `Stub: ${matrixMeta.rawStubColumn.slice(0, 8).join(", ")}` : "",
+    matrixMeta.rawSizeAxisLabels.length
+      ? `Sizes: ${matrixMeta.rawSizeAxisLabels.slice(0, 12).join(", ")}`
+      : "",
     args.nearbyAdvisoryText,
   ]
     .filter(Boolean)
     .join(" | ")
-    .slice(0, 500);
+    .slice(0, 600);
 
   return {
     id: args.id,
     kind: args.kind,
     isTabular: args.kind !== "advisory-text",
     sourceUrl: args.sourceUrl,
-    sourceType: args.sourceType,
+    sourceType:
+      category.detectedCategory === "generic-body-guide"
+        ? "generic-body-guide"
+        : args.sourceType,
+    documentKind: args.documentKind,
+    sourceTraceChain: args.sourceTraceChain,
+    linkOriginId: args.linkOriginId,
+    navigationConfidence: args.navigationConfidence,
     sectionTitle: args.sectionTitle || "Untitled section",
     subheading: args.subheading,
     headingPath: args.headingPath,
@@ -189,26 +342,37 @@ function createCandidate(args: {
     detectedCategoryLabel: category.detectedCategoryLabel,
     fitVariant: detectFitVariant(contextText),
     detectedSizeSystem: detectSizeSystem({
-      rowLabels: sizeLikeRows,
-      headers: visibleColumnLabels,
+      rowLabels: matrixMeta.rawSizeAxisLabels,
+      headers: matrixMeta.rawHeaders,
+      stubColumn: matrixMeta.rawStubColumn,
+      sizeAxisLabels: matrixMeta.rawSizeAxisLabels,
       context: contextText,
     }),
-    originalUnitSystem: detectMeasurementUnit(
-      `${contextText} ${args.matrix.flat().join(" ")}`,
-    ),
-    visibleColumnLabels,
-    visibleRowLabels: sizeLikeRows,
+    originalUnitSystem: detectMeasurementUnit(`${contextText} ${matrix.flat().join(" ")}`),
+    matrixOrientation: matrixMeta.matrixOrientation,
+    categoryMappingMode: categoryMapping.mode,
+    categoryMappingReason: categoryMapping.reason,
+    rawHeaders: matrixMeta.rawHeaders,
+    rawStubColumn: matrixMeta.rawStubColumn,
+    rawSizeAxisLabels: matrixMeta.rawSizeAxisLabels,
+    visibleColumnLabels: matrixMeta.visibleColumnLabels,
+    visibleRowLabels: matrixMeta.visibleRowLabels,
     nearbyAdvisoryText: args.nearbyAdvisoryText,
     rawEvidenceSnippet: evidenceSnippet,
-    matrix: args.matrix,
+    matrix,
     extractionConfidence,
     selectionScore: 0,
-    matchReasons: category.reasons,
+    matchReasons: [
+      ...category.reasons,
+      ...(categoryMapping.reason ? [categoryMapping.reason] : []),
+    ],
     rejectionReasons: [],
     warnings:
       args.kind === "advisory-text"
         ? ["Advisory text was detected without a nearby structured table."]
-        : [],
+        : matrixMeta.matrixOrientation === "unknown"
+          ? ["Matrix orientation could not be resolved confidently."]
+          : [],
   };
 }
 
@@ -221,13 +385,17 @@ function isMarkdownSeparator(line: string): boolean {
   return /^[:|\-\s]+$/.test(line.trim());
 }
 
-function discoverMarkdownTables(
-  markdown: string,
-  sourceUrl: string,
-  sourceType: SourceType,
-  indexOffset: number,
-): CandidateSection[] {
-  const lines = markdown.split(/\r?\n/);
+function discoverMarkdownTables(args: {
+  markdown: string;
+  sourceUrl: string;
+  sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
+  linkOriginId?: string;
+  navigationConfidence: number;
+  indexOffset: number;
+}): CandidateSection[] {
+  const lines = args.markdown.split(/\r?\n/);
   const candidates: CandidateSection[] = [];
   let headingPath: string[] = [];
 
@@ -259,10 +427,14 @@ function discoverMarkdownTables(
 
     candidates.push(
       createCandidate({
-        id: makeId(indexOffset + candidates.length),
+        id: makeId(args.indexOffset + candidates.length),
         kind: "markdown-table",
-        sourceUrl,
-        sourceType,
+        sourceUrl: args.sourceUrl,
+        sourceType: args.sourceType,
+        documentKind: args.documentKind,
+        sourceTraceChain: args.sourceTraceChain,
+        linkOriginId: args.linkOriginId,
+        navigationConfidence: args.navigationConfidence,
         matrix,
         headingPath,
         sectionTitle,
@@ -275,12 +447,158 @@ function discoverMarkdownTables(
   return candidates;
 }
 
-function discoverAdvisorySections(
-  $: cheerio.CheerioAPI,
-  sourceUrl: string,
-  sourceType: SourceType,
-  indexOffset: number,
-): CandidateSection[] {
+function discoverDelimitedMarkdownGrids(args: {
+  markdown: string;
+  sourceUrl: string;
+  sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
+  linkOriginId?: string;
+  navigationConfidence: number;
+  indexOffset: number;
+}): CandidateSection[] {
+  const lines = args.markdown.split(/\r?\n/);
+  const candidates: CandidateSection[] = [];
+  let headingPath: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]?.trim() ?? "";
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      headingPath = [...headingPath.slice(-2), cleanText(headingMatch[2])];
+      continue;
+    }
+
+    const parsed = splitLooseRow(lines[i] ?? "");
+    if (parsed.length < 2) continue;
+
+    const matrix = [parsed];
+    let j = i + 1;
+    while (j < lines.length) {
+      const row = splitLooseRow(lines[j] ?? "");
+      if (row.length < 2) break;
+      matrix.push(row);
+      j++;
+    }
+
+    const normalized = normalizeMatrix(matrix);
+    const flat = normalized.flat().map((cell) => normalizeToken(cell));
+    const signalCount =
+      flat.filter((cell) => isSizeLikeLabel(cell) || Boolean(fieldFromHeader(cell))).length;
+    if (normalized.length < 2 || signalCount < 3) continue;
+
+    const sectionTitle = headingPath[headingPath.length - 1] ?? "Markdown grid";
+    candidates.push(
+      createCandidate({
+        id: makeId(args.indexOffset + candidates.length),
+        kind: "markdown-grid",
+        sourceUrl: args.sourceUrl,
+        sourceType: args.sourceType,
+        documentKind: args.documentKind,
+        sourceTraceChain: args.sourceTraceChain,
+        linkOriginId: args.linkOriginId,
+        navigationConfidence: args.navigationConfidence,
+        matrix: normalized,
+        headingPath,
+        sectionTitle,
+        nearbyAdvisoryText: cleanText(
+          `${lines[i - 1] ?? ""} ${lines[j] ?? ""}`.slice(0, 300),
+        ),
+      }),
+    );
+
+    i = j;
+  }
+
+  return candidates;
+}
+
+function discoverDivGrids(args: {
+  html: string;
+  sourceUrl: string;
+  sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
+  linkOriginId?: string;
+  navigationConfidence: number;
+  indexOffset: number;
+}): CandidateSection[] {
+  const $ = cheerio.load(args.html);
+  const candidates: CandidateSection[] = [];
+
+  $("section, article, div").each((_, node) => {
+    if (candidates.length >= 18) return false;
+    const element = $(node);
+    if (element.find("table, [role='table']").length > 0) return;
+    const childCount = element.children().length;
+    if (childCount < 2 || childCount > 20) return;
+
+    const text = cleanText(element.text());
+    const normalized = normalizeToken(text);
+    if (
+      !containsAny(normalized, [
+        "size",
+        "fit",
+        "guide",
+        "chart",
+        "chest",
+        "waist",
+        "hips",
+        "inseam",
+        "xxs",
+        "xs",
+        "xl",
+      ])
+    ) {
+      return;
+    }
+
+    const matrix = extractDivGridMatrix($, node);
+    if (matrix.length < 2) return;
+
+    const flat = matrix.flat();
+    const signalCount = flat.filter(
+      (cell) => isSizeLikeLabel(cell) || Boolean(fieldFromHeader(cell)),
+    ).length;
+    if (signalCount < 3) return;
+
+    const headingPath = collectHeadingPath($, node);
+    const sectionTitle =
+      headingPath.slice(-1)[0] || cleanText(element.attr("aria-label") ?? "") || "Grid section";
+
+    candidates.push(
+      createCandidate({
+        id: makeId(args.indexOffset + candidates.length),
+        kind: "div-grid",
+        sourceUrl: args.sourceUrl,
+        sourceType: args.sourceType,
+        documentKind: args.documentKind,
+        sourceTraceChain: args.sourceTraceChain,
+        linkOriginId: args.linkOriginId,
+        navigationConfidence: args.navigationConfidence,
+        matrix,
+        headingPath,
+        sectionTitle,
+        subheading: collectSubheading($, node),
+        nearbyAdvisoryText: collectNearbyText($, node),
+      }),
+    );
+  });
+
+  return candidates;
+}
+
+function discoverAdvisorySections(args: {
+  html: string;
+  sourceUrl: string;
+  sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
+  linkOriginId?: string;
+  navigationConfidence: number;
+  indexOffset: number;
+}): CandidateSection[] {
+  const $ = cheerio.load(args.html);
   const candidates: CandidateSection[] = [];
 
   $("h1, h2, h3, h4").each((_, node) => {
@@ -288,7 +606,9 @@ function discoverAdvisorySections(
     if (!/(size|taille|fit|measure|guide)/i.test(title)) return;
 
     const siblings = $(node).nextAll().slice(0, 4);
-    const hasStructuredTable = siblings.filter("table, [role='table']").length > 0;
+    const hasStructuredTable =
+      siblings.filter("table, [role='table']").length > 0 ||
+      siblings.find("table, [role='table']").length > 0;
     if (hasStructuredTable) return;
 
     const nearby = cleanText(siblings.text());
@@ -296,10 +616,14 @@ function discoverAdvisorySections(
 
     candidates.push(
       createCandidate({
-        id: makeId(indexOffset + candidates.length),
+        id: makeId(args.indexOffset + candidates.length),
         kind: "advisory-text",
-        sourceUrl,
-        sourceType,
+        sourceUrl: args.sourceUrl,
+        sourceType: args.sourceType,
+        documentKind: args.documentKind,
+        sourceTraceChain: args.sourceTraceChain,
+        linkOriginId: args.linkOriginId,
+        navigationConfidence: args.navigationConfidence,
         matrix: [[title], [nearby]],
         headingPath: [title],
         sectionTitle: title,
@@ -318,11 +642,14 @@ function dedupeCandidates(candidates: CandidateSection[]): CandidateSection[] {
     const signature = [
       candidate.kind,
       candidate.sectionTitle,
-      candidate.visibleColumnLabels.join("||"),
-      candidate.visibleRowLabels.join("||"),
+      candidate.matrixOrientation,
+      candidate.rawHeaders.join("||"),
+      candidate.rawStubColumn.join("||"),
+      candidate.rawSizeAxisLabels.join("||"),
     ].join("::");
 
-    if (!bySignature.has(signature)) {
+    const existing = bySignature.get(signature);
+    if (!existing || existing.extractionConfidence < candidate.extractionConfidence) {
       bySignature.set(signature, candidate);
     }
   }
@@ -337,27 +664,31 @@ export function discoverCandidateSections(args: {
   html: string;
   markdown: string;
   sourceUrl: string;
-}): { sourceType: SourceType; candidates: CandidateSection[] } {
+  sourceType: SourceType;
+  documentKind: DocumentKind;
+  sourceTraceChain: SourceTraceStep[];
+  linkOriginId?: string;
+  navigationConfidence?: number;
+}): CandidateSection[] {
   const $ = cheerio.load(args.html);
+  const navigationConfidence = args.navigationConfidence ?? 0;
   const htmlTables = $("table").toArray();
   const ariaTables = $('[role="table"]').toArray();
-  const provisionalSourceType = inferPageSourceType(
-    args.sourceUrl,
-    htmlTables.length + ariaTables.length,
-  );
 
   const htmlCandidates = htmlTables.map((table, index) => {
     const headingPath = collectHeadingPath($, table);
     const sectionTitle =
-      headingPath.slice(-1)[0] ||
-      cleanText($(table).attr("aria-label") ?? "") ||
-      "HTML table";
+      headingPath.slice(-1)[0] || cleanText($(table).attr("aria-label") ?? "") || "HTML table";
 
     return createCandidate({
       id: makeId(index),
       kind: "html-table",
       sourceUrl: args.sourceUrl,
-      sourceType: provisionalSourceType,
+      sourceType: args.sourceType,
+      documentKind: args.documentKind,
+      sourceTraceChain: args.sourceTraceChain,
+      linkOriginId: args.linkOriginId,
+      navigationConfidence,
       matrix: extractHtmlTableMatrix($, table),
       headingPath,
       sectionTitle,
@@ -369,15 +700,17 @@ export function discoverCandidateSections(args: {
   const ariaCandidates = ariaTables.map((table, index) => {
     const headingPath = collectHeadingPath($, table);
     const sectionTitle =
-      headingPath.slice(-1)[0] ||
-      cleanText($(table).attr("aria-label") ?? "") ||
-      "ARIA table";
+      headingPath.slice(-1)[0] || cleanText($(table).attr("aria-label") ?? "") || "ARIA table";
 
     return createCandidate({
       id: makeId(htmlCandidates.length + index),
       kind: "aria-grid",
       sourceUrl: args.sourceUrl,
-      sourceType: provisionalSourceType,
+      sourceType: args.sourceType,
+      documentKind: args.documentKind,
+      sourceTraceChain: args.sourceTraceChain,
+      linkOriginId: args.linkOriginId,
+      navigationConfidence,
       matrix: extractAriaGridMatrix($, table),
       headingPath,
       sectionTitle,
@@ -386,37 +719,71 @@ export function discoverCandidateSections(args: {
     });
   });
 
-  const markdownCandidates = discoverMarkdownTables(
-    args.markdown,
-    args.sourceUrl,
-    provisionalSourceType,
-    htmlCandidates.length + ariaCandidates.length,
-  );
+  const markdownCandidates = discoverMarkdownTables({
+    markdown: args.markdown,
+    sourceUrl: args.sourceUrl,
+    sourceType: args.sourceType,
+    documentKind: args.documentKind,
+    sourceTraceChain: args.sourceTraceChain,
+    linkOriginId: args.linkOriginId,
+    navigationConfidence,
+    indexOffset: htmlCandidates.length + ariaCandidates.length,
+  });
 
-  const advisoryCandidates = discoverAdvisorySections(
-    $,
-    args.sourceUrl,
-    provisionalSourceType,
-    htmlCandidates.length + ariaCandidates.length + markdownCandidates.length,
-  );
+  const markdownGridCandidates = discoverDelimitedMarkdownGrids({
+    markdown: args.markdown,
+    sourceUrl: args.sourceUrl,
+    sourceType: args.sourceType,
+    documentKind: args.documentKind,
+    sourceTraceChain: args.sourceTraceChain,
+    linkOriginId: args.linkOriginId,
+    navigationConfidence,
+    indexOffset: htmlCandidates.length + ariaCandidates.length + markdownCandidates.length,
+  });
 
-  const deduped = dedupeCandidates(
-    [...htmlCandidates, ...ariaCandidates, ...markdownCandidates, ...advisoryCandidates].filter(
+  const divGridCandidates = discoverDivGrids({
+    html: args.html,
+    sourceUrl: args.sourceUrl,
+    sourceType: args.sourceType,
+    documentKind: args.documentKind,
+    sourceTraceChain: args.sourceTraceChain,
+    linkOriginId: args.linkOriginId,
+    navigationConfidence,
+    indexOffset:
+      htmlCandidates.length +
+      ariaCandidates.length +
+      markdownCandidates.length +
+      markdownGridCandidates.length,
+  });
+
+  const advisoryCandidates = discoverAdvisorySections({
+    html: args.html,
+    sourceUrl: args.sourceUrl,
+    sourceType: args.sourceType,
+    documentKind: args.documentKind,
+    sourceTraceChain: args.sourceTraceChain,
+    linkOriginId: args.linkOriginId,
+    navigationConfidence,
+    indexOffset:
+      htmlCandidates.length +
+      ariaCandidates.length +
+      markdownCandidates.length +
+      markdownGridCandidates.length +
+      divGridCandidates.length,
+  });
+
+  return dedupeCandidates(
+    [
+      ...htmlCandidates,
+      ...ariaCandidates,
+      ...markdownCandidates,
+      ...markdownGridCandidates,
+      ...divGridCandidates,
+      ...advisoryCandidates,
+    ].filter(
       (candidate) =>
         candidate.matrix.length >= 2 &&
         candidate.matrix.some((row) => row.some(Boolean)),
     ),
   );
-
-  const finalSourceType = inferPageSourceType(args.sourceUrl, deduped.length);
-  return {
-    sourceType: finalSourceType,
-    candidates: deduped.map((candidate) => ({
-      ...candidate,
-      sourceType:
-        candidate.detectedCategory === "generic-body-guide"
-          ? "generic-body-guide"
-          : finalSourceType,
-    })),
-  };
 }

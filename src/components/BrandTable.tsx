@@ -73,7 +73,13 @@ function summaryMessage(result: BrandResult): string {
     const selected = result.pipeline?.discoveredCandidates.find(
       (candidate) => candidate.id === selectedId,
     );
-    if (selected) return `${selected.sectionTitle} · ${result.pipeline?.validationStatus}`;
+    if (selected) {
+      const followed = result.pipeline?.followedUrl ? " · followed link" : "";
+      return `${selected.sectionTitle} · ${selected.matrixOrientation} · ${result.pipeline?.validationStatus}${followed}`;
+    }
+  }
+  if (result.pipeline?.documentReasoning.length) {
+    return result.pipeline.documentReasoning[0] ?? "—";
   }
   return "—";
 }

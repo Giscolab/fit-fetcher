@@ -82,11 +82,19 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         fetchedUrl: scraped.sourceUrl,
         html: scraped.html,
         markdown: scraped.markdown,
+        fetchDocument: scrapeWithFirecrawl,
       });
 
       logs.push(
         `Discovered ${report.discoveredCandidates.length} candidate section(s).`,
       );
+      logs.push(`Document kind: ${report.documentKind}.`);
+      if (report.followedUrl) {
+        logs.push(`Followed one internal guide link to ${report.followedUrl}.`);
+      }
+      if (report.linkCandidates.length > 0) {
+        logs.push(`Discovered ${report.linkCandidates.length} internal guide link candidate(s).`);
+      }
 
       if (report.selectedCandidateId) {
         const selected = report.discoveredCandidates.find(
@@ -95,6 +103,11 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         logs.push(
           `Selected section ${selected?.sectionTitle ?? report.selectedCandidateId}.`,
         );
+        if (selected) {
+          logs.push(
+            `Selected orientation ${selected.matrixOrientation} with ${selected.rawSizeAxisLabels.length} visible source sizes.`,
+          );
+        }
         logs.push("Stage 4/5 extraction: extracting only the selected candidate section.");
         logs.push("Stage 5/5 validation: enforcing semantic and traceability checks.");
       } else {
@@ -138,9 +151,23 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         logs,
         pipeline: {
           fetchedUrl: source.size_guide_url,
+          resolvedSourceUrl: source.size_guide_url,
           requestedCategory: null,
           requestedSizeSystem: null,
           sourceType: "category-specific-page",
+          documentKind: "unrelated-page",
+          documentReasoning: [],
+          sourceTraceChain: [
+            {
+              kind: "requested-url",
+              url: source.size_guide_url,
+              label: source.name?.trim() || source.brand,
+              confidence: 1,
+              reasons: ["Initial requested size-guide URL."],
+            },
+          ],
+          linkCandidates: [],
+          navigationConfidence: 0,
           discoveredCandidates: [],
           rejectedCandidateIds: [],
           selectionReasoning: [],

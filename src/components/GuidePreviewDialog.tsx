@@ -20,7 +20,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { guideFilename } from "@/lib/normalizers/guideBuilder";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
-import type { BrandResult, CandidateSection, SizeRow, ValidationIssue } from "@/lib/types";
+import type {
+  BrandResult,
+  CandidateSection,
+  LinkCandidate,
+  SizeRow,
+  SourceTraceStep,
+  ValidationIssue,
+} from "@/lib/types";
 
 interface Props {
   open: boolean;
@@ -78,6 +85,68 @@ function IssueList({
   );
 }
 
+function TraceChain({ steps }: { steps: SourceTraceStep[] }) {
+  if (!steps.length) return null;
+
+  return (
+    <div className="rounded-lg border border-border bg-background p-4">
+      <h3 className="text-sm font-semibold">Source trace</h3>
+      <div className="mt-3 space-y-3 text-sm">
+        {steps.map((step, index) => (
+          <div key={`${step.url}-${index}`} className="rounded border border-border/70 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">{step.kind}</Badge>
+              <span className="font-medium">{step.label}</span>
+              <span className="text-xs text-muted-foreground">
+                confidence {step.confidence.toFixed(2)}
+              </span>
+            </div>
+            <div className="mt-1 break-all text-xs text-muted-foreground">{step.url}</div>
+            {!!step.reasons.length && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                {step.reasons.slice(0, 3).join(" ")}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LinkCandidateCard({ candidate }: { candidate: LinkCandidate }) {
+  return (
+    <div
+      className={`space-y-3 rounded-lg border p-4 ${
+        candidate.selected ? "border-accent bg-accent/5" : "border-border bg-background"
+      }`}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-sm font-semibold">{candidate.label}</h3>
+        <Badge variant="outline">{candidate.detectedCategory}</Badge>
+        <Badge variant="outline">{candidate.detectedSizeSystem}</Badge>
+        <Badge variant="outline">{candidate.categoryMappingMode}</Badge>
+        {candidate.selected && <Badge className="bg-accent text-accent-foreground">Followed</Badge>}
+      </div>
+      <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+        <div>Score: {candidate.score}</div>
+        <div>Resolver: {candidate.resolver}</div>
+      </div>
+      <div className="break-all text-xs text-muted-foreground">{candidate.url}</div>
+      {!!candidate.reasons.length && (
+        <div className="text-xs text-muted-foreground">
+          Navigation reasoning: {candidate.reasons.slice(0, 3).join(" ")}
+        </div>
+      )}
+      {!!candidate.rejectionReasons.length && (
+        <div className="text-xs text-destructive/90">
+          Rejections: {candidate.rejectionReasons.slice(0, 3).join(" ")}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CandidateCard({
   candidate,
   selected,
@@ -99,15 +168,25 @@ function CandidateCard({
         <Badge variant="outline">{candidate.detectedCategory}</Badge>
         <Badge variant="outline">{candidate.detectedSizeSystem}</Badge>
         <Badge variant="outline">{candidate.originalUnitSystem}</Badge>
+        <Badge variant="outline">{candidate.matrixOrientation}</Badge>
+        <Badge variant="outline">{candidate.categoryMappingMode}</Badge>
         {selected && <Badge className="bg-accent text-accent-foreground">Selected</Badge>}
       </div>
 
-      <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+      <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-3">
         <div>Audience: {candidate.audience}</div>
         <div>Fit: {candidate.fitVariant}</div>
         <div>Score: {candidate.selectionScore}</div>
         <div>Confidence: {candidate.extractionConfidence.toFixed(2)}</div>
+        <div>Document: {candidate.documentKind}</div>
+        <div>Navigation: {candidate.navigationConfidence.toFixed(2)}</div>
       </div>
+
+      {candidate.categoryMappingReason && (
+        <div className="text-xs text-muted-foreground">
+          Category mapping: {candidate.categoryMappingReason}
+        </div>
+      )}
 
       {!!candidate.matchReasons.length && (
         <div className="text-xs text-muted-foreground">
@@ -121,9 +200,15 @@ function CandidateCard({
         </div>
       )}
 
-      {!!candidate.visibleRowLabels.length && (
+      {!!candidate.rawSizeAxisLabels.length && (
         <div className="text-xs text-muted-foreground">
-          Visible sizes: {candidate.visibleRowLabels.join(", ")}
+          Visible size axis: {candidate.rawSizeAxisLabels.join(", ")}
+        </div>
+      )}
+
+      {!!candidate.rawStubColumn.length && (
+        <div className="text-xs text-muted-foreground">
+          Stub labels: {candidate.rawStubColumn.slice(0, 8).join(", ")}
         </div>
       )}
 
@@ -222,6 +307,22 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                   <div className="text-muted-foreground">Validation</div>
                   <div className="font-medium">{guide.guide.validationStatus}</div>
                 </div>
+                <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                  <div className="text-muted-foreground">Document Kind</div>
+                  <div className="font-medium">{guide.guide.documentKind}</div>
+                </div>
+                <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                  <div className="text-muted-foreground">Matrix Orientation</div>
+                  <div className="font-medium">{guide.guide.matrixOrientation}</div>
+                </div>
+                <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                  <div className="text-muted-foreground">Category Mapping</div>
+                  <div className="font-medium">{guide.guide.categoryMappingMode}</div>
+                </div>
+                <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                  <div className="text-muted-foreground">Resolved Source URL</div>
+                  <div className="break-all font-medium">{guide.guide.resolvedSourceUrl}</div>
+                </div>
               </div>
 
               <IssueList
@@ -230,6 +331,7 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                 destructive
               />
               <IssueList title="Warnings" issues={guide.guide.warnings} />
+              <TraceChain steps={guide.guide.sourceTraceChain} />
 
               <div className="overflow-auto rounded border border-border">
                 <Table>
@@ -287,8 +389,16 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                     <div className="break-all font-medium">{pipeline.fetchedUrl}</div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                    <div className="text-muted-foreground">Resolved URL</div>
+                    <div className="break-all font-medium">{pipeline.resolvedSourceUrl}</div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-background p-3 text-sm">
                     <div className="text-muted-foreground">Source Type</div>
                     <div className="font-medium">{pipeline.sourceType}</div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                    <div className="text-muted-foreground">Document Kind</div>
+                    <div className="font-medium">{pipeline.documentKind}</div>
                   </div>
                   <div className="rounded-lg border border-border bg-background p-3 text-sm">
                     <div className="text-muted-foreground">Selected Section</div>
@@ -306,6 +416,10 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                       {pipeline.manualReviewRecommended ? "Yes" : "No"}
                     </div>
                   </div>
+                  <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                    <div className="text-muted-foreground">Navigation Confidence</div>
+                    <div className="font-medium">{pipeline.navigationConfidence.toFixed(2)}</div>
+                  </div>
                 </div>
 
                 <IssueList
@@ -314,6 +428,18 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                   destructive
                 />
                 <IssueList title="Warnings" issues={pipeline.warnings} />
+                <TraceChain steps={pipeline.sourceTraceChain} />
+
+                {!!pipeline.documentReasoning.length && (
+                  <div className="rounded-lg border border-border bg-background p-4">
+                    <h3 className="text-sm font-semibold">Document reasoning</h3>
+                    <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+                      {pipeline.documentReasoning.map((line, index) => (
+                        <p key={index}>{line}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {!!pipeline.selectionReasoning.length && (
                   <div className="rounded-lg border border-border bg-background p-4">
@@ -323,6 +449,17 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                         <p key={index}>{line}</p>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {!!pipeline.linkCandidates.length && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold">
+                      Internal guide links ({pipeline.linkCandidates.length})
+                    </h3>
+                    {pipeline.linkCandidates.map((candidate) => (
+                      <LinkCandidateCard key={candidate.id} candidate={candidate} />
+                    ))}
                   </div>
                 )}
 

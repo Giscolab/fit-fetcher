@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test:ingestion": "node --import tsx --test src/lib/ingestion/pipeline.test.ts",
     "format": "prettier --write ."
   },
   "dependencies": {

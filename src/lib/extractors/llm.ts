@@ -131,11 +131,15 @@ function buildPrompt(args: {
     args.candidate.headingPath.length
       ? `Heading path: ${args.candidate.headingPath.join(" > ")}.`
       : "",
-    args.candidate.visibleColumnLabels.length
-      ? `Visible column labels: ${args.candidate.visibleColumnLabels.join(", ")}.`
+    `Matrix orientation: ${args.candidate.matrixOrientation}.`,
+    args.candidate.rawHeaders.length
+      ? `Visible header labels: ${args.candidate.rawHeaders.join(", ")}.`
       : "",
-    args.candidate.visibleRowLabels.length
-      ? `Visible row labels: ${args.candidate.visibleRowLabels.join(", ")}.`
+    args.candidate.rawStubColumn.length
+      ? `Visible stub labels: ${args.candidate.rawStubColumn.join(", ")}.`
+      : "",
+    args.candidate.rawSizeAxisLabels.length
+      ? `Visible size-axis labels: ${args.candidate.rawSizeAxisLabels.join(", ")}.`
       : "",
     args.requestedCategory
       ? `Requested garment category: ${args.requestedCategory}.`
@@ -145,9 +149,12 @@ function buildPrompt(args: {
       : "Requested size system is unknown.",
     `Allowed measurement fields: ${allowedFields}.`,
     "Preserve each visible size label exactly in original_label and evidence_row_label.",
+    "Preserve broad source labels exactly before canonical normalization.",
     "Do not invent missing sizes, variants, or measurements.",
+    "Do not infer Tall, Petite, Short, 3XL, or 4XL rows unless they are explicitly visible.",
     "Do not interpolate or smooth ranges.",
     "Do not merge data from any other section on the page.",
+    "Do not convert advisory text into measurements.",
     "If the target section is ambiguous, missing, or does not clearly match, return status=ambiguous or status=not_found with rows=[].",
     "If a row is not explicitly visible in the target section, do not return it.",
     "Use centimetres only in the numeric fields.",

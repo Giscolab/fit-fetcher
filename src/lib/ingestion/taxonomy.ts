@@ -1,5 +1,5 @@
 import type {
-  Audience,
+  CategoryMappingMode,
   DetectedGarmentCategory,
   DetectedSizeSystem,
   FitVariant,
@@ -8,7 +8,7 @@ import type {
   SizeSystem,
 } from "@/lib/types";
 
-function normalizeToken(raw: string): string {
+export function normalizeToken(raw: string): string {
   return raw
     .toLowerCase()
     .normalize("NFD")
@@ -18,28 +18,88 @@ function normalizeToken(raw: string): string {
     .trim();
 }
 
-function containsAny(text: string, patterns: string[]): boolean {
+export function containsAny(text: string, patterns: string[]): boolean {
   return patterns.some((pattern) => text.includes(pattern));
 }
 
-const TOP_KEYWORDS = [
-  "top",
-  "tops",
-  "haut",
-  "hauts",
-  "upper body",
+const TOP_KEYWORDS = ["top", "tops", "haut", "hauts", "upper body"];
+const BOTTOM_KEYWORDS = ["bottom", "bottoms", "bas", "lower body"];
+const OUTERWEAR_KEYWORDS = [
+  "jacket",
+  "jackets",
+  "coat",
+  "coats",
+  "outerwear",
+  "manteau",
+  "manteaux",
+  "veste",
+  "vestes",
+  "parka",
+  "parkas",
+  "doudoune",
+  "doudounes",
+];
+const BROAD_TOP_LABELS = [
+  "tops tees",
+  "tees tops",
+  "shirts tops",
+  "tops shirts",
+  "tops tees size guide",
+  "shirts tops size guide",
 ];
 
-const BOTTOM_KEYWORDS = [
-  "bottom",
-  "bottoms",
-  "bas",
-  "lower body",
-];
+function hasExplicitNumericSystemLabel(label: string): DetectedSizeSystem | null {
+  const normalized = ` ${normalizeToken(label)} `;
+  if (containsAny(normalized, [" us ", " us size", " size us"])) return "US";
+  if (containsAny(normalized, [" uk ", " uk size", " size uk"])) return "UK";
+  if (containsAny(normalized, [" eu ", " eu size", " size eu"])) return "EU";
+  if (containsAny(normalized, [" fr ", " fr size", " size fr"])) return "FR";
+  if (containsAny(normalized, [" it ", " it size", " size it"])) return "IT";
+  return null;
+}
 
-export function mapRequestedGarmentCategory(
-  raw?: string,
-): GarmentCategory | null {
+function isNumericOnlyLabel(label: string): boolean {
+  const normalized = normalizeToken(label);
+  return /^\d{2,3}(\/\d{2,3})?$/.test(normalized);
+}
+
+function isInternationalSizeLabel(label: string): boolean {
+  const normalized = normalizeToken(label);
+  return /^(xxs|xs|s|m|l|xl|xxl|xxxl|3xl|4xl|5xl)( tall| petite| regular| short| long)?$/.test(
+    normalized,
+  );
+}
+
+function detectAxisSizeSystem(labels: string[]): DetectedSizeSystem {
+  const normalized = labels.map((label) => normalizeToken(label)).filter(Boolean);
+
+  if (!normalized.length) return "UNKNOWN";
+  if (normalized.some((label) => isInternationalSizeLabel(label))) return "INT";
+  if (
+    normalized.some(
+      (label) => /^w\d+\s*l\d+$/.test(label) || /^\d{2,3}\/\d{2,3}$/.test(label),
+    )
+  ) {
+    return "WAIST_INSEAM";
+  }
+
+  const explicitSystems = new Set(
+    normalized
+      .map((label) => hasExplicitNumericSystemLabel(label))
+      .filter((label): label is Exclude<DetectedSizeSystem, "UNKNOWN"> => Boolean(label)),
+  );
+  if (explicitSystems.size === 1) {
+    return Array.from(explicitSystems)[0] ?? "UNKNOWN";
+  }
+
+  if (normalized.length > 0 && normalized.every((label) => isNumericOnlyLabel(label))) {
+    return "NUMERIC";
+  }
+
+  return "UNKNOWN";
+}
+
+export function mapRequestedGarmentCategory(raw?: string): GarmentCategory | null {
   const text = normalizeToken(raw ?? "");
   if (!text) return null;
   if (containsAny(text, ["t shirt", "tshirt", "tshirts", "tee", "tees"])) {
@@ -51,23 +111,7 @@ export function mapRequestedGarmentCategory(
   if (containsAny(text, ["hoodie", "hoodies", "sweatshirt", "sweatshirts"])) {
     return "hoodies";
   }
-  if (
-    containsAny(text, [
-      "jacket",
-      "jackets",
-      "coat",
-      "coats",
-      "outerwear",
-      "manteau",
-      "manteaux",
-      "veste",
-      "vestes",
-      "parka",
-      "parkas",
-      "doudoune",
-      "doudounes",
-    ])
-  ) {
+  if (containsAny(text, OUTERWEAR_KEYWORDS)) {
     return "jackets";
   }
   if (containsAny(text, ["jean", "jeans", "denim"])) {
@@ -133,21 +177,39 @@ export function mapRequestedSizeSystem(raw?: string): SizeSystem | null {
   if (text === "us" || text === "usa" || text === "american") return "US";
   if (text === "uk" || text === "british") return "UK";
   if (text === "it" || text === "italy" || text === "italian") return "IT";
-  if (text === "waist inseam" || text === "waist_inseam") {
-    return "WAIST_INSEAM";
-  }
+  if (text === "waist inseam" || text === "waist_inseam") return "WAIST_INSEAM";
   if (text === "footwear" || text === "shoe size") return "FOOTWEAR";
   if (text === "bra") return "BRA";
   return null;
 }
 
-export function detectAudience(text: string): Audience {
+export function detectAudience(text: string) {
   const normalized = normalizeToken(text);
-  if (containsAny(normalized, ["kid", "kids", "child", "children", "junior", "boys", "girls"])) {
+  if (
+    containsAny(normalized, [
+      "kid",
+      "kids",
+      "child",
+      "children",
+      "junior",
+      "boys",
+      "girls",
+    ])
+  ) {
     return "kids";
   }
   if (containsAny(normalized, ["unisex"])) return "unisex";
-  if (containsAny(normalized, ["women", "woman", "female", "femme", "femmes", "lady", "ladies"])) {
+  if (
+    containsAny(normalized, [
+      "women",
+      "woman",
+      "female",
+      "femme",
+      "femmes",
+      "lady",
+      "ladies",
+    ])
+  ) {
     return "women";
   }
   if (containsAny(normalized, ["men", "man", "male", "homme", "hommes"])) {
@@ -161,6 +223,7 @@ export function detectFitVariant(text: string): FitVariant {
   if (containsAny(normalized, ["tall", "long"])) return "tall";
   if (containsAny(normalized, ["petite"])) return "petite";
   if (containsAny(normalized, ["regular"])) return "regular";
+  if (containsAny(normalized, ["short"])) return "standard";
   if (normalized) return "standard";
   return "unknown";
 }
@@ -168,10 +231,8 @@ export function detectFitVariant(text: string): FitVariant {
 export function isSizeLikeLabel(label: string): boolean {
   const normalized = normalizeToken(label);
   if (!normalized) return false;
-  if (/^(xxs|xs|s|m|l|xl|xxl|xxxl|3xl|4xl|5xl)( tall| petite| regular)?$/.test(normalized)) {
-    return true;
-  }
-  if (/^\d{2,3}(\/\d{2,3})?( tall| petite| regular)?$/.test(normalized)) {
+  if (isInternationalSizeLabel(label)) return true;
+  if (/^\d{2,3}(\/\d{2,3})?( tall| petite| regular| short| long)?$/.test(normalized)) {
     return true;
   }
   if (/^\d{2,3}-\d{2,3}$/.test(normalized)) return true;
@@ -189,7 +250,7 @@ export function canonicalizeSizeLabel(label: string): {
   const normalized = normalizeToken(label);
   const fitVariant = detectFitVariant(label);
   const stripped = normalized
-    .replace(/\b(tall|petite|regular|long)\b/g, "")
+    .replace(/\b(tall|petite|regular|long|short)\b/g, "")
     .replace(/\s+/g, " ")
     .trim()
     .toUpperCase();
@@ -203,33 +264,46 @@ export function canonicalizeSizeLabel(label: string): {
 export function detectSizeSystem(args: {
   rowLabels: string[];
   headers: string[];
+  stubColumn?: string[];
+  sizeAxisLabels?: string[];
   context: string;
 }): DetectedSizeSystem {
   const context = normalizeToken(
-    [...args.headers, ...args.rowLabels, args.context].join(" "),
+    [
+      ...args.headers,
+      ...args.rowLabels,
+      ...(args.stubColumn ?? []),
+      ...(args.sizeAxisLabels ?? []),
+      args.context,
+    ].join(" "),
   );
-  const rowLabels = args.rowLabels.map((label) => normalizeToken(label));
 
-  if (rowLabels.some((label) => /^(xxs|xs|s|m|l|xl|xxl|xxxl|3xl|4xl|5xl)/.test(label))) {
-    return "INT";
-  }
-  if (rowLabels.some((label) => /^w\d+\s*l\d+$/.test(label) || /^\d{2,3}\/\d{2,3}$/.test(label))) {
-    return "WAIST_INSEAM";
-  }
+  const explicitFromAxis = [
+    detectAxisSizeSystem(args.sizeAxisLabels ?? []),
+    detectAxisSizeSystem(args.rowLabels),
+    detectAxisSizeSystem(args.headers),
+  ].find((system) => system !== "UNKNOWN");
+  if (explicitFromAxis) return explicitFromAxis;
+
   if (containsAny(context, ["footwear", "shoe size", "chaussure", "shoes"])) {
     return "FOOTWEAR";
   }
   if (containsAny(context, ["bra", "cup size"])) {
     return "BRA";
   }
-  if (containsAny(context, [" us ", " us size", " size us"])) return "US";
-  if (containsAny(context, [" uk ", " uk size", " size uk"])) return "UK";
-  if (containsAny(context, [" eu ", " eu size", " size eu"])) return "EU";
-  if (containsAny(context, [" fr ", " fr size", " size fr"])) return "FR";
-  if (containsAny(context, [" it ", " it size", " size it"])) return "IT";
-  if (rowLabels.length > 0 && rowLabels.every((label) => /^\d{2,3}([ -]\d{2,3})?$/.test(label))) {
-    return "NUMERIC";
-  }
+
+  const explicit = [
+    ...args.headers,
+    ...args.rowLabels,
+    ...(args.stubColumn ?? []),
+    ...(args.sizeAxisLabels ?? []),
+  ]
+    .map((label) => hasExplicitNumericSystemLabel(label))
+    .find((label): label is Exclude<DetectedSizeSystem, "UNKNOWN" | "NUMERIC"> =>
+      Boolean(label),
+    );
+  if (explicit) return explicit;
+
   return "UNKNOWN";
 }
 
@@ -238,6 +312,7 @@ export function detectCategory(args: {
   subheading?: string;
   headers: string[];
   rowLabels: string[];
+  stubColumn?: string[];
   nearbyText: string;
   fields: MeasurementField[];
 }): {
@@ -250,13 +325,16 @@ export function detectCategory(args: {
     args.sectionTitle,
     args.subheading ?? "",
     ...args.headers,
+    ...(args.stubColumn ?? []),
+    ...args.rowLabels,
     args.nearbyText,
   ];
   const text = normalizeToken(labelSources.join(" "));
   const reasons: string[] = [];
   const hasChest = args.fields.includes("chest");
   const hasInseam = args.fields.includes("inseam");
-  const hasFoot = args.fields.includes("footLength") || args.fields.includes("footWidth");
+  const hasFoot =
+    args.fields.includes("footLength") || args.fields.includes("footWidth");
 
   if (hasChest && hasInseam) {
     reasons.push("Section mixes chest and inseam fields, which suggests a broad body guide.");
@@ -369,15 +447,17 @@ export function detectCategory(args: {
     };
   }
 
-  if (
-    containsAny(text, [
-      "t shirt",
-      "tshirts",
-      "tshirt",
-      "tee",
-      "tees",
-    ])
-  ) {
+  if (containsAny(text, BROAD_TOP_LABELS)) {
+    reasons.push("Section uses a broad tops label that needs curated mapping.");
+    return {
+      garmentFamily: "tops",
+      detectedCategory: "tops",
+      detectedCategoryLabel: args.sectionTitle || "tops",
+      reasons,
+    };
+  }
+
+  if (containsAny(text, ["t shirt", "tshirts", "tshirt", "tee", "tees"])) {
     reasons.push("T-shirt keywords are present.");
     return {
       garmentFamily: "tops",
@@ -407,23 +487,7 @@ export function detectCategory(args: {
     };
   }
 
-  if (
-    containsAny(text, [
-      "jacket",
-      "jackets",
-      "coat",
-      "coats",
-      "outerwear",
-      "manteau",
-      "manteaux",
-      "veste",
-      "vestes",
-      "parka",
-      "parkas",
-      "doudoune",
-      "doudounes",
-    ])
-  ) {
+  if (containsAny(text, OUTERWEAR_KEYWORDS)) {
     reasons.push("Outerwear keywords are present.");
     return {
       garmentFamily: "tops",
@@ -459,6 +523,129 @@ export function detectCategory(args: {
     detectedCategoryLabel: args.sectionTitle || "unknown",
     reasons: ["No garment-specific evidence was strong enough."],
   };
+}
+
+export function detectCategoryMapping(args: {
+  detectedCategory: DetectedGarmentCategory;
+  detectedCategoryLabel: string;
+  sectionTitle: string;
+  subheading?: string;
+  nearbyText: string;
+  fields: MeasurementField[];
+}): {
+  mode: CategoryMappingMode;
+  reason?: string;
+} {
+  const text = normalizeToken(
+    [
+      args.detectedCategoryLabel,
+      args.sectionTitle,
+      args.subheading ?? "",
+      args.nearbyText,
+    ].join(" "),
+  );
+  const paddedText = ` ${text} `;
+  const hasOuterwear = containsAny(text, OUTERWEAR_KEYWORDS);
+  const hasBottoms = containsAny(text, BOTTOM_KEYWORDS) || args.fields.includes("inseam");
+  const topOnlyFields =
+    args.fields.length > 0 &&
+    args.fields.every((field) =>
+      ["chest", "waist", "hips", "height", "sleeve", "neck", "shoulder"].includes(field),
+    );
+
+  if (args.detectedCategory === "generic-body-guide") {
+    return {
+      mode: "generic-body",
+      reason: "The section is explicitly labeled as body guidance.",
+    };
+  }
+
+  if (args.detectedCategory !== "tops") {
+    return {
+      mode: args.detectedCategory === "unknown" ? "unknown" : "exact",
+    };
+  }
+
+  if (containsAny(text, ["tops tees", "tees tops", "shirts tops", "tops shirts"])) {
+    return {
+      mode: "curated-broad-top",
+      reason: `Mapped "${args.detectedCategoryLabel}" into a curated tops-to-tshirts match.`,
+    };
+  }
+
+  if (containsAny(paddedText, [" top ", " tops ", " haut ", " hauts "]) && !hasOuterwear && !hasBottoms && topOnlyFields) {
+    return {
+      mode: "curated-broad-top",
+      reason: `Mapped broad top label "${args.detectedCategoryLabel}" into tshirts because only top fields were present.`,
+    };
+  }
+
+  return {
+    mode: "unknown",
+  };
+}
+
+export function resolveRequestedCategoryMatch(args: {
+  requestedCategory: GarmentCategory | null;
+  detectedCategory: DetectedGarmentCategory;
+  categoryMappingMode: CategoryMappingMode;
+}): {
+  matchedCategory: GarmentCategory | null;
+  mode: "exact" | "curated" | "generic-body" | "none";
+  reason?: string;
+} {
+  if (!args.requestedCategory) {
+    if (
+      args.detectedCategory === "tshirts" ||
+      args.detectedCategory === "shirts" ||
+      args.detectedCategory === "hoodies" ||
+      args.detectedCategory === "jackets" ||
+      args.detectedCategory === "pants" ||
+      args.detectedCategory === "jeans" ||
+      args.detectedCategory === "shorts" ||
+      args.detectedCategory === "leggings" ||
+      args.detectedCategory === "bras" ||
+      args.detectedCategory === "shoes" ||
+      args.detectedCategory === "generic-body-guide"
+    ) {
+      return {
+        matchedCategory: args.detectedCategory,
+        mode: args.detectedCategory === "generic-body-guide" ? "generic-body" : "exact",
+      };
+    }
+    return { matchedCategory: null, mode: "none" };
+  }
+
+  if (args.detectedCategory === args.requestedCategory) {
+    return {
+      matchedCategory: args.requestedCategory,
+      mode: "exact",
+    };
+  }
+
+  if (
+    args.requestedCategory === "generic-body-guide" &&
+    args.detectedCategory === "generic-body-guide"
+  ) {
+    return {
+      matchedCategory: "generic-body-guide",
+      mode: "generic-body",
+    };
+  }
+
+  if (
+    args.requestedCategory === "tshirts" &&
+    args.detectedCategory === "tops" &&
+    args.categoryMappingMode === "curated-broad-top"
+  ) {
+    return {
+      matchedCategory: "tshirts",
+      mode: "curated",
+      reason: "Curated broad tops mapping matched the requested tshirts category.",
+    };
+  }
+
+  return { matchedCategory: null, mode: "none" };
 }
 
 export function isTopCategory(category: GarmentCategory): boolean {

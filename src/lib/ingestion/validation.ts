@@ -2,6 +2,7 @@ import { FIELD_TO_ROW_KEYS } from "@/lib/ingestion/measurements";
 import {
   isBottomCategory,
   isTopCategory,
+  resolveRequestedCategoryMatch,
 } from "@/lib/ingestion/taxonomy";
 import type {
   CandidateExtraction,
@@ -61,68 +62,36 @@ function resolveCategory(args: {
   candidate: CandidateSection;
   issues: ValidationIssue[];
 }): GarmentCategory | null {
+  const match = resolveRequestedCategoryMatch({
+    requestedCategory: args.requestedCategory,
+    detectedCategory: args.candidate.detectedCategory,
+    categoryMappingMode: args.candidate.categoryMappingMode,
+  });
+
+  if (match.matchedCategory) {
+    return match.matchedCategory;
+  }
+
   if (args.requestedCategory) {
-    if (args.candidate.detectedCategory === args.requestedCategory) {
-      return args.requestedCategory;
-    }
-    if (
-      args.candidate.detectedCategory === "tops" ||
-      args.candidate.detectedCategory === "bottoms" ||
-      args.candidate.detectedCategory === "unknown"
-    ) {
-      args.issues.push(
-        buildIssue(
-          args.candidate.id,
-          "error",
-          "ambiguous-category",
-          "The selected section does not prove the requested garment category at section level.",
-        ),
-      );
-      return null;
-    }
     args.issues.push(
       buildIssue(
         args.candidate.id,
         "error",
-        "category-mismatch",
-        `Detected category ${args.candidate.detectedCategory} does not match requested category ${args.requestedCategory}.`,
+        "ambiguous-category",
+        "The selected section does not prove the requested garment category at section level.",
       ),
     );
     return null;
   }
 
-  if (
-    args.candidate.detectedCategory === "tops" ||
-    args.candidate.detectedCategory === "bottoms" ||
-    args.candidate.detectedCategory === "unknown"
-  ) {
-    args.issues.push(
-      buildIssue(
-        args.candidate.id,
-        "error",
-        "missing-category",
-        "No precise garment category could be resolved for this source.",
-      ),
-    );
-    return null;
-  }
-
-  if (
-    args.candidate.detectedCategory === "tshirts" ||
-    args.candidate.detectedCategory === "shirts" ||
-    args.candidate.detectedCategory === "hoodies" ||
-    args.candidate.detectedCategory === "jackets" ||
-    args.candidate.detectedCategory === "pants" ||
-    args.candidate.detectedCategory === "jeans" ||
-    args.candidate.detectedCategory === "shorts" ||
-    args.candidate.detectedCategory === "leggings" ||
-    args.candidate.detectedCategory === "bras" ||
-    args.candidate.detectedCategory === "shoes" ||
-    args.candidate.detectedCategory === "generic-body-guide"
-  ) {
-    return args.candidate.detectedCategory;
-  }
-
+  args.issues.push(
+    buildIssue(
+      args.candidate.id,
+      "error",
+      "missing-category",
+      "No precise garment category could be resolved for this source.",
+    ),
+  );
   return null;
 }
 
@@ -205,6 +174,28 @@ export function validateExtraction(args: {
     issues: validationErrors,
   });
 
+  if (args.candidate.documentKind === "guide-hub-page") {
+    validationErrors.push(
+      buildIssue(
+        candidateId,
+        "error",
+        "guide-hub-selected",
+        "Rejected because a guide hub was selected without isolating a concrete table-backed section.",
+      ),
+    );
+  }
+
+  if (args.candidate.linkOriginId && args.candidate.navigationConfidence < 0.55) {
+    validationErrors.push(
+      buildIssue(
+        candidateId,
+        "error",
+        "low-navigation-confidence",
+        "Rejected because the followed internal link was not unique or confident enough.",
+      ),
+    );
+  }
+
   if (!args.candidate.isTabular) {
     validationErrors.push(
       buildIssue(
@@ -227,11 +218,9 @@ export function validateExtraction(args: {
     );
   }
 
-  const visibleSizeCount = args.candidate.visibleRowLabels.length;
+  const visibleSourceLabels = args.candidate.rawSizeAxisLabels;
   const extractedLabels = args.extraction.rows.map((row) => row.originalLabel);
-  const extraLabels = extractedLabels.filter(
-    (label) => !args.candidate.visibleRowLabels.includes(label),
-  );
+  const extraLabels = extractedLabels.filter((label) => !visibleSourceLabels.includes(label));
   if (extraLabels.length > 0) {
     validationErrors.push(
       buildIssue(
@@ -244,20 +233,34 @@ export function validateExtraction(args: {
     );
   }
 
-  if (visibleSizeCount > extractedLabels.length) {
-    const message = `Visible source sizes (${visibleSizeCount}) became ${extractedLabels.length} extracted rows.`;
+  const missingLabels = visibleSourceLabels.filter((label) => !extractedLabels.includes(label));
+  if (missingLabels.length > 0) {
+    const message = `Visible source sizes (${visibleSourceLabels.length}) became ${extractedLabels.length} extracted rows.`;
     if (
-      visibleSizeCount >= 4 &&
-      extractedLabels.length < Math.ceil(visibleSizeCount * 0.75)
+      visibleSourceLabels.length >= 4 &&
+      extractedLabels.length < Math.ceil(visibleSourceLabels.length * 0.75)
     ) {
       validationErrors.push(
-        buildIssue(candidateId, "error", "size-breadth-loss", message),
+        buildIssue(candidateId, "error", "size-breadth-loss", message, missingLabels),
       );
     } else {
       warnings.push(
-        buildIssue(candidateId, "warning", "size-breadth-warning", message),
+        buildIssue(candidateId, "warning", "size-breadth-warning", message, missingLabels),
       );
     }
+  }
+
+  const droppedVariants = missingLabels.filter((label) => /\b(tall|petite|short|long)\b/i.test(label));
+  if (droppedVariants.length > 0) {
+    validationErrors.push(
+      buildIssue(
+        candidateId,
+        "error",
+        "fit-variant-loss",
+        "Rejected because visible fit variants such as Tall or Petite were dropped during extraction.",
+        droppedVariants,
+      ),
+    );
   }
 
   if (hasField(args.extraction, "chest") && hasField(args.extraction, "inseam")) {
@@ -273,9 +276,7 @@ export function validateExtraction(args: {
 
   if (resolvedCategory) {
     if (isTopCategory(resolvedCategory)) {
-      const incompatible = presentFields.filter(
-        (field) => !TOP_ALLOWED_FIELDS.includes(field),
-      );
+      const incompatible = presentFields.filter((field) => !TOP_ALLOWED_FIELDS.includes(field));
       if (incompatible.length > 0) {
         validationErrors.push(
           buildIssue(
@@ -296,12 +297,20 @@ export function validateExtraction(args: {
           ),
         );
       }
+      if (args.candidate.detectedCategory === "shoes") {
+        validationErrors.push(
+          buildIssue(
+            candidateId,
+            "error",
+            "wrong-source-family",
+            "Rejected because the selected section belonged to footwear, not tops.",
+          ),
+        );
+      }
     }
 
     if (isBottomCategory(resolvedCategory)) {
-      const incompatible = presentFields.filter(
-        (field) => !BOTTOM_ALLOWED_FIELDS.includes(field),
-      );
+      const incompatible = presentFields.filter((field) => !BOTTOM_ALLOWED_FIELDS.includes(field));
       if (incompatible.length > 0) {
         validationErrors.push(
           buildIssue(
@@ -325,9 +334,7 @@ export function validateExtraction(args: {
     }
 
     if (resolvedCategory === "shoes") {
-      const incompatible = presentFields.filter(
-        (field) => !SHOE_ALLOWED_FIELDS.includes(field),
-      );
+      const incompatible = presentFields.filter((field) => !SHOE_ALLOWED_FIELDS.includes(field));
       if (incompatible.length > 0) {
         validationErrors.push(
           buildIssue(
@@ -366,9 +373,13 @@ export function validateExtraction(args: {
     );
   }
 
+  const ambiguousCodes = new Set([
+    "ambiguous-category",
+    "low-navigation-confidence",
+  ]);
   const validationStatus: ValidationStatus =
     validationErrors.length > 0
-      ? validationErrors.some((issue) => issue.code.startsWith("ambiguous"))
+      ? validationErrors.some((issue) => ambiguousCodes.has(issue.code))
         ? "ambiguous"
         : "rejected"
       : warnings.length > 0

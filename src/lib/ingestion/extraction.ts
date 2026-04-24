@@ -20,12 +20,10 @@ function normalizeRow(row: string[], width: number): string[] {
   return next.slice(0, width);
 }
 
-function usesHeaderRow(matrix: string[][]): boolean {
-  const firstRow = matrix[0] ?? [];
-  return firstRow.some((cell, index) => {
-    if (index === 0) return /size|taille/i.test(cell);
-    return Boolean(fieldFromHeader(cell));
-  });
+function normalizeMatrix(matrix: string[][]): string[][] {
+  if (!matrix.length) return [];
+  const width = Math.max(...matrix.map((row) => row.length));
+  return matrix.map((row) => normalizeRow(row, width));
 }
 
 function strategyForCandidate(
@@ -37,10 +35,122 @@ function strategyForCandidate(
     case "aria-grid":
       return "aria-grid";
     case "markdown-table":
+    case "markdown-grid":
       return "markdown-table";
+    case "div-grid":
+      return "table";
     default:
       return "none";
   }
+}
+
+function createEmptyRow(label: string): SizeRow {
+  const canonical = canonicalizeSizeLabel(label);
+  return {
+    label,
+    originalLabel: label,
+    canonicalLabel: canonical.canonicalLabel,
+    fitVariant: canonical.fitVariant,
+    evidenceRowLabel: label,
+    rawMeasurements: {},
+  };
+}
+
+function applyMeasurement(
+  row: SizeRow,
+  field: MeasurementField,
+  rawCell: string,
+  header: string,
+  fallbackUnit: CandidateSection["originalUnitSystem"],
+): boolean {
+  const parsed = parseMeasurementCell(rawCell, header, fallbackUnit);
+  if (!parsed) return false;
+
+  row.rawMeasurements[field] = rawCell;
+  const [minKey, maxKey] = FIELD_TO_ROW_KEYS[field];
+  (row as Record<string, number | string | object>)[minKey as string] = parsed[0];
+  (row as Record<string, number | string | object>)[maxKey as string] = parsed[1];
+  return true;
+}
+
+function buildRowsFromSizeRows(candidate: CandidateSection): {
+  rows: SizeRow[];
+  extractedFieldKeys: MeasurementField[];
+} {
+  const matrix = normalizeMatrix(candidate.matrix);
+  const headerRow = matrix[0] ?? [];
+  const bodyRows = matrix.slice(1);
+  const fieldMap = headerRow.map((header) => fieldFromHeader(header));
+  const rows: SizeRow[] = [];
+  const extractedFields = new Set<MeasurementField>();
+
+  for (const rawRow of bodyRows) {
+    const label = rawRow[0]?.trim() ?? "";
+    if (!label || !isSizeLikeLabel(label)) continue;
+
+    const nextRow = createEmptyRow(label);
+    let hasMeasure = false;
+
+    for (let i = 1; i < rawRow.length; i++) {
+      const field = fieldMap[i];
+      const cell = rawRow[i]?.trim() ?? "";
+      if (!field || !cell) continue;
+      if (applyMeasurement(nextRow, field, cell, headerRow[i] ?? "", candidate.originalUnitSystem)) {
+        extractedFields.add(field);
+        hasMeasure = true;
+      }
+    }
+
+    if (hasMeasure) {
+      rows.push(nextRow);
+    }
+  }
+
+  return {
+    rows,
+    extractedFieldKeys: Array.from(extractedFields),
+  };
+}
+
+function buildRowsFromSizeColumns(candidate: CandidateSection): {
+  rows: SizeRow[];
+  extractedFieldKeys: MeasurementField[];
+} {
+  const matrix = normalizeMatrix(candidate.matrix);
+  const headerRow = matrix[0] ?? [];
+  const bodyRows = matrix.slice(1);
+  const sizeLabels = headerRow.slice(1);
+  const rows = new Map<number, SizeRow>();
+  const extractedFields = new Set<MeasurementField>();
+
+  for (let columnIndex = 1; columnIndex < headerRow.length; columnIndex++) {
+    const label = sizeLabels[columnIndex - 1]?.trim() ?? "";
+    if (!label || !isSizeLikeLabel(label)) continue;
+    rows.set(columnIndex, createEmptyRow(label));
+  }
+
+  for (const bodyRow of bodyRows) {
+    const stub = bodyRow[0]?.trim() ?? "";
+    const field = fieldFromHeader(stub);
+    if (!field) continue;
+
+    for (let columnIndex = 1; columnIndex < bodyRow.length; columnIndex++) {
+      const row = rows.get(columnIndex);
+      const cell = bodyRow[columnIndex]?.trim() ?? "";
+      if (!row || !cell) continue;
+
+      if (applyMeasurement(row, field, cell, stub, candidate.originalUnitSystem)) {
+        extractedFields.add(field);
+      }
+    }
+  }
+
+  return {
+    rows: Array.from(rows.values()).filter(
+      (row) => Object.keys(row.rawMeasurements).length > 0,
+    ),
+    extractedFieldKeys: Array.from(extractedFields),
+  };
 }
 
 function buildRowsFromMatrix(candidate: CandidateSection): {
@@ -51,58 +161,21 @@ function buildRowsFromMatrix(candidate: CandidateSection): {
     return { rows: [], extractedFieldKeys: [] };
   }
 
-  const width = Math.max(...candidate.matrix.map((row) => row.length));
-  const matrix = candidate.matrix.map((row) => normalizeRow(row, width));
-  const headerRow = usesHeaderRow(matrix) ? matrix[0] : matrix[0];
-  const bodyRows = matrix.slice(1);
-  const fieldMap = headerRow.map((header) => fieldFromHeader(header));
-  const rows: SizeRow[] = [];
-  const extractedFields = new Set<MeasurementField>();
-
-  for (const rawRow of bodyRows) {
-    const row = normalizeRow(rawRow, headerRow.length);
-    const label = row[0]?.trim() ?? "";
-    if (!label || !isSizeLikeLabel(label)) continue;
-
-    const canonical = canonicalizeSizeLabel(label);
-    const nextRow: SizeRow = {
-      label,
-      originalLabel: label,
-      canonicalLabel: canonical.canonicalLabel,
-      fitVariant: canonical.fitVariant,
-      evidenceRowLabel: label,
-      rawMeasurements: {},
-    };
-
-    let hasMeasure = false;
-    for (let i = 1; i < row.length; i++) {
-      const field = fieldMap[i];
-      const cell = row[i]?.trim() ?? "";
-      if (!field || !cell) continue;
-
-      nextRow.rawMeasurements[field] = cell;
-      const parsed = parseMeasurementCell(
-        cell,
-        headerRow[i] ?? "",
-        candidate.originalUnitSystem,
-      );
-      if (!parsed) continue;
-      const [minKey, maxKey] = FIELD_TO_ROW_KEYS[field];
-      (nextRow as Record<string, number | string | object>)[minKey as string] = parsed[0];
-      (nextRow as Record<string, number | string | object>)[maxKey as string] = parsed[1];
-      extractedFields.add(field);
-      hasMeasure = true;
-    }
-
-    if (hasMeasure || label) {
-      rows.push(nextRow);
-    }
+  if (candidate.matrixOrientation === "size-rows") {
+    return buildRowsFromSizeRows(candidate);
   }
 
-  return {
-    rows,
-    extractedFieldKeys: Array.from(extractedFields),
-  };
+  if (candidate.matrixOrientation === "size-columns") {
+    return buildRowsFromSizeColumns(candidate);
+  }
+
+  if (candidate.matrixOrientation === "conversion-grid") {
+    return { rows: [], extractedFieldKeys: [] };
+  }
+
+  const fallbackRows = buildRowsFromSizeRows(candidate);
+  if (fallbackRows.rows.length > 0) return fallbackRows;
+  return buildRowsFromSizeColumns(candidate);
 }
 
 export async function extractCandidate(args: {
