@@ -142,16 +142,70 @@ interface LinkRule {
   weight: number;
 }
 
-const LINK_SCORING_RULES: LinkRule[] = [
-  { pattern: /\b(men|mens|man)\b/i, weight: 3 },
-  { pattern: /\b(top|tops|shirt|shirts|tee|tees|t-shirt)\b/i, weight: 3 },
-  { pattern: /\bsize\b/i, weight: 2 },
-  { pattern: /\b(chart|guide|conversion)\b/i, weight: 2 },
-  { pattern: /\b(shoe|shoes|footwear|sneaker|trainer)\b/i, weight: -3 },
-  { pattern: /\b(pant|pants|trouser|trousers|bottom|bottoms|short|shorts)\b/i, weight: -3 },
-  { pattern: /\b(kid|kids|baby|infant|junior|children)\b/i, weight: -5 },
-  { pattern: /\b(women|woman|female|ladies|lady)\b/i, weight: -2 },
-];
+const GENDER_PATTERNS = {
+  men: /\b(men|mens|man|homme|hommes)\b/i,
+  women: /\b(women|woman|female|ladies|lady|femme|femmes)\b/i,
+  kids: /\b(kid|kids|baby|infant|junior|children|enfant|enfants)\b/i,
+} as const;
+
+const CATEGORY_PATTERNS = {
+  tops: /\b(top|tops|shirt|shirts|tee|tees|t-?shirt|polo|hoodie|sweater|sweatshirt|jacket|coat|haut|hauts)\b/i,
+  bottoms:
+    /\b(pant|pants|trouser|trousers|bottom|bottoms|short|shorts|jean|jeans|legging|leggings|pantalon)\b/i,
+  shoes: /\b(shoe|shoes|footwear|sneaker|sneakers|trainer|trainers|chaussure|chaussures)\b/i,
+} as const;
+
+function buildLinkScoringRules(target: {
+  gender?: BrandSource["gender"];
+  category?: string;
+}): LinkRule[] {
+  const rules: LinkRule[] = [
+    { pattern: /\bsize\b/i, weight: 2 },
+    { pattern: /\btaille\b/i, weight: 2 },
+    { pattern: /\b(chart|guide|conversion)\b/i, weight: 2 },
+  ];
+
+  // Gender weighting: boost the requested gender, demote the others.
+  // Defaults (no target) assume men/tops to match the fixture spec.
+  const gender = target.gender ?? "men";
+  if (gender === "men") {
+    rules.push({ pattern: GENDER_PATTERNS.men, weight: 3 });
+    rules.push({ pattern: GENDER_PATTERNS.women, weight: -2 });
+    rules.push({ pattern: GENDER_PATTERNS.kids, weight: -5 });
+  } else if (gender === "women") {
+    rules.push({ pattern: GENDER_PATTERNS.women, weight: 3 });
+    rules.push({ pattern: GENDER_PATTERNS.men, weight: -2 });
+    rules.push({ pattern: GENDER_PATTERNS.kids, weight: -5 });
+  } else if (gender === "kids") {
+    rules.push({ pattern: GENDER_PATTERNS.kids, weight: 3 });
+    rules.push({ pattern: GENDER_PATTERNS.men, weight: -3 });
+    rules.push({ pattern: GENDER_PATTERNS.women, weight: -3 });
+  } else {
+    // unisex: do not penalize or boost any gender token
+    rules.push({ pattern: GENDER_PATTERNS.kids, weight: -3 });
+  }
+
+  // Category weighting: boost the requested family, demote the others.
+  const category = (target.category ?? "tops").toLowerCase();
+  if (category === "tops" || ["tshirts", "shirts", "hoodies", "jackets"].includes(category)) {
+    rules.push({ pattern: CATEGORY_PATTERNS.tops, weight: 3 });
+    rules.push({ pattern: CATEGORY_PATTERNS.bottoms, weight: -3 });
+    rules.push({ pattern: CATEGORY_PATTERNS.shoes, weight: -3 });
+  } else if (
+    category === "bottoms" ||
+    ["pants", "jeans", "shorts", "leggings"].includes(category)
+  ) {
+    rules.push({ pattern: CATEGORY_PATTERNS.bottoms, weight: 3 });
+    rules.push({ pattern: CATEGORY_PATTERNS.tops, weight: -3 });
+    rules.push({ pattern: CATEGORY_PATTERNS.shoes, weight: -3 });
+  } else if (category === "shoes") {
+    rules.push({ pattern: CATEGORY_PATTERNS.shoes, weight: 3 });
+    rules.push({ pattern: CATEGORY_PATTERNS.tops, weight: -2 });
+    rules.push({ pattern: CATEGORY_PATTERNS.bottoms, weight: -2 });
+  }
+
+  return rules;
+}
 
 function normalizeUrl(raw: string, base: string): URL | null {
   try {
@@ -187,14 +241,15 @@ function canonicalizeUrl(url: URL): string {
   return url.toString();
 }
 
-function scoreLink(href: string, anchorText: string): {
-  score: number;
-  reasons: string[];
-} {
+function scoreLink(
+  href: string,
+  anchorText: string,
+  rules: LinkRule[],
+): { score: number; reasons: string[] } {
   const reasons: string[] = [];
   const probe = `${href} ${anchorText}`;
   let score = 0;
-  for (const rule of LINK_SCORING_RULES) {
+  for (const rule of rules) {
     if (rule.pattern.test(probe)) {
       score += rule.weight;
       reasons.push(
@@ -208,6 +263,7 @@ function scoreLink(href: string, anchorText: string): {
 export function scoreHubLinks(args: {
   html: string;
   sourceUrl: string;
+  target?: { gender?: BrandSource["gender"]; category?: string };
 }): HubLinkCandidate[] {
   const $ = cheerio.load(args.html);
   const sourceUrl = (() => {
@@ -222,6 +278,10 @@ export function scoreHubLinks(args: {
   const sourceHost = sourceUrl.hostname.toLowerCase();
   const sourceCanonical = canonicalizeUrl(new URL(sourceUrl.toString()));
   const seen = new Map<string, HubLinkCandidate>();
+  const rules = buildLinkScoringRules({
+    gender: args.target?.gender,
+    category: args.target?.category,
+  });
 
   $("a[href]").each((_, node) => {
     const rawHref = $(node).attr("href") ?? "";
@@ -236,7 +296,7 @@ export function scoreHubLinks(args: {
     if (canonical === sourceCanonical) return;
 
     const anchorText = ($(node).text() ?? "").replace(/\s+/g, " ").trim();
-    const { score, reasons } = scoreLink(canonical, anchorText);
+    const { score, reasons } = scoreLink(canonical, anchorText, rules);
     if (score < MIN_LINK_SCORE) return;
 
     const existing = seen.get(canonical);
@@ -412,6 +472,10 @@ export async function resolveSizeGuide(args: ResolveArgs): Promise<ResolveResult
   const links = scoreHubLinks({
     html: initial.html,
     sourceUrl: initial.fetchedUrl,
+    target: {
+      gender: args.source.gender,
+      category: args.source.garmentCategory,
+    },
   });
 
   log(

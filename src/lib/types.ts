@@ -128,6 +128,7 @@ export interface BrandSource {
   size_guide_url: string;
   garmentCategory?: string;
   sizeSystem?: string;
+  gender?: "men" | "women" | "kids" | "unisex";
 }
 
 export interface Brand {
