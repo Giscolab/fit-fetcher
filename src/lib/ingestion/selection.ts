@@ -43,7 +43,7 @@ function scoreCategoryMatch(
   }
 
   if (match.mode === "curated") {
-    reasons.push("Curated broad-top mapping matched the requested tshirts category.");
+    reasons.push("Top-family evidence matched the requested guide category.");
     if (candidate.categoryMappingReason) {
       reasons.push(candidate.categoryMappingReason);
     }

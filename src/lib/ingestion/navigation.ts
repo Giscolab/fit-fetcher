@@ -115,6 +115,94 @@ function isGuideLikeLink(text: string): boolean {
   ]);
 }
 
+function isProductPageLink(url: string, text: string): boolean {
+  const raw = `${text} ${url}`;
+  const path = (() => {
+    try {
+      return new URL(url).pathname.toLowerCase();
+    } catch {
+      return url.toLowerCase();
+    }
+  })();
+  const hasGuideSignal =
+    /\b(size|chart|guide|alpha|measurement|measurements)\b/i.test(raw) ||
+    /size[-_/]?(fit|chart|guide)/i.test(url);
+  const hasPrice = /[$]\s?\d/.test(text) || /\b(?:usd|gbp|cad|aud)\s?\d/i.test(text);
+  const hasProductPath =
+    /\/(?:p|product|products|sku)\//i.test(path) ||
+    /\/t\/(?!size-guide(?:\/|$))[^/?#]+/i.test(path);
+  const hasProductTitle =
+    !hasGuideSignal &&
+    (/\b(?:nike|adidas|puma|reebok|new balance|under armour)\b.*\b(?:t[\s-]?shirt|tee|shirt|hoodie|pants?|shorts?)\b/i.test(
+      raw,
+    ) ||
+      /\b(?:dri[\s-]?fit|drycell|climacool|heatgear|coldgear|nb dry)\b/i.test(raw) ||
+      /\bmen'?s\b.*\b(?:fitness|training|running|basketball|graphic)\b.*\b(?:t[\s-]?shirt|tee|shirt)\b/i.test(
+        raw,
+      ));
+  const genericProductTitle =
+    !hasGuideSignal &&
+    /\bproduct\b/i.test(text) &&
+    /\b(?:t[\s-]?shirt|tee|shirt|hoodie|pants?|shorts?)\b/i.test(text);
+
+  return hasPrice || hasProductPath || hasProductTitle || genericProductTitle;
+}
+
+function isUtilityNavigationLink(label: string, url: string): boolean {
+  const normalizedLabel = normalizeToken(label);
+  const path = (() => {
+    try {
+      return new URL(url).pathname.toLowerCase();
+    } catch {
+      return url.toLowerCase();
+    }
+  })();
+  const hasGuideSignal = /\b(size|sizing|fit|chart|guide|alpha|measurements?)\b/.test(
+    normalizedLabel,
+  );
+
+  if (hasGuideSignal) return false;
+  if (/^\/?(?:#|main|content|skip)/.test(path)) return true;
+  if (
+    /^(skip(?: to)?(?: main)? content|main content|shop by gender|gender|menu|search|account|sign in|log in|cart|bag|wishlist)$/.test(
+      normalizedLabel,
+    )
+  ) {
+    return true;
+  }
+  if (
+    /^(gifts for him|gifts for her|spring selection|summer selection|new arrivals|sale|deals|uniqlo u)$/.test(
+      normalizedLabel,
+    )
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
+  const raw = `${text} ${url}`;
+  const normalized = ` ${normalizeToken(raw)} `;
+  const path = (() => {
+    try {
+      return new URL(url).pathname.toLowerCase();
+    } catch {
+      return url.toLowerCase();
+    }
+  })();
+  const guideSignal =
+    /\b(size|sizing|fit|chart|guide|alpha|measurements?)\b/.test(normalized) ||
+    /(?:size[-_/]?(?:fit|chart|guide)|\/size-fit\/|mens?[-_]?tops?[-_]?alpha|mens?_tops?_alpha|tops?[-_]?alpha|apparel[-_/]size)/i.test(
+      path,
+    );
+  const incompatibleSignal = /\b(shoe|shoes|footwear|kid|kids|baby|pant|pants|bottom|bottoms|inseam|bra|bras)\b/.test(
+    normalized,
+  );
+
+  return guideSignal && !incompatibleSignal;
+}
+
 function scoreOneHopGuideLink(text: string): {
   score: number;
   reasons: string[];
@@ -275,9 +363,21 @@ function createLinkCandidate(args: {
   const reasons: string[] = [];
   const rejectionReasons: string[] = [];
   const oneHop = scoreOneHopGuideLink(context);
+  const productPage = isProductPageLink(args.url, context);
+  const utilityNavigation = isUtilityNavigationLink(label, args.url);
   let score = oneHop.score;
   reasons.push(...oneHop.reasons);
   rejectionReasons.push(...oneHop.rejections);
+
+  if (productPage) {
+    score -= 20;
+    rejectionReasons.push("Link looks like a product page, not a size-guide page.");
+  }
+
+  if (utilityNavigation) {
+    score -= 20;
+    rejectionReasons.push("Link looks like utility navigation, not a size-guide page.");
+  }
 
   if (isSameBrandUrl(args.currentUrl, args.url)) {
     reasons.push("Link stays on the same brand domain.");
@@ -301,7 +401,7 @@ function createLinkCandidate(args: {
     reasons.push("Link context matches the requested garment category.");
   } else if (categoryMatch.mode === "curated") {
     score += 4;
-    reasons.push("Link context supports the curated broad-top mapping for tshirts.");
+    reasons.push("Link context supports a top-family match for the requested guide.");
   } else if (category.detectedCategory === "generic-body-guide") {
     score -= 2;
     rejectionReasons.push("Link appears to point to a generic body guide.");
@@ -479,6 +579,7 @@ export function discoverLinkCandidates(args: {
 
 export function selectHubFollowLinks(args: {
   linkCandidates: LinkCandidate[];
+  requireConcreteGuide?: boolean;
 }): {
   linkCandidates: LinkCandidate[];
   selected: LinkCandidate[];
@@ -486,37 +587,53 @@ export function selectHubFollowLinks(args: {
   navigationConfidence: number;
 } {
   const rescored = args.linkCandidates.map((candidate) => {
+    const context = [
+      candidate.label,
+      candidate.headingPath.join(" "),
+      candidate.nearbyText,
+      candidate.url,
+    ].join(" ");
     const isInternal = candidate.reasons.includes("Link stays on the same brand domain.");
     const isNewUrl = !candidate.rejectionReasons.includes(
       "Link resolves to the same URL that was already fetched.",
     );
-    const oneHop = scoreOneHopGuideLink(
-      [
-        candidate.label,
-        candidate.headingPath.join(" "),
-        candidate.nearbyText,
-        candidate.url,
-      ].join(" "),
-    );
+    const isProductPage = isProductPageLink(candidate.url, context);
+    const isUtilityNavigation = isUtilityNavigationLink(candidate.label, candidate.url);
+    const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, context);
+    const oneHop = scoreOneHopGuideLink(context);
+    const disqualifications = [
+      ...oneHop.rejections,
+      ...(!isInternal ? ["Rejected because one-hop links must stay on the same domain."] : []),
+      ...(!isNewUrl ? ["Rejected because one-hop links must not point to the current page."] : []),
+      ...(isProductPage ? ["Rejected because the link looks like a product page."] : []),
+      ...(isUtilityNavigation
+        ? ["Rejected because the link looks like utility navigation."]
+        : []),
+      ...(args.requireConcreteGuide && !hasConcreteGuideSignal
+        ? ["Rejected because second-hop links must point to a concrete size guide."]
+        : []),
+    ];
+    const score =
+      isInternal &&
+      isNewUrl &&
+      !isProductPage &&
+      !isUtilityNavigation &&
+      (!args.requireConcreteGuide || hasConcreteGuideSignal)
+        ? oneHop.score + (hasConcreteGuideSignal ? 3 : 0)
+        : -99;
+
     return {
       ...candidate,
-      score: isInternal && isNewUrl ? oneHop.score : -99,
+      score,
       reasons: oneHop.reasons,
-      rejectionReasons:
-        isInternal && isNewUrl
-          ? oneHop.rejections
-          : [
-              ...oneHop.rejections,
-              isInternal
-                ? "Rejected because one-hop links must not point to the current page."
-                : "Rejected because one-hop links must stay on the same domain.",
-            ],
+      rejectionReasons: disqualifications,
     };
   });
   const eligible = rescored
     .filter((candidate) => candidate.score >= 3)
     .sort((a, b) => b.score - a.score)
     .slice(0, 2);
+  const topRescored = [...rescored].sort((a, b) => b.score - a.score)[0];
   const selectedIds = new Set(eligible.map((candidate) => candidate.id));
   const reasoning: string[] = [];
 
@@ -528,10 +645,9 @@ export function selectHubFollowLinks(args: {
       reasoning.push(`One-hop candidate "${link.label}" scored ${link.score}.`);
     }
   } else {
-    const top = args.linkCandidates[0];
     reasoning.push(
-      top
-        ? `No one-hop internal guide link reached score >= 3. Best link "${top.label}" scored ${top.score}.`
+      topRescored
+        ? `No one-hop internal guide link reached score >= 3. Best link "${topRescored.label}" scored ${topRescored.score}.`
         : "No one-hop internal guide links were discovered.",
     );
   }
@@ -621,6 +737,20 @@ export function classifyDocument(args: {
 
   if (structuredBlockCount === 0 && tableLikeSignals === 0 && rawLinkCount >= 2) {
     reasoning.push("Guide-related links were found, but no table-like guide blocks were present.");
+    return {
+      documentKind: "guide-hub-page",
+      sourceType: "guide-hub-page",
+      reasoning,
+    };
+  }
+
+  if (
+    structuredBlockCount === 0 &&
+    tableLikeSignals === 0 &&
+    rawLinkCount === 1 &&
+    args.linkCandidates[0]!.score >= 3
+  ) {
+    reasoning.push("One strong guide-related link was found, but no table-like guide blocks were present.");
     return {
       documentKind: "guide-hub-page",
       sourceType: "guide-hub-page",

@@ -90,6 +90,34 @@ function distinctDetectedFamilies(candidates: IngestionPipelineReport["discovere
   );
 }
 
+function guideSourceKey(result: {
+  guide?: GeneratedGuide;
+  report: IngestionPipelineReport;
+}): string {
+  return result.guide?.strictGuide.source_url ?? result.report.resolvedSourceUrl;
+}
+
+function uniqueAcceptedResults(
+  results: Array<{
+    guide?: GeneratedGuide;
+    report: IngestionPipelineReport;
+  }>,
+): Array<{
+  guide?: GeneratedGuide;
+  report: IngestionPipelineReport;
+}> {
+  const accepted = results.filter(
+    (result) => result.guide && result.report.validationStatus === "accepted",
+  );
+  const bySource = new Map<string, (typeof accepted)[number]>();
+
+  for (const result of accepted) {
+    bySource.set(guideSourceKey(result), result);
+  }
+
+  return Array.from(bySource.values());
+}
+
 async function processResolvedDocument(args: {
   source: BrandSource;
   originalFetchedUrl: string;
@@ -101,7 +129,8 @@ async function processResolvedDocument(args: {
   followedUrl?: string;
   linkOriginId?: string;
   navigationConfidence?: number;
-  allowHubFollow: boolean;
+  remainingFollowHops: number;
+  followDepth: number;
   priorReasoning?: string[];
 }): Promise<{
   guide?: GeneratedGuide;
@@ -130,7 +159,10 @@ async function processResolvedDocument(args: {
   ];
 
   if (classification.documentKind === "guide-hub-page") {
-    const navigation = selectHubFollowLinks({ linkCandidates });
+    const navigation = selectHubFollowLinks({
+      linkCandidates,
+      requireConcreteGuide: args.followDepth >= 1,
+    });
     const hubReport: IngestionPipelineReport = {
       fetchedUrl: args.originalFetchedUrl,
       resolvedSourceUrl: args.currentUrl,
@@ -153,12 +185,12 @@ async function processResolvedDocument(args: {
       manualReviewRecommended: true,
     };
 
-    if (!args.allowHubFollow || !args.fetchDocument) {
+    if (args.remainingFollowHops <= 0 || !args.fetchDocument) {
       return {
         report: appendError(hubReport, {
           code: "unresolved-guide-hub",
           message:
-            "NO_VALID_SIZE_GUIDE: guide hub pages must resolve to one concrete guide page within one internal hop.",
+            "NO_VALID_SIZE_GUIDE: guide hub pages must resolve to one concrete guide page within two controlled internal hops.",
           severity: "error",
         }),
       };
@@ -169,7 +201,9 @@ async function processResolvedDocument(args: {
         report: appendError(hubReport, {
           code: "no-followable-guide-link",
           message:
-            "NO_VALID_SIZE_GUIDE: no same-domain internal guide link scored high enough for a one-hop follow.",
+            args.followDepth >= 1
+              ? "NO_VALID_SIZE_GUIDE: no second-hop concrete size-guide link scored high enough."
+              : "NO_VALID_SIZE_GUIDE: no same-domain internal guide link scored high enough for a one-hop follow.",
           severity: "error",
         }),
       };
@@ -188,12 +222,13 @@ async function processResolvedDocument(args: {
         currentUrl: followed.sourceUrl,
         html: followed.html,
         markdown: followed.markdown,
-        fetchDocument: undefined,
+        fetchDocument: args.fetchDocument,
         sourceTraceChain: [...args.sourceTraceChain, buildFollowTraceStep(link)],
         followedUrl: followed.sourceUrl,
         linkOriginId: link.id,
         navigationConfidence: Math.min(0.98, 0.35 + link.score / 10),
-        allowHubFollow: false,
+        remainingFollowHops: args.remainingFollowHops - 1,
+        followDepth: args.followDepth + 1,
         priorReasoning: [...documentReasoning, ...navigation.reasoning],
       });
 
@@ -202,7 +237,7 @@ async function processResolvedDocument(args: {
         report: {
           ...child.report,
           fetchedUrl: args.originalFetchedUrl,
-          followedUrl: followed.sourceUrl,
+          followedUrl: child.report.followedUrl ?? followed.sourceUrl,
           linkCandidates: navigation.linkCandidates,
           navigationConfidence: Math.min(0.98, 0.35 + link.score / 10),
           documentReasoning: child.report.documentReasoning,
@@ -210,9 +245,7 @@ async function processResolvedDocument(args: {
       });
     }
 
-    const accepted = followedResults.filter(
-      (result) => result.guide && result.report.validationStatus === "accepted",
-    );
+    const accepted = uniqueAcceptedResults(followedResults);
 
     if (accepted.length === 1) {
       return accepted[0]!;
@@ -233,7 +266,7 @@ async function processResolvedDocument(args: {
           message:
             accepted.length > 1
               ? "NO_VALID_SIZE_GUIDE: multiple followed internal guide pages validated, so the source is ambiguous."
-              : "NO_VALID_SIZE_GUIDE: no followed internal guide page validated as a single tshirts / INT table.",
+              : "NO_VALID_SIZE_GUIDE: no followed internal guide page validated as a single tops/tshirts / INT table.",
           severity: "error",
           details: details.slice(0, 8),
         },
@@ -328,7 +361,7 @@ async function processResolvedDocument(args: {
             : "no-unique-section-match",
           message: selection.selectedCandidateId
             ? "NO_VALID_SIZE_GUIDE: source request is invalid for strict extraction."
-            : "NO_VALID_SIZE_GUIDE: no single candidate matched tshirts / INT strongly enough.",
+            : "NO_VALID_SIZE_GUIDE: no single candidate matched tops/tshirts / INT strongly enough.",
           severity: "error",
         },
         selection.selectedCandidateId ? "rejected" : "ambiguous",
@@ -426,6 +459,7 @@ export async function runIngestionPipeline(args: {
     markdown: args.markdown,
     fetchDocument: args.fetchDocument,
     sourceTraceChain: [requestedTraceStep(args.source, args.fetchedUrl)],
-    allowHubFollow: true,
+    remainingFollowHops: 2,
+    followDepth: 0,
   });
 }

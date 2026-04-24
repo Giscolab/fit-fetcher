@@ -90,8 +90,14 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         `Discovered ${report.discoveredCandidates.length} candidate section(s).`,
       );
       logs.push(`Document kind: ${report.documentKind}.`);
-      if (report.followedUrl) {
-        logs.push(`Followed one internal guide link to ${report.followedUrl}.`);
+      const followedSteps = report.sourceTraceChain.filter(
+        (step) => step.kind === "followed-link" || step.kind === "brand-fallback",
+      );
+      if (report.followedUrl || followedSteps.length > 0) {
+        logs.push(`Followed internal guide chain to ${report.followedUrl ?? followedSteps.at(-1)?.url}.`);
+      }
+      if (followedSteps.length > 1) {
+        logs.push(`Trace: ${followedSteps.map((step) => step.url).join(" -> ")}`);
       }
       if (report.linkCandidates.length > 0) {
         logs.push(`Discovered ${report.linkCandidates.length} internal guide link candidate(s).`);

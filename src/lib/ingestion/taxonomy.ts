@@ -638,13 +638,12 @@ export function resolveRequestedCategoryMatch(args: {
 
   if (
     args.requestedCategory === "tshirts" &&
-    args.detectedCategory === "tops" &&
-    args.categoryMappingMode === "curated-broad-top"
+    (args.detectedCategory === "tops" || args.detectedCategory === "shirts")
   ) {
     return {
       matchedCategory: "tshirts",
       mode: "curated",
-      reason: "Curated broad tops mapping matched the requested tshirts category.",
+      reason: "Top-family guide evidence matched the requested tshirts category.",
     };
   }
 

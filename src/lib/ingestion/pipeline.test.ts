@@ -64,6 +64,32 @@ test("Nike transposed tops table extracts all visible INT rows without collapsin
   ]);
 });
 
+test("Nike hub filters product links before one-hop ranking", async () => {
+  const result = await runFixture({
+    brand: "Nike",
+    fixture: fixtures.nikeHubWithProductLink,
+    followed: fixtures.nikeHubWithProductLink.followed,
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.report.followedUrl, "https://www.nike.com/size-fit/mens_tops_alpha");
+  assert.deepEqual(
+    result.guide.guide.sourceTraceChain.map((step) => step.url),
+    [
+      "https://www.nike.com/size-fit-guide",
+      "https://www.nike.com/gb/w/mens-graphic-tees",
+      "https://www.nike.com/size-fit/mens_tops_alpha",
+    ],
+  );
+  const productLink = result.report.linkCandidates.find((link) =>
+    link.label.includes("Dri-FIT Legend"),
+  );
+  assert.equal(productLink?.selected, false);
+  assert.ok(
+    productLink?.rejectionReasons.some((reason) => reason.includes("product page")),
+  );
+});
+
 test("Adidas multi-guide page fails instead of extracting from a mixed category page", async () => {
   const result = await runFixture({
     brand: "Adidas",

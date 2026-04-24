@@ -50,7 +50,7 @@ function buildStrictGuide(args: {
   extraction: CandidateExtraction;
 }): StrictSizeGuideOutput {
   if (args.garmentCategory !== "tshirts" || args.sizeSystem !== "INT") {
-    throw new Error("NO_VALID_SIZE_GUIDE: strict export only supports tshirts / INT.");
+    throw new Error("NO_VALID_SIZE_GUIDE: strict export only supports tops/tshirts / INT.");
   }
 
   return {

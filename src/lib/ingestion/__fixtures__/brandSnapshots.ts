@@ -70,6 +70,73 @@ export const fixtures = {
 | Hips (cm) | 80-85 | 86-91 | 92-99 | 100-107 | 100-107 | 124-136 | 136-148 |
 `,
   },
+  nikeHubWithProductLink: {
+    url: "https://www.nike.com/size-fit-guide",
+    html: `<!doctype html><html><body>
+      <h1>Size & Fit Guide</h1>
+      <a href="/#main">Skip to main content</a>
+      <a href="/gb/w/mens-graphic-tees">Tops & Graphic Tees</a>
+      <a href="/t/dri-fit-legend-mens-fitness-t-shirt-abc123">Nike Dri-FIT Legend Men's Fitness T-Shirt $35</a>
+      <a href="/gb/size-fit/mens-shoes">Men's Shoes Size Guide</a>
+    </body></html>`,
+    markdown: `
+# Size & Fit Guide
+[Skip to main content](/#main)
+[Tops & Graphic Tees](/gb/w/mens-graphic-tees)
+[Nike Dri-FIT Legend Men's Fitness T-Shirt $35](/t/dri-fit-legend-mens-fitness-t-shirt-abc123)
+[Men's Shoes Size Guide](/gb/size-fit/mens-shoes)
+`,
+    followed: {
+      "https://www.nike.com/gb/w/mens-graphic-tees": {
+        sourceUrl: "https://www.nike.com/gb/w/mens-graphic-tees",
+        html: `<!doctype html><html><body>
+          <h1>Men's Graphic Tees</h1>
+          <a href="/size-fit/mens_tops_alpha">Men's Tops Size Chart</a>
+          <a href="/t/dri-fit-legend-mens-fitness-t-shirt-abc123">Nike Dri-FIT Legend Men's Fitness T-Shirt $35</a>
+        </body></html>`,
+        markdown: `
+# Men's Graphic Tees
+[Men's Tops Size Chart](/size-fit/mens_tops_alpha)
+[Nike Dri-FIT Legend Men's Fitness T-Shirt $35](/t/dri-fit-legend-mens-fitness-t-shirt-abc123)
+`,
+      },
+      "https://www.nike.com/size-fit/mens_tops_alpha": {
+        sourceUrl: "https://www.nike.com/size-fit/mens_tops_alpha",
+        html: `<!doctype html><html><body>${nikeTopsTable}</body></html>`,
+        markdown: `
+## Men's Tops & Tees
+| Measure | XXS | XS | S Tall | M | M Tall | 3XL | 4XL |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Chest (cm) | 76-81 | 82-88 | 89-96 | 97-104 | 97-104 | 124-136 | 136-148 |
+| Waist (cm) | 61-66 | 67-73 | 74-81 | 82-89 | 82-89 | 112-124 | 124-136 |
+| Hips (cm) | 80-85 | 86-91 | 92-99 | 100-107 | 100-107 | 124-136 | 136-148 |
+`,
+      },
+      "https://www.nike.com/gb/size-fit/mens-tops-alpha": {
+        sourceUrl: "https://www.nike.com/gb/size-fit/mens-tops-alpha",
+        html: `<!doctype html><html><body>${nikeTopsTable}</body></html>`,
+        markdown: `
+## Men's Tops & Tees
+| Measure | XXS | XS | S Tall | M | M Tall | 3XL | 4XL |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Chest (cm) | 76-81 | 82-88 | 89-96 | 97-104 | 97-104 | 124-136 | 136-148 |
+| Waist (cm) | 61-66 | 67-73 | 74-81 | 82-89 | 82-89 | 112-124 | 124-136 |
+| Hips (cm) | 80-85 | 86-91 | 92-99 | 100-107 | 100-107 | 124-136 | 136-148 |
+`,
+      },
+      "https://www.nike.com/gb/size-fit/mens-shoes": {
+        sourceUrl: "https://www.nike.com/gb/size-fit/mens-shoes",
+        html: `<!doctype html><html><body>${shoeTable}</body></html>`,
+        markdown: `
+## Footwear Size Guide
+| US | Foot Length (cm) |
+| --- | --- |
+| 8 | 26 |
+| 9 | 27 |
+`,
+      },
+    },
+  },
   adidasMulti: {
     url: "https://www.adidas.com/size-chart",
     html: `<!doctype html><html><body>${adidasTopTable}${adidasBottomsTable}</body></html>`,
