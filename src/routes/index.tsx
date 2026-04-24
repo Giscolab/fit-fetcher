@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Play, Pause, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { UploadBox } from "@/components/UploadBox";
+import { Pause, Play, Sparkles } from "lucide-react";
 import { BrandTable } from "@/components/BrandTable";
-import { Logs } from "@/components/Logs";
 import { DownloadAll } from "@/components/DownloadAll";
 import { GuidePreviewDialog } from "@/components/GuidePreviewDialog";
-import { scrapeBrandSource } from "@/lib/server/scrape.functions";
+import { Logs } from "@/components/Logs";
+import { UploadBox } from "@/components/UploadBox";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  scrapeBrandSource,
+  type ScrapeResponse,
+} from "@/lib/server/scrape.functions";
 import type { BrandResult, BrandSource } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
@@ -18,18 +21,37 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Upload a brands catalog, scrape size guides via Firecrawl, normalize and download importable JSON.",
+          "Upload a brands catalog, discover size-guide sections, validate extractions, and export traceable JSON.",
       },
       { property: "og:title", content: "Size Intelligence Visual Scraper" },
       {
         property: "og:description",
         content:
-          "Upload a brands catalog, scrape size guides via Firecrawl, normalize and download importable JSON.",
+          "Upload a brands catalog, discover size-guide sections, validate extractions, and export traceable JSON.",
       },
     ],
   }),
   component: HomePage,
 });
+
+function summarizeRun(result: ScrapeResponse) {
+  if (result.guide) {
+    return `${result.guide.guide.sourceSectionTitle} · ${result.guide.guide.validationStatus}`;
+  }
+  return (
+    result.pipeline.validationErrors[0]?.message ??
+    result.pipeline.selectionReasoning[0] ??
+    "No validated guide was generated."
+  );
+}
+
+function deriveStatus(result: ScrapeResponse): BrandResult["status"] {
+  if (result.guide) return "done";
+  if (result.pipeline.manualReviewRecommended && result.pipeline.discoveredCandidates.length > 0) {
+    return "review";
+  }
+  return "error";
+}
 
 function HomePage() {
   const [results, setResults] = useState<BrandResult[]>([]);
@@ -39,65 +61,60 @@ function HomePage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   function pushLog(line: string) {
-    setLogs((l) => [...l, `[${new Date().toLocaleTimeString()}] ${line}`]);
+    setLogs((lines) => [...lines, `[${new Date().toLocaleTimeString()}] ${line}`]);
   }
 
   function handleLoaded(sources: BrandSource[], name: string) {
     setFilename(name);
-    setResults(sources.map((s) => ({ source: s, status: "pending", logs: [] })));
+    setResults(sources.map((source) => ({ source, status: "pending", logs: [] })));
     setLogs([`Loaded ${sources.length} brand sources from ${name}`]);
   }
 
   async function runAll() {
     if (!results.length || running) return;
     setRunning(true);
-    pushLog(`Starting scrape for ${results.length} brands…`);
+    pushLog(`Starting ingestion for ${results.length} brands…`);
 
     for (let i = 0; i < results.length; i++) {
-      setResults((prev) => {
-        const next = [...prev];
+      setResults((previous) => {
+        const next = [...previous];
         next[i] = { ...next[i], status: "running", message: undefined };
         return next;
       });
-      const src = results[i].source;
-      pushLog(`→ [${i + 1}/${results.length}] ${src.brand}`);
+
+      const source = results[i].source;
+      pushLog(`→ [${i + 1}/${results.length}] ${source.brand}`);
+
       try {
-        const res = await scrapeBrandSource({ data: { source: src } });
-        for (const l of res.logs) pushLog(`   ${l}`);
-        setResults((prev) => {
-          const next = [...prev];
-          if (res.guide) {
-            next[i] = {
-              ...next[i],
-              status: "done",
-              guide: res.guide,
-              rowsCount: res.guide.guide.rows.length,
-              message: res.meta
-                ? `${res.meta.strategy} · ${res.meta.unit}`
-                : "ok",
-              logs: res.logs,
-            };
-          } else {
-            next[i] = {
-              ...next[i],
-              status: "error",
-              message: res.error ?? "Unknown error",
-              logs: res.logs,
-            };
-          }
+        const response = await scrapeBrandSource({ data: { source } });
+        for (const line of response.logs) pushLog(`   ${line}`);
+
+        setResults((previous) => {
+          const next = [...previous];
+          next[i] = {
+            ...next[i],
+            status: deriveStatus(response),
+            guide: response.guide,
+            pipeline: response.pipeline,
+            rowsCount:
+              response.guide?.guide.rows.length ??
+              response.pipeline.candidateExtractions[0]?.rows.length,
+            message: summarizeRun(response),
+            logs: response.logs,
+          };
           return next;
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         pushLog(`   ERROR: ${message}`);
-        setResults((prev) => {
-          const next = [...prev];
+        setResults((previous) => {
+          const next = [...previous];
           next[i] = { ...next[i], status: "error", message, logs: [message] };
           return next;
         });
       }
-      // gentle throttle
-      await new Promise((r) => setTimeout(r, 400));
+
+      await new Promise((resolve) => setTimeout(resolve, 400));
     }
 
     pushLog("Run finished.");
@@ -117,13 +134,11 @@ function HomePage() {
                 Size Intelligence Scraper
               </h1>
               <p className="text-xs text-muted-foreground">
-                Firecrawl-powered · multi-heuristic extraction
+                Candidate discovery · constrained extraction · strict validation
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <DownloadAll results={results} />
-          </div>
+          <DownloadAll results={results} />
         </div>
       </header>
 
@@ -132,7 +147,7 @@ function HomePage() {
 
         <Card className="flex flex-col gap-4 border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold">Run scraping pipeline</h2>
+            <h2 className="text-base font-semibold">Run ingestion pipeline</h2>
             <p className="text-sm text-muted-foreground">
               {filename
                 ? `${results.length} brands ready from ${filename}`
@@ -151,13 +166,13 @@ function HomePage() {
           </Button>
         </Card>
 
-        <BrandTable results={results} onPreview={(i) => setPreviewIndex(i)} />
+        <BrandTable results={results} onPreview={(index) => setPreviewIndex(index)} />
 
         <Logs lines={logs} />
 
         <GuidePreviewDialog
           open={previewIndex !== null}
-          onOpenChange={(o) => !o && setPreviewIndex(null)}
+          onOpenChange={(open) => !open && setPreviewIndex(null)}
           result={previewIndex !== null ? results[previewIndex] : null}
         />
       </main>

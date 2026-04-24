@@ -1,11 +1,15 @@
 import type {
   Brand,
   BrandSource,
-  GarmentCategory,
+  CandidateExtraction,
+  CandidateSection,
   GeneratedGuide,
+  GarmentCategory,
   Guide,
   SizeRow,
   SizeSystem,
+  ValidationIssue,
+  ValidationStatus,
 } from "@/lib/types";
 
 function slug(s: string): string {
@@ -31,23 +35,25 @@ function safeWebsite(url: string): string | null {
   }
 }
 
-/** Build the importer-ready { brand, guide } payload. */
 export function buildGeneratedGuide(args: {
   source: BrandSource;
   rows: SizeRow[];
+  garmentCategory: GarmentCategory;
+  sizeSystem: SizeSystem;
+  candidate: CandidateSection;
+  extraction: CandidateExtraction;
+  validationStatus: ValidationStatus;
+  validationErrors: ValidationIssue[];
+  warnings: ValidationIssue[];
 }): GeneratedGuide {
-  const { source, rows } = args;
-  const garmentCategory: GarmentCategory =
-    (source.garmentCategory as GarmentCategory) ?? "tshirts";
-  const sizeSystem: SizeSystem = (source.sizeSystem as SizeSystem) ?? "INT";
   const now = new Date().toISOString();
-  const brandId = `brand-${slug(source.brand)}`;
+  const brandId = `brand-${slug(args.source.brand)}`;
 
   const brand: Brand = {
     id: brandId,
-    name: source.brand,
+    name: args.source.brand,
     country: null,
-    website: safeWebsite(source.size_guide_url),
+    website: safeWebsite(args.source.size_guide_url),
     isSample: false,
     notes: "",
     createdAt: now,
@@ -55,22 +61,40 @@ export function buildGeneratedGuide(args: {
   };
 
   const guide: Guide = {
-    id: `guide-${slug(source.brand)}-${slug(garmentCategory)}-${slug(sizeSystem)}-${uid()}`,
+    id: `guide-${slug(args.source.brand)}-${slug(args.garmentCategory)}-${slug(args.sizeSystem)}-${uid()}`,
     brandId,
     name:
-      source.name && source.name.trim()
-        ? source.name
-        : `${source.brand} – ${garmentCategory} (${sizeSystem})`,
-    garmentCategory,
-    sizeSystem,
+      args.source.name && args.source.name.trim()
+        ? args.source.name
+        : `${args.source.brand} – ${args.garmentCategory} (${args.sizeSystem})`,
+    garmentCategory: args.garmentCategory,
+    sizeSystem: args.sizeSystem,
     fabricStretch: "low",
-    rows,
+    rows: args.rows,
+    sourceUrl: args.candidate.sourceUrl,
+    sourceSectionTitle: args.candidate.sectionTitle,
+    sourceAudience: args.candidate.audience,
+    sourceCategoryLabel: args.candidate.detectedCategoryLabel,
+    sourceType: args.candidate.sourceType,
+    originalUnitSystem: args.candidate.originalUnitSystem,
+    extractionConfidence: args.extraction.extractionConfidence,
+    validationStatus: args.validationStatus,
+    validationErrors: args.validationErrors,
+    warnings: args.warnings,
+    fitVariantSupport: Array.from(
+      new Set(args.rows.map((row) => row.fitVariant).filter(Boolean)),
+    ),
+    originalSizeLabels: args.rows.map((row) => row.originalLabel),
+    sourceHeaders: args.candidate.visibleColumnLabels,
+    sourceRowLabels: args.candidate.visibleRowLabels,
+    rawEvidenceSnippet: args.candidate.rawEvidenceSnippet,
+    rawExtractedFields: args.extraction.extractedFieldKeys,
+    rawCandidateId: args.candidate.id,
   };
 
   return { brand, guide };
 }
 
-/** Suggested filename for a generated guide. */
 export function guideFilename(g: GeneratedGuide): string {
   return `${slug(g.brand.name)}_${slug(g.guide.garmentCategory)}_${slug(g.guide.sizeSystem)}.json`;
 }

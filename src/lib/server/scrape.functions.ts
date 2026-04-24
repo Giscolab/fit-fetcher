@@ -1,22 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
+import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
 import { scrapeWithFirecrawl } from "@/lib/utils/firecrawl";
-import { extractSizeGuide } from "@/lib/extractors/generic";
-import { extractSizeGuideLLM } from "@/lib/extractors/llm";
-import { buildGeneratedGuide } from "@/lib/normalizers/guideBuilder";
-import type { BrandSource, GeneratedGuide } from "@/lib/types";
+import type {
+  BrandSource,
+  GeneratedGuide,
+  IngestionPipelineReport,
+} from "@/lib/types";
 
 export interface ScrapeResponse {
   guide?: GeneratedGuide;
   error?: string;
   logs: string[];
-  meta?: { strategy: string; unit: string };
+  pipeline: IngestionPipelineReport;
 }
 
-/**
- * Validate a user-supplied URL before forwarding it to the scraping provider.
- * Rejects non-http(s) protocols and obvious internal/private hostnames to
- * mitigate SSRF-by-proxy abuse.
- */
 function validateExternalUrl(raw: string): URL {
   let parsed: URL;
   try {
@@ -28,8 +25,6 @@ function validateExternalUrl(raw: string): URL {
     throw new Error("size_guide_url must use http or https");
   }
   const host = parsed.hostname.toLowerCase();
-  // Block obvious internal targets. DNS-rebinding and other tricks are still
-  // possible, but Firecrawl is the actual fetcher and applies its own checks.
   const blocked =
     host === "localhost" ||
     host === "0.0.0.0" ||
@@ -48,7 +43,6 @@ function validateExternalUrl(raw: string): URL {
   return parsed;
 }
 
-/** Server function: scrape a single brand source via Firecrawl + extract guide. */
 export const scrapeBrandSource = createServerFn({ method: "POST" })
   .inputValidator((input: { source: BrandSource }) => {
     if (
@@ -73,51 +67,95 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<ScrapeResponse> => {
     const { source } = data;
     const logs: string[] = [];
+
     try {
-      logs.push(`Fetching ${source.size_guide_url}…`);
+      logs.push(`Stage 1/5 fetch: ${source.size_guide_url}`);
       const scraped = await scrapeWithFirecrawl(source.size_guide_url);
       logs.push(
-        `Got ${scraped.html.length} chars HTML, ${scraped.markdown.length} chars markdown`,
+        `Fetched ${scraped.html.length} chars HTML and ${scraped.markdown.length} chars markdown.`,
       );
 
-      const ext = extractSizeGuide(scraped.html, scraped.markdown);
+      logs.push("Stage 2/5 normalize: preparing raw content for candidate discovery.");
+      logs.push("Stage 3/5 discovery: segmenting candidate guide sections.");
+      const { guide, report } = await runIngestionPipeline({
+        source,
+        fetchedUrl: scraped.sourceUrl,
+        html: scraped.html,
+        markdown: scraped.markdown,
+      });
+
       logs.push(
-        `Extraction strategy=${ext.strategy} unit=${ext.unit} rows=${ext.rows.length} score=${ext.score}`,
+        `Discovered ${report.discoveredCandidates.length} candidate section(s).`,
       );
 
-      let finalRows = ext.rows;
-      let finalStrategy: string = ext.strategy;
-      let finalUnit: string = ext.unit;
-
-      if (!finalRows.length) {
-        logs.push("Heuristic extraction empty — trying Firecrawl LLM fallback…");
-        try {
-          const llm = await extractSizeGuideLLM(source.size_guide_url);
-          logs.push(
-            `LLM extraction unit=${llm.unit} rows=${llm.rows.length} score=${llm.score}`,
-          );
-          if (llm.rows.length) {
-            finalRows = llm.rows;
-            finalStrategy = llm.strategy;
-            finalUnit = llm.unit;
-          }
-        } catch (llmErr) {
-          const m = llmErr instanceof Error ? llmErr.message : String(llmErr);
-          logs.push(`LLM fallback failed: ${m}`);
-        }
+      if (report.selectedCandidateId) {
+        const selected = report.discoveredCandidates.find(
+          (candidate) => candidate.id === report.selectedCandidateId,
+        );
+        logs.push(
+          `Selected section ${selected?.sectionTitle ?? report.selectedCandidateId}.`,
+        );
+        logs.push("Stage 4/5 extraction: extracting only the selected candidate section.");
+        logs.push("Stage 5/5 validation: enforcing semantic and traceability checks.");
+      } else {
+        logs.push("No candidate section was selected automatically.");
       }
 
-      if (!finalRows.length) {
-        return { error: "No size table found on the page", logs };
+      for (const reason of report.selectionReasoning) {
+        logs.push(reason);
+      }
+      for (const issue of report.validationErrors) {
+        logs.push(`Validation error: ${issue.message}`);
+      }
+      for (const warning of report.warnings) {
+        logs.push(`Warning: ${warning.message}`);
       }
 
-      const guide = buildGeneratedGuide({ source, rows: finalRows });
-      logs.push(`Built guide ${guide.guide.id} with ${guide.guide.rows.length} rows`);
+      if (!guide) {
+        return {
+          error:
+            report.validationErrors[0]?.message ??
+            "The page could not be converted into a validated size guide.",
+          logs,
+          pipeline: report,
+        };
+      }
 
-      return { guide, logs, meta: { strategy: finalStrategy, unit: finalUnit } };
+      logs.push(
+        `Accepted guide ${guide.guide.id} from section ${guide.guide.sourceSectionTitle}.`,
+      );
+
+      return {
+        guide,
+        logs,
+        pipeline: report,
+      };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logs.push(`ERROR: ${message}`);
-      return { error: message, logs };
+      return {
+        error: message,
+        logs,
+        pipeline: {
+          fetchedUrl: source.size_guide_url,
+          requestedCategory: null,
+          requestedSizeSystem: null,
+          sourceType: "category-specific-page",
+          discoveredCandidates: [],
+          rejectedCandidateIds: [],
+          selectionReasoning: [],
+          candidateExtractions: [],
+          validationStatus: "rejected",
+          validationErrors: [
+            {
+              code: "server-error",
+              message,
+              severity: "error",
+            },
+          ],
+          warnings: [],
+          manualReviewRecommended: true,
+        },
+      };
     }
   });
