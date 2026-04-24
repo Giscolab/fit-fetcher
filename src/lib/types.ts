@@ -96,6 +96,32 @@ export const VALIDATION_STATUSES = [
 ] as const;
 export type ValidationStatus = (typeof VALIDATION_STATUSES)[number];
 
+export const DOCUMENT_KINDS = [
+  "direct-guide-page",
+  "multi-guide-page",
+  "guide-hub-page",
+  "irrelevant",
+] as const;
+export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
+
+export interface HubLinkCandidate {
+  url: string;
+  anchorText: string;
+  score: number;
+  reasons: string[];
+}
+
+export interface HopAttempt {
+  url: string;
+  followedFromUrl?: string;
+  documentKind: DocumentKind;
+  candidatesDiscovered: number;
+  selectedCandidateId?: string;
+  validationStatus: ValidationStatus;
+  outcome: "accepted" | "rejected" | "skipped" | "fetch-error";
+  errorMessage?: string;
+}
+
 export interface BrandSource {
   brand: string;
   name?: string;
@@ -230,6 +256,9 @@ export interface IngestionPipelineReport {
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
   sourceType: SourceType;
+  documentKind?: DocumentKind;
+  followedFromUrl?: string;
+  hopAttempts?: HopAttempt[];
   discoveredCandidates: CandidateSection[];
   selectedCandidateId?: string;
   rejectedCandidateIds: string[];

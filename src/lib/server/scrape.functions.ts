@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
-import { scrapeWithFirecrawl } from "@/lib/utils/firecrawl";
+import { resolveSizeGuide } from "@/lib/ingestion/hubResolver";
 import type {
   BrandSource,
   GeneratedGuide,
@@ -67,48 +66,51 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<ScrapeResponse> => {
     const { source } = data;
     const logs: string[] = [];
+    const pushLog = (line: string) => logs.push(line);
 
     try {
-      logs.push(`Stage 1/5 fetch: ${source.size_guide_url}`);
-      const scraped = await scrapeWithFirecrawl(source.size_guide_url);
-      logs.push(
-        `Fetched ${scraped.html.length} chars HTML and ${scraped.markdown.length} chars markdown.`,
-      );
+      pushLog(`Stage 0/7 fetch + classify: ${source.size_guide_url}`);
 
-      logs.push("Stage 2/5 normalize: preparing raw content for candidate discovery.");
-      logs.push("Stage 3/5 discovery: segmenting candidate guide sections.");
-      const { guide, report } = await runIngestionPipeline({
+      const { guide, report } = await resolveSizeGuide({
         source,
-        fetchedUrl: scraped.sourceUrl,
-        html: scraped.html,
-        markdown: scraped.markdown,
+        initialUrl: source.size_guide_url,
+        log: pushLog,
       });
 
-      logs.push(
-        `Discovered ${report.discoveredCandidates.length} candidate section(s).`,
+      pushLog(
+        `Stage 2/7 discovery: ${report.discoveredCandidates.length} candidate section(s) on resolved page.`,
       );
 
       if (report.selectedCandidateId) {
         const selected = report.discoveredCandidates.find(
           (candidate) => candidate.id === report.selectedCandidateId,
         );
-        logs.push(
-          `Selected section ${selected?.sectionTitle ?? report.selectedCandidateId}.`,
+        pushLog(
+          `Stage 3/7 selection: ${selected?.sectionTitle ?? report.selectedCandidateId}`,
         );
-        logs.push("Stage 4/5 extraction: extracting only the selected candidate section.");
-        logs.push("Stage 5/5 validation: enforcing semantic and traceability checks.");
+        pushLog("Stage 4/7 extraction: extracting only the selected candidate section.");
+        pushLog("Stage 5/7 validation: enforcing semantic and traceability checks.");
       } else {
-        logs.push("No candidate section was selected automatically.");
+        pushLog("Stage 3/7 selection: no candidate section was selected automatically.");
       }
 
-      for (const reason of report.selectionReasoning) {
-        logs.push(reason);
-      }
+      for (const reason of report.selectionReasoning) pushLog(reason);
       for (const issue of report.validationErrors) {
-        logs.push(`Validation error: ${issue.message}`);
+        pushLog(`Validation error: ${issue.message}`);
       }
       for (const warning of report.warnings) {
-        logs.push(`Warning: ${warning.message}`);
+        pushLog(`Warning: ${warning.message}`);
+      }
+
+      if (report.hopAttempts && report.hopAttempts.length > 1) {
+        pushLog(
+          `Stage 1/7 follow trace: ${report.hopAttempts.length} document(s) inspected (1-hop max).`,
+        );
+        for (const attempt of report.hopAttempts) {
+          pushLog(
+            `   • ${attempt.documentKind} ${attempt.outcome} (${attempt.candidatesDiscovered} candidate(s)) ${attempt.url}`,
+          );
+        }
       }
 
       if (!guide) {
@@ -121,8 +123,8 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         };
       }
 
-      logs.push(
-        `Accepted guide ${guide.guide.id} from section ${guide.guide.sourceSectionTitle}.`,
+      pushLog(
+        `Stage 7/7 emit: accepted guide ${guide.guide.id} from section ${guide.guide.sourceSectionTitle}.`,
       );
 
       return {
@@ -132,7 +134,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
       };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      logs.push(`ERROR: ${message}`);
+      pushLog(`ERROR: ${message}`);
       return {
         error: message,
         logs,
