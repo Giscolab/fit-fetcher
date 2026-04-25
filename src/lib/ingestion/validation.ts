@@ -76,6 +76,7 @@ function buildIssue(
 function resolveCategory(args: {
   requestedCategory: GarmentCategory | null;
   candidate: CandidateSection;
+  presentFields: MeasurementField[];
   issues: ValidationIssue[];
 }): GarmentCategory | null {
   const match = resolveRequestedCategoryMatch({
@@ -86,6 +87,21 @@ function resolveCategory(args: {
 
   if (match.matchedCategory) {
     return match.matchedCategory;
+  }
+
+  if (
+    args.requestedCategory &&
+    isTopCategory(args.requestedCategory) &&
+    args.candidate.detectedCategory === "generic-body-guide"
+  ) {
+    const hasTopAnchor =
+      args.presentFields.includes("chest") || args.presentFields.includes("height");
+    const hasIncompatibleField = args.presentFields.some(
+      (field) => !TOP_ALLOWED_FIELDS.includes(field),
+    );
+    if (hasTopAnchor && !hasIncompatibleField) {
+      return args.requestedCategory;
+    }
   }
 
   if (args.requestedCategory) {
@@ -182,6 +198,7 @@ export function validateExtraction(args: {
   const resolvedCategory = resolveCategory({
     requestedCategory: args.requestedCategory,
     candidate: args.candidate,
+    presentFields,
     issues: validationErrors,
   });
   const resolvedSizeSystem = resolveSizeSystem({
@@ -197,17 +214,6 @@ export function validateExtraction(args: {
         "error",
         "guide-hub-selected",
         "Rejected because a guide hub was selected without isolating a concrete table-backed section.",
-      ),
-    );
-  }
-
-  if (args.candidate.originalUnitSystem === "mixed") {
-    validationErrors.push(
-      buildIssue(
-        candidateId,
-        "error",
-        "mixed-units",
-        "Rejected because the selected section mixes cm and inches in the same candidate.",
       ),
     );
   }
@@ -271,7 +277,15 @@ export function validateExtraction(args: {
 
   const visibleSourceLabels = args.candidate.rawSizeAxisLabels;
   const extractedLabels = args.extraction.rows.map((row) => row.originalLabel);
-  const extraLabels = extractedLabels.filter((label) => !visibleSourceLabels.includes(label));
+  const visibleCanonicalLabels = new Set(
+    visibleSourceLabels.map((label) => canonicalizeSizeLabel(label).canonicalLabel),
+  );
+  const extractedCanonicalLabels = new Set(
+    extractedLabels.map((label) => canonicalizeSizeLabel(label).canonicalLabel),
+  );
+  const extraLabels = extractedLabels.filter(
+    (label) => !visibleCanonicalLabels.has(canonicalizeSizeLabel(label).canonicalLabel),
+  );
   if (extraLabels.length > 0) {
     validationErrors.push(
       buildIssue(
@@ -284,7 +298,9 @@ export function validateExtraction(args: {
     );
   }
 
-  const missingLabels = visibleSourceLabels.filter((label) => !extractedLabels.includes(label));
+  const missingLabels = visibleSourceLabels.filter(
+    (label) => !extractedCanonicalLabels.has(canonicalizeSizeLabel(label).canonicalLabel),
+  );
   if (missingLabels.length > 0) {
     const message = `Visible source sizes (${visibleSourceLabels.length}) became ${extractedLabels.length} extracted rows.`;
     if (

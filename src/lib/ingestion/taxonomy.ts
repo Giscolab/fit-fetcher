@@ -19,7 +19,11 @@ export function normalizeToken(raw: string): string {
 }
 
 export function containsAny(text: string, patterns: string[]): boolean {
-  return patterns.some((pattern) => text.includes(pattern));
+  const normalizedText = ` ${normalizeToken(text)} `;
+  return patterns.some((pattern) => {
+    const normalizedPattern = normalizeToken(pattern);
+    return Boolean(normalizedPattern) && normalizedText.includes(` ${normalizedPattern} `);
+  });
 }
 
 const TOP_KEYWORDS = ["top", "tops", "haut", "hauts", "upper body"];
@@ -65,7 +69,7 @@ function isNumericOnlyLabel(label: string): boolean {
 
 function isInternationalSizeLabel(label: string): boolean {
   const normalized = normalizeToken(label);
-  return /^(xxs|xs|s|m|l|xl|xxl|xxxl|3xl|4xl|5xl)( tall| petite| regular| short| long)?$/.test(
+  return /^(xxs|xs|s|sm|m|md|l|lg|xl|xxl|2xl|xxxl|3xl|4xl|5xl)( tall| petite| regular| short| long)?$/.test(
     normalized,
   );
 }
@@ -261,7 +265,14 @@ export function canonicalizeSizeLabel(label: string): {
     .replace(/\s+/g, " ")
     .trim()
     .toUpperCase();
-  const canonicalLabel = stripped || label.trim().toUpperCase();
+  const shorthandMap: Record<string, string> = {
+    SM: "S",
+    MD: "M",
+    LG: "L",
+    "2XL": "XXL",
+    XXXL: "3XL",
+  };
+  const canonicalLabel = shorthandMap[stripped] ?? (stripped || label.trim().toUpperCase());
   return {
     canonicalLabel,
     fitVariant: fitVariant === "unknown" ? "standard" : fitVariant,

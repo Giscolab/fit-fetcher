@@ -136,6 +136,7 @@ export interface BrandSource {
   garmentCategory?: string;
   sizeSystem?: string;
   fallbackSizeSystem?: string;
+  fallbackUrls?: string[];
 }
 
 export interface Brand {

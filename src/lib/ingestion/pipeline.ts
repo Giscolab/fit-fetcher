@@ -301,6 +301,19 @@ function isGuideReady(validation: ExtractionValidation): boolean {
   );
 }
 
+function shouldAttemptAiFallback(validation: ExtractionValidation): boolean {
+  const semanticBlockers = new Set([
+    "fused-top-bottom-evidence",
+    "top-incompatible-fields",
+    "top-has-inseam",
+    "bottom-incompatible-fields",
+    "bottom-has-chest",
+    "shoe-incompatible-fields",
+    "wrong-source-family",
+  ]);
+  return !validation.validationErrors.some((issue) => semanticBlockers.has(issue.code));
+}
+
 function llmWarningIssue(candidateId: string, message: string): ValidationIssue {
   return {
     code: "llm-warning",
@@ -340,9 +353,11 @@ function reasonForAiAttempt(args: {
 function isDirectGuideUrl(url: string): boolean {
   const normalized = url.toLowerCase();
   return (
-    /size-fit\//.test(normalized) ||
-    /size-guide\//.test(normalized) ||
+    /size-fit(?:\/|$)/.test(normalized) ||
+    /size-guide(?:\/|$)/.test(normalized) ||
     /size-chart/.test(normalized) ||
+    /sizecharts?/.test(normalized) ||
+    /sizeguides?/.test(normalized) ||
     /size_charts/.test(normalized) ||
     /pages\/size-guides/.test(normalized)
   );
@@ -510,6 +525,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
     sourceUrl: args.currentUrl,
     requestedCategory,
     requestedSizeSystem,
+    brandFallbackUrls: args.source.fallbackUrls,
   });
   const classification = classifyDocument({
     html: args.html,
@@ -711,7 +727,8 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
   if (
     canRetryWithRenderedDocument(args) &&
     (classification.documentKind === "irrelevant" ||
-      !selection.candidates.length)
+      !selection.candidates.length ||
+      !selection.selectedCandidateId)
   ) {
     return retryWithRenderedDocument(
       args,
@@ -854,7 +871,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
     candidateExtractions: [candidateExtraction],
     validationStatus: validation.validationStatus,
     validationErrors: [...report.validationErrors, ...validation.validationErrors],
-    warnings: validation.warnings,
+    warnings: [...report.warnings, ...validation.warnings],
     manualReviewRecommended: validation.validationStatus !== "accepted",
   };
 
@@ -862,6 +879,10 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
   let finalValidation = validation;
 
   if (!isGuideReady(validation)) {
+    if (!shouldAttemptAiFallback(validation)) {
+      return { report };
+    }
+
     const aiFallback = await runAiFallback({
       sourceUrl: selectedCandidate.sourceUrl,
       candidate: selectedCandidate,
@@ -890,7 +911,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
         aiFallbackAttempt: aiFallback.attempt,
         validationStatus: aiFallback.validation.validationStatus,
         validationErrors: aiFallback.validation.validationErrors,
-        warnings: aiFallback.validation.warnings,
+        warnings: [...report.warnings, ...aiFallback.validation.warnings],
         manualReviewRecommended: false,
       };
     } else {

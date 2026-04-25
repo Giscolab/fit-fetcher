@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { fixtures } from "@/lib/ingestion/__fixtures__/brandSnapshots";
 import { discoverCandidateSections } from "@/lib/ingestion/discovery";
-import { classifyDocument, discoverLinkCandidates } from "@/lib/ingestion/navigation";
+import { classifyDocument, discoverLinkCandidates, selectHubFollowLinks } from "@/lib/ingestion/navigation";
 import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
 import { selectCandidate } from "@/lib/ingestion/selection";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
@@ -234,6 +234,173 @@ test("Navigation ignores image assets before Firecrawl rendering", () => {
   assert.ok(links.some((link) => link.url === "https://www.hm.com/sizeguide/men-tops"));
 });
 
+test("Navigation does not follow marketing utility links as size guides", () => {
+  const sourceUrl = "https://www.hugoboss.com/size-guide";
+  const links = discoverLinkCandidates({
+    html: `
+      <a href="/size-guide#cookie">Cookie settings</a>
+      <a href="/en-us/gifts/">The Gift Guide</a>
+      <a href="/rlmag/men">Style Guide: Men</a>
+      <a href="/size-chart/men-tops">Men's Tops Size Chart</a>
+    `,
+    markdown: "",
+    sourceUrl,
+    requestedCategory: mapRequestedGarmentCategory("tshirts"),
+    requestedSizeSystem: mapRequestedSizeSystem("INT"),
+  });
+  const navigation = selectHubFollowLinks({ linkCandidates: links });
+
+  assert.deepEqual(
+    navigation.selected.map((link) => link.url),
+    ["https://www.hugoboss.com/size-chart/men-tops"],
+  );
+  assert.ok(
+    navigation.linkCandidates
+      .filter((link) => ["Cookie settings", "The Gift Guide", "Style Guide: Men"].includes(link.label))
+      .every((link) => link.selected === false),
+  );
+});
+
+test("Navigation treats same-brand regional domains as internal", () => {
+  const sourceUrl = "https://www.calvinklein.com/size-guide";
+  const links = discoverLinkCandidates({
+    html: `
+      <a href="https://www.calvinklein.us/en/men-size-guide.html">Men's Size Guide</a>
+    `,
+    markdown: "",
+    sourceUrl,
+    requestedCategory: mapRequestedGarmentCategory("tshirts"),
+    requestedSizeSystem: mapRequestedSizeSystem("INT"),
+  });
+  const navigation = selectHubFollowLinks({ linkCandidates: links });
+
+  assert.deepEqual(
+    navigation.selected.map((link) => link.url),
+    ["https://www.calvinklein.us/en/men-size-guide.html"],
+  );
+  assert.ok(
+    navigation.selected[0]?.reasons.some((reason) => reason.includes("men's context")),
+  );
+});
+
+test("Brand fallback uses the known New Balance apparel guide when the hub is empty", async () => {
+  const sourceUrl = "https://www.newbalance.com/size-chart";
+  const fallbackUrl = "https://www.newbalance.com/customercare-sizeguide-apparel.html";
+  const fetchedUrls: string[] = [];
+  const result = await runFixture({
+    brand: "New Balance",
+    fixture: {
+      url: sourceUrl,
+      html: "<html><body><h1>Size chart</h1><p>Select your size guide.</p></body></html>",
+      markdown: "# Size chart\n\nSelect your size guide.",
+    },
+    fetchDocument: async (url, options) => {
+      fetchedUrls.push(url);
+      assert.equal(options?.renderer, "firecrawl");
+      if (url === sourceUrl) {
+        return {
+          sourceUrl,
+          html: "<html><body><h1>Size chart</h1><p>Select your size guide.</p></body></html>",
+          markdown: "# Size chart\n\nSelect your size guide.",
+        };
+      }
+
+      assert.equal(url, fallbackUrl);
+      return {
+        ...renderedTopGuide,
+        sourceUrl: fallbackUrl,
+      };
+    },
+  });
+
+  assert.ok(result.guide);
+  assert.deepEqual(fetchedUrls, [sourceUrl, fallbackUrl]);
+  assert.equal(result.report.followedUrl, fallbackUrl);
+  assert.equal(result.guide.guide.sourceTraceChain[1]?.kind, "brand-fallback");
+});
+
+test("Under Armour shorthand labels and implicit inch units validate deterministically", async () => {
+  const result = await runFixture({
+    brand: "Under Armour",
+    fixture: {
+      url: "https://www.underarmour.com/en-us/t/size-guide/mens-tops/",
+      html: `
+        <h1>Men's Tops Size Chart</h1>
+        <table>
+          <tr><th>Size</th><th>Chest</th><th>Waist</th><th>Hips</th></tr>
+          <tr><td>XS</td><td>30-32</td><td>26-27</td><td>32-33</td></tr>
+          <tr><td>SM</td><td>34-36</td><td>28-29</td><td>34-35</td></tr>
+          <tr><td>MD</td><td>38-40</td><td>30-32</td><td>36-38</td></tr>
+          <tr><td>LG</td><td>42-44</td><td>34-36</td><td>40-42</td></tr>
+          <tr><td>XL</td><td>46-48</td><td>38-40</td><td>44-46</td></tr>
+        </table>
+      `,
+      markdown: "",
+    },
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.guide.guide.originalUnitSystem, "in");
+  assert.deepEqual(
+    result.guide.guide.rows.map((row) => row.canonicalLabel),
+    ["XS", "S", "M", "L", "XL"],
+  );
+  assert.equal(result.report.aiFallbackAttempt, undefined);
+});
+
+test("Columbia-style IN CM unit toggles do not force inch tables to centimeters", async () => {
+  const result = await runFixture({
+    brand: "Columbia",
+    fixture: {
+      url: "https://www.columbia.com/sizefit?isPage=true&r=1",
+      html: `
+        <h1>Men's Tops Size Chart</h1>
+        <p>Standard IN CM</p>
+        <table>
+          <tr><th>Size</th><th>Chest</th><th>Waist</th><th>Hips</th></tr>
+          <tr><td>XS</td><td>35</td><td>29</td><td>34</td></tr>
+          <tr><td>S</td><td>36-37</td><td>30-31</td><td>35-36</td></tr>
+          <tr><td>M</td><td>39-41</td><td>33-35</td><td>38-40</td></tr>
+          <tr><td>L</td><td>42.5-44</td><td>36-38</td><td>41.5-43</td></tr>
+          <tr><td>XL</td><td>46.5-48</td><td>40-42</td><td>44.5-47</td></tr>
+          <tr><td>XXL</td><td>50.5-52</td><td>44-46</td><td>49.5-51</td></tr>
+        </table>
+      `,
+      markdown: "",
+    },
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.guide.guide.originalUnitSystem, "in");
+  assert.equal(result.guide.guide.rows[0]?.chestCmMin, 88.9);
+});
+
+test("Top-compatible body measurement tables can satisfy tshirts without bottom evidence", async () => {
+  const result = await runFixture({
+    brand: "Puma",
+    fixture: {
+      url: "https://nz.puma.com/nz/en/sizecharts/sizecharts.html",
+      html: `
+        <h1>Men's Body Measurements</h1>
+        <table>
+          <tr><th>Size</th><th>Chest (cm)</th><th>Waist (cm)</th><th>Hips (cm)</th></tr>
+          <tr><td>XS</td><td>84-89</td><td>70-75</td><td>85-90</td></tr>
+          <tr><td>S</td><td>90-95</td><td>76-81</td><td>91-96</td></tr>
+          <tr><td>M</td><td>96-101</td><td>82-87</td><td>97-102</td></tr>
+          <tr><td>L</td><td>102-107</td><td>88-93</td><td>103-108</td></tr>
+          <tr><td>XL</td><td>108-113</td><td>94-99</td><td>109-114</td></tr>
+        </table>
+      `,
+      markdown: "",
+    },
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.guide.guide.garmentCategory, "tshirts");
+  assert.equal(result.guide.guide.sourceType, "generic-body-guide");
+  assert.equal(result.report.validationStatus, "accepted");
+});
+
 test("Pipeline refetches followed brand fallback pages with Firecrawl rendering", async () => {
   const fallbackUrl = "https://www.nike.com/size-fit/mens-tops-alpha";
   const fetchModes: string[] = [];
@@ -331,8 +498,8 @@ test("Pipeline retries a fallback size system after the primary INT target fails
 
 test("Pipeline does not try fallback size system after a category failure", async () => {
   const result = await runFixture({
-    brand: "Adidas",
-    fixture: fixtures.adidasMulti,
+    brand: "Invalid Tops",
+    fixture: fixtures.invalidTopWithInseam,
     sizeSystem: "INT",
     fallbackSizeSystem: "EU",
   });
@@ -341,7 +508,7 @@ test("Pipeline does not try fallback size system after a category failure", asyn
   assert.equal(result.report.requestedSizeSystem, "INT");
   assert.ok(
     result.report.validationErrors.some(
-      (issue) => issue.code === "multiple-categories-detected",
+      (issue) => issue.code === "no-unique-section-match",
     ),
   );
   assert.equal(
@@ -424,15 +591,17 @@ test("Pipeline does not run LLM fallback when no candidate section exists", asyn
   assert.equal(result.report.aiFallbackAttempt, undefined);
 });
 
-test("Adidas multi-guide page fails instead of extracting from a mixed category page", async () => {
+test("Adidas multi-guide page can extract the selected tops table from a mixed category page", async () => {
   const result = await runFixture({
     brand: "Adidas",
     fixture: fixtures.adidasMulti,
   });
 
-  assert.equal(result.guide, undefined);
+  assert.ok(result.guide);
+  assert.equal(result.guide.guide.sourceSectionTitle, "Men's Shirts & Tops");
+  assert.equal(result.guide.guide.garmentCategory, "tshirts");
   assert.ok(
-    result.report.validationErrors.some(
+    result.report.warnings.some(
       (issue) => issue.code === "multiple-categories-detected",
     ),
   );
@@ -451,15 +620,17 @@ test("Adidas hub follows one-hop tops link before extraction", async () => {
   assert.equal(result.guide.guide.garmentCategory, "tshirts");
 });
 
-test("Reebok mixed guide page fails until a one-hop tops page is resolved", async () => {
+test("Reebok mixed guide page extracts the tops table without following product links", async () => {
   const result = await runFixture({
     brand: "Reebok",
     fixture: fixtures.reebokMulti,
   });
 
-  assert.equal(result.guide, undefined);
+  assert.ok(result.guide);
+  assert.equal(result.guide.guide.sourceSectionTitle, "Men's Tops Size Guide");
+  assert.equal(result.guide.guide.garmentCategory, "tshirts");
   assert.ok(
-    result.report.validationErrors.some(
+    result.report.warnings.some(
       (issue) => issue.code === "multiple-categories-detected",
     ),
   );

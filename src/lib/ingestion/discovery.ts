@@ -16,6 +16,8 @@ import type {
   CandidateSection,
   DocumentKind,
   MatrixOrientation,
+  MeasurementField,
+  MeasurementUnit,
   SourceTraceStep,
   SourceType,
 } from "@/lib/types";
@@ -98,6 +100,50 @@ function inferMatrixOrientation(matrix: string[][]): {
     visibleColumnLabels: rawHeaders,
     visibleRowLabels: rawSizeAxisLabels,
   };
+}
+
+function parseMeasurementNumbers(raw: string): number[] {
+  return Array.from(raw.matchAll(/\d+(?:[.,]\d+)?/g))
+    .map((match) => Number(match[0].replace(",", ".")))
+    .filter((value) => Number.isFinite(value));
+}
+
+function inferImplicitMeasurementUnit(
+  matrix: string[][],
+  fields: MeasurementField[],
+): MeasurementUnit {
+  const canInferFromFields = fields.some((field) =>
+    ["chest", "waist", "hips", "height", "sleeve", "neck", "shoulder"].includes(field),
+  );
+  if (!canInferFromFields) return "unknown";
+
+  const values = matrix
+    .flat()
+    .flatMap(parseMeasurementNumbers)
+    .filter((value) => value >= 10 && value <= 260)
+    .sort((a, b) => a - b);
+  if (values.length < 2) return "unknown";
+
+  const median = values[Math.floor(values.length / 2)] ?? 0;
+  const max = values[values.length - 1] ?? 0;
+  if (max <= 80 && median < 60) return "in";
+  if (max >= 80 || median >= 65) return "cm";
+  return "unknown";
+}
+
+function shouldPreferImplicitUnit(args: {
+  contextUnit: MeasurementUnit;
+  implicitUnit: MeasurementUnit;
+  matrixUnit: MeasurementUnit;
+}): boolean {
+  if (args.matrixUnit !== "unknown") return false;
+  if (args.implicitUnit === "unknown") return false;
+  if (args.contextUnit === "unknown") return true;
+
+  // Some rendered guides expose unit toggles such as "IN CM" outside the
+  // actual table. If the table values look like adult inch ranges (for
+  // example 35-48 for chest), trust the matrix over the surrounding toggle.
+  return args.contextUnit === "cm" && args.implicitUnit === "in";
 }
 
 function extractHtmlTableMatrix(
@@ -284,6 +330,15 @@ function createCandidate(args: {
     ].join(" "),
   );
   const contextUnit = detectMeasurementUnit(contextText);
+  const implicitUnit = inferImplicitMeasurementUnit(matrix, fields);
+  const inferredUnit =
+    matrixUnit !== "unknown"
+      ? matrixUnit
+      : shouldPreferImplicitUnit({ matrixUnit, contextUnit, implicitUnit })
+        ? implicitUnit
+        : contextUnit !== "unknown"
+          ? contextUnit
+          : implicitUnit;
   const category = detectCategory({
     sectionTitle: args.sectionTitle,
     subheading: args.subheading,
@@ -357,7 +412,7 @@ function createCandidate(args: {
       sizeAxisLabels: matrixMeta.rawSizeAxisLabels,
       context: contextText,
     }),
-    originalUnitSystem: matrixUnit !== "unknown" ? matrixUnit : contextUnit,
+    originalUnitSystem: inferredUnit,
     matrixOrientation: matrixMeta.matrixOrientation,
     categoryMappingMode: categoryMapping.mode,
     categoryMappingReason: categoryMapping.reason,

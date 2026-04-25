@@ -31,11 +31,29 @@ function registrableDomain(hostname: string): string {
   return parts.slice(-2).join(".");
 }
 
+function brandDomainKey(hostname: string): string {
+  const host = hostname.toLowerCase().replace(/^www\./, "");
+  const aliasMap: Array<[RegExp, string]> = [
+    [/calvinklein\.(?:com|us)$/, "calvinklein"],
+    [/(?:usa\.)?tommy\.com$/, "tommyhilfiger"],
+    [/tommyhilfiger\./, "tommyhilfiger"],
+    [/underarmour\./, "underarmour"],
+    [/newbalance\./, "newbalance"],
+    [/hugoboss\./, "hugoboss"],
+    [/ralphlauren\./, "ralphlauren"],
+    [/thenorthface\./, "thenorthface"],
+    [/columbia\./, "columbia"],
+    [/lacoste\./, "lacoste"],
+  ];
+  const alias = aliasMap.find(([pattern]) => pattern.test(host));
+  return alias?.[1] ?? registrableDomain(host);
+}
+
 function isSameBrandUrl(currentUrl: string, candidateUrl: string): boolean {
   try {
     const current = new URL(currentUrl);
     const candidate = new URL(candidateUrl);
-    return registrableDomain(current.hostname) === registrableDomain(candidate.hostname);
+    return brandDomainKey(current.hostname) === brandDomainKey(candidate.hostname);
   } catch {
     return false;
   }
@@ -114,7 +132,6 @@ function collectNearbyText(
 // ── Mots-clés multilingues pour la navigation ──────────────────────────
 
 const MEN_KEYWORDS = ["men", "mens", "homme", "hommes", "man", "male"];
-const WOMEN_KEYWORDS = ["women", "womans", "woman", "femme", "femmes", "lady", "ladies"];
 const TOPS_KEYWORDS = [
   "top", "tops", "haut", "hauts",
   "shirt", "shirts", "chemise", "chemises",
@@ -130,6 +147,8 @@ const SIZE_KEYWORDS = [
   "size", "taille", "tailles", "fit", "guide",
   "chart", "charts", "alpha", "officiel", "official",
   "sizing", "measurement", "measurements", "mesure", "mesures",
+  "sizeguide", "sizeguides", "sizechart", "sizecharts",
+  "guide des tailles", "tableau des tailles",
 ];
 const FOOTWEAR_KEYWORDS = [
   "shoe", "shoes", "footwear", "chaussure", "chaussures",
@@ -147,6 +166,11 @@ const UTILITY_KEYWORDS = [
   "send us feedback", "site feedback", "your opinion counts",
   "contact us", "customer service", "help", "support",
   "accessibility", "privacy", "terms", "newsletter",
+  "cookie", "cookie settings", "change country", "store locator",
+  "find a store", "sitemap", "promotions", "student promotion",
+  "digital greeting card", "authenticity", "payment methods",
+  "saved items", "styling book", "style guide", "gift guide",
+  "denim fit guide",
   "gifts for him", "gifts for her", "gifts for mom",
   "spring selection", "summer selection", "new arrivals",
   "sale", "deals", "uniqlo u",
@@ -161,8 +185,6 @@ function isGuideLikeLink(text: string): boolean {
   if (containsAny(normalized, SIZE_KEYWORDS)) return true;
   if (containsAny(normalized, TOPS_KEYWORDS)) return true;
   if (containsAny(normalized, ["apparel", "clothing", "vetement", "vêtement", "vetements", "vêtements"])) return true;
-  if (containsAny(normalized, MEN_KEYWORDS)) return true;
-  if (containsAny(normalized, WOMEN_KEYWORDS)) return true;
   return false;
 }
 
@@ -175,6 +197,13 @@ function isProductPageLink(url: string, text: string): boolean {
       return url.toLowerCase();
     }
   })();
+  const search = (() => {
+    try {
+      return new URL(url).search.toLowerCase();
+    } catch {
+      return "";
+    }
+  })();
   const hasGuideSignal =
     /\b(size|chart|guide|alpha|measurement|measurements|taille|tailles|officiel)\b/i.test(raw) ||
     /size[-_/]?(fit|chart|guide)/i.test(url) ||
@@ -182,7 +211,11 @@ function isProductPageLink(url: string, text: string): boolean {
   const hasPrice = /[$]\s?\d/.test(text) || /\b(?:usd|gbp|cad|aud)\s?\d/i.test(text);
   const hasProductPath =
     /\/(?:p|product|products|sku)\//i.test(path) ||
-    /\/t\/(?!size-guide(?:\/|$))[^/?#]+/i.test(path);
+    /\/t\/(?!size-guide(?:\/|$))[^/?#]+/i.test(path) ||
+    /\/(?:lacoste|homme|femme|men|women)\/.+\/[^/]+\.html$/i.test(path);
+  const hasProductQuery =
+    /(?:^|[?&])(?:color|size|sku|pid|productid)=/i.test(search) ||
+    /%22|%27|["']/.test(url);
   const hasProductTitle =
     !hasGuideSignal &&
     (/\b(?:nike|adidas|puma|reebok|new balance|under armour)\b.*\b(?:t[\s-]?shirt|tee|shirt|hoodie|pants?|shorts?)\b/i.test(
@@ -197,7 +230,7 @@ function isProductPageLink(url: string, text: string): boolean {
     /\bproduct\b/i.test(text) &&
     /\b(?:t[\s-]?shirt|tee|shirt|hoodie|pants?|shorts?)\b/i.test(text);
 
-  return hasPrice || hasProductPath || hasProductTitle || genericProductTitle;
+  return hasPrice || hasProductPath || hasProductQuery || hasProductTitle || genericProductTitle;
 }
 
 function isUtilityNavigationLink(label: string, url: string): boolean {
@@ -224,6 +257,43 @@ function isUtilityNavigationLink(label: string, url: string): boolean {
   return false;
 }
 
+function isBadMarketingOrUtilityTarget(url: string, label: string): boolean {
+  const normalized = normalizeToken(`${label} ${url}`);
+  const parsed = (() => {
+    try {
+      return new URL(url);
+    } catch {
+      return null;
+    }
+  })();
+  const path = parsed?.pathname.toLowerCase() ?? url.toLowerCase();
+  const hash = parsed?.hash.toLowerCase() ?? "";
+  const search = parsed?.search.toLowerCase() ?? "";
+  const normalizedLabel = normalizeToken(label);
+  const labelHasConcreteSizeSignal = containsAny(normalizedLabel, [
+    "size chart",
+    "size charts",
+    "size guide",
+    "size guides",
+    "size fit",
+    "guide des tailles",
+    "tableau des tailles",
+    "mens tops alpha",
+    "men tops alpha",
+  ]);
+
+  if (/%22|%27|["']/.test(url)) return true;
+  if (containsAny(normalizedLabel, UTILITY_KEYWORDS) && !labelHasConcreteSizeSignal) return true;
+  if (hasConcreteSizeGuideLinkSignal(url, label)) return false;
+  if (containsAny(normalized, UTILITY_KEYWORDS)) return true;
+  if (/cookie|change[-_ ]?country/.test(hash)) return true;
+  if (/(?:^|[?&])(?:color|size|sku|pid|productid)=/i.test(search)) return true;
+
+  return /\/(?:stores?|store-locator|retail|promotions?|gift|gifts|stylingbook|stories|journal|rlmag|wishlist|saved-items|payment-methods|sitemap|privacy|terms|authenticity|student-promotions|digital-card|help|faq)(?:\/|$)/i.test(
+    path,
+  );
+}
+
 function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
   const raw = `${text} ${url}`;
   const normalized = ` ${normalizeToken(raw)} `;
@@ -235,8 +305,22 @@ function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
     }
   })();
   const guideSignal =
-    containsAny(normalized, SIZE_KEYWORDS) ||
-    /(?:size[-_/]?(?:fit|chart|guide)|\/size-fit\/|mens?[-_]?tops?[-_]?alpha|mens?_tops?_alpha|tops?[-_]?alpha|apparel[-_/]size)/i.test(
+    containsAny(normalized, [
+      "size chart",
+      "size charts",
+      "size guide",
+      "size guides",
+      "size fit",
+      "sizeguide",
+      "sizeguides",
+      "sizechart",
+      "sizecharts",
+      "guide des tailles",
+      "tableau des tailles",
+      "mens tops alpha",
+      "men tops alpha",
+    ]) ||
+    /(?:size[-_/]?(?:fit|chart|guide)|\/size-fit\/|mens?[-_]?tops?[-_]?alpha|mens?_tops?_alpha|tops?[-_]?alpha|apparel[-_/]size|sizecharts?|sizeguides?)/i.test(
       path,
     );
   const incompatibleSignal = containsAny(normalized, [
@@ -247,33 +331,6 @@ function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
   ]);
 
   return guideSignal && !incompatibleSignal;
-}
-
-function isExploratoryCategoryLink(url: string, label: string): boolean {
-  if (hasConcreteSizeGuideLinkSignal(url, `${label} ${url}`)) return false;
-
-  const normalized = normalizeToken(`${label} ${url}`);
-  const path = (() => {
-    try {
-      return new URL(url).pathname.toLowerCase();
-    } catch {
-      return url.toLowerCase();
-    }
-  })();
-  const categoryPath =
-    /\/(?:[a-z]{2}\/)?w\//i.test(path) ||
-    /\/(?:c|collections?)\//i.test(path) ||
-    /\/(?:men|mens|women|womens|kids|homme|femme)[-_/]?[^/?#]*(?:tops?|tees?|shirts?|clothing|apparel|haut|hauts)/i.test(path) ||
-    /\/(?:men|mens|women|womens)[-_](?:tops?|tees?|shirts?|clothing|apparel)/i.test(path);
-  const categoryLabel = containsAny(normalized, [
-    "top", "tops", "haut", "hauts",
-    "tee", "tees", "t-shirt", "t-shirts",
-    "shirt", "shirts", "chemise", "chemises",
-    "graphic tees", "apparel", "clothing",
-    "vetement", "vêtement",
-  ]);
-
-  return categoryPath && categoryLabel;
 }
 
 function scoreOneHopGuideLink(text: string): {
@@ -448,6 +505,7 @@ function createLinkCandidate(args: {
   const oneHop = scoreOneHopGuideLink(context);
   const productPage = isProductPageLink(args.url, label);
   const utilityNavigation = isUtilityNavigationLink(label, args.url);
+  const badMarketingTarget = isBadMarketingOrUtilityTarget(args.url, label);
   let score = oneHop.score;
   reasons.push(...oneHop.reasons);
   rejectionReasons.push(...oneHop.rejections);
@@ -457,7 +515,7 @@ function createLinkCandidate(args: {
     rejectionReasons.push("Link looks like a product page, not a size-guide page.");
   }
 
-  if (utilityNavigation) {
+  if (utilityNavigation || badMarketingTarget) {
     score -= 20;
     rejectionReasons.push("Link looks like utility navigation, not a size-guide page.");
   }
@@ -507,13 +565,15 @@ function createLinkCandidate(args: {
   reasons.push(...sizeSystem.reasons);
   rejectionReasons.push(...sizeSystem.rejections);
 
-  const fallback = scoreBrandFallbackBonus(args.url, context);
-  score += fallback.score;
-  if (fallback.reason) {
-    if (fallback.score >= 0) {
-      reasons.push(fallback.reason);
-    } else {
-      rejectionReasons.push(fallback.reason);
+  if (args.resolver === "brand-fallback") {
+    const fallback = scoreBrandFallbackBonus(args.url, context);
+    score += fallback.score;
+    if (fallback.reason) {
+      if (fallback.score >= 0) {
+        reasons.push(fallback.reason);
+      } else {
+        rejectionReasons.push(fallback.reason);
+      }
     }
   }
 
@@ -577,7 +637,21 @@ function discoverHtmlLinks(args: {
     if (!url) return;
     if (isUnsupportedFetchTarget(url)) return;
 
-    const label = cleanText($(node).text()) || cleanText($(node).attr("title") ?? "");
+    const anchor = $(node).clone();
+    anchor.find("script, style, noscript").remove();
+    let label =
+      cleanText(anchor.text()) ||
+      cleanText($(node).attr("aria-label") ?? "") ||
+      cleanText($(node).attr("title") ?? "");
+    if (
+      label.length > 180 ||
+      /\b(?:function|const|let|window|document|fetch|queryselector)\b/i.test(label)
+    ) {
+      label =
+        cleanText($(node).attr("aria-label") ?? "") ||
+        cleanText($(node).attr("title") ?? "");
+    }
+    if (!label) return;
     const headingPath = collectHeadingPath($, node);
     const nearbyText = collectNearbyText($, node);
     const context = `${label} ${headingPath.join(" ")} ${nearbyText} ${url}`;
@@ -658,6 +732,7 @@ function officialBrandFallbackUrls(args: {
   sourceUrl: string;
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
+  brandFallbackUrls?: string[];
 }): Array<{ url: string; label: string }> {
   let host = "";
   try {
@@ -673,13 +748,24 @@ function officialBrandFallbackUrls(args: {
     ["tshirts", "shirts", "hoodies", "jackets"].includes(category);
   const isBottom = category && ["pants", "jeans", "shorts", "leggings"].includes(category);
   const isShoe = category === "shoes" || sizeSystem === "FOOTWEAR";
+  const providedFallbacks =
+    args.brandFallbackUrls
+      ?.map((url, index) => ({
+        url: resolveLink(args.sourceUrl, url),
+        label: `Fallback guide fourni ${index + 1}`,
+      }))
+      .filter(
+        (fallback): fallback is { url: string; label: string } =>
+          Boolean(fallback.url) && !isUnsupportedFetchTarget(fallback.url),
+      ) ?? [];
 
   if (host.includes("nike.com")) {
     if (isShoe) {
-      return [{ url: "https://www.nike.com/size-fit/mens-footwear", label: "Nike guide officiel chaussures homme" }];
+      return [...providedFallbacks, { url: "https://www.nike.com/size-fit/mens-footwear", label: "Nike guide officiel chaussures homme" }];
     }
     if (isBottom) {
       return [
+        ...providedFallbacks,
         {
           url:
             sizeSystem === "WAIST_INSEAM"
@@ -690,49 +776,82 @@ function officialBrandFallbackUrls(args: {
       ];
     }
     if (isTop) {
-      return [{ url: "https://www.nike.com/size-fit/mens-tops-alpha", label: "Nike guide officiel hauts homme" }];
+      return [...providedFallbacks, { url: "https://www.nike.com/size-fit/mens-tops-alpha", label: "Nike guide officiel hauts homme" }];
     }
   }
 
   if (host.includes("adidas.")) {
     if (isShoe) {
-      return [{ url: "https://www.adidas.com/us/help/size_charts/men-shoes", label: "adidas guide officiel chaussures homme" }];
+      return [...providedFallbacks, { url: "https://www.adidas.com/us/help/size_charts/men-shoes", label: "adidas guide officiel chaussures homme" }];
     }
     if (isBottom) {
-      return [{ url: "https://www.adidas.com/us/help/size_charts/men-pants_shorts", label: "adidas guide officiel bas homme" }];
+      return [...providedFallbacks, { url: "https://www.adidas.com/us/help/size_charts/men-pants_shorts", label: "adidas guide officiel bas homme" }];
     }
-    return [{ url: "https://www.adidas.com/us/help/size_charts/men-shirts_tops", label: "adidas guide officiel hauts homme" }];
+    return [...providedFallbacks, { url: "https://www.adidas.com/us/help/size_charts/men-shirts_tops", label: "adidas guide officiel hauts homme" }];
   }
 
   if (host.includes("puma.")) {
-    return [{ url: "https://eu.puma.com/de/en/size-charts.html", label: "PUMA guide officiel tailles homme" }];
+    return [...providedFallbacks, { url: "https://eu.puma.com/de/en/size-charts.html", label: "PUMA guide officiel tailles homme" }];
   }
 
   if (host.includes("reebok.")) {
     if (isTop) {
-      return [{ url: "https://www.reebok.com/us/men-tops-size-chart", label: "Reebok guide officiel hauts homme" }];
+      return [...providedFallbacks, { url: "https://www.reebok.com/us/men-tops-size-chart", label: "Reebok guide officiel hauts homme" }];
     }
-    return [{ url: "https://www.reebok.com/us/size-chart-men", label: "Reebok guide officiel tailles homme" }];
+    return [...providedFallbacks, { url: "https://www.reebok.com/us/size-chart-men", label: "Reebok guide officiel tailles homme" }];
   }
 
   if (host.includes("underarmour.") || host.includes("under armour.")) {
     if (isTop) {
-      return [{ url: "https://www.underarmour.com/en-us/t/size-guide/mens-tops/", label: "Under Armour guide officiel hauts homme" }];
+      return [...providedFallbacks, { url: "https://www.underarmour.com/en-us/t/size-guide/mens-tops/", label: "Under Armour guide officiel hauts homme" }];
     }
-    return [{ url: "https://www.underarmour.com/en-us/t/size-guide/mens/", label: "Under Armour guide officiel tailles homme" }];
+    return [...providedFallbacks, { url: "https://www.underarmour.com/en-us/t/size-guide/mens/", label: "Under Armour guide officiel tailles homme" }];
   }
 
   if (host.includes("newbalance.") || host.includes("new balance.")) {
-    return [{ url: "https://www.newbalance.com/size-guide/apparel/", label: "New Balance guide officiel vêtements homme" }];
+    return [
+      ...providedFallbacks,
+      { url: "https://www.newbalance.com/customercare-sizeguide-apparel.html", label: "New Balance guide officiel vêtements homme" },
+      { url: "https://www.newbalance.com/sizechart-apparel.html", label: "New Balance ancien guide vêtements homme" },
+    ];
   }
 
-  return [];
+  if (host.includes("patagonia.")) {
+    return [...providedFallbacks, { url: "https://www.patagonia.com/guides/size-fit/mens/", label: "Patagonia guide officiel tailles homme" }];
+  }
+
+  if (host.includes("zara.")) {
+    return [...providedFallbacks, { url: "https://www.zara.com/fr/fr/help/size-guide-h38.html", label: "Zara guide officiel tailles" }];
+  }
+
+  if (host.includes("tommy.com") || host.includes("tommyhilfiger.")) {
+    return [...providedFallbacks, { url: "https://usa.tommy.com/en/size-guide-men.html", label: "Tommy Hilfiger guide officiel tailles homme" }];
+  }
+
+  if (host.includes("calvinklein.")) {
+    return [...providedFallbacks, { url: "https://www.calvinklein.us/en/men-size-guide.html", label: "Calvin Klein guide officiel tailles homme" }];
+  }
+
+  if (host.includes("columbia.")) {
+    return [...providedFallbacks, { url: "https://www.columbia.com/sizefit?isPage=true&r=1", label: "Columbia guide officiel hauts homme" }];
+  }
+
+  if (host.includes("thenorthface.")) {
+    return [...providedFallbacks, { url: "https://www.thenorthface.com/en-us/help/size-charts", label: "The North Face guide officiel hauts homme" }];
+  }
+
+  if (host.includes("lacoste.")) {
+    return [...providedFallbacks, { url: "https://www.lacoste.com/ca/fr/sizeguide/", label: "Lacoste guide officiel tailles homme" }];
+  }
+
+  return providedFallbacks;
 }
 
 function discoverBrandFallbackLinks(args: {
   sourceUrl: string;
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
+  brandFallbackUrls?: string[];
 }): LinkCandidate[] {
   return officialBrandFallbackUrls(args).map((fallback, index) =>
     createLinkCandidate({
@@ -758,6 +877,7 @@ export function discoverLinkCandidates(args: {
   sourceUrl: string;
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
+  brandFallbackUrls?: string[];
 }): LinkCandidate[] {
   return dedupeLinks([
     ...discoverHtmlLinks(args),
@@ -789,9 +909,9 @@ export function selectHubFollowLinks(args: {
     );
     const isProductPage = isProductPageLink(candidate.url, candidate.label);
     const isUtilityNavigation = isUtilityNavigationLink(candidate.label, candidate.url);
+    const isBadMarketingTarget = isBadMarketingOrUtilityTarget(candidate.url, candidate.label);
     const isUnsupportedTarget = isUnsupportedFetchTarget(candidate.url);
     const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, primaryContext);
-    const isExploratoryCategory = isExploratoryCategoryLink(candidate.url, candidate.label);
     const oneHop = scoreOneHopGuideLink(primaryContext);
 
     // Un brand fallback est toujours considéré comme ayant un signal concret
@@ -803,7 +923,7 @@ export function selectHubFollowLinks(args: {
       ...(!isInternal ? ["Rejected because one-hop links must stay on the same domain."] : []),
       ...(!isNewUrl ? ["Rejected because one-hop links must not point to the current page."] : []),
       ...(isProductPage ? ["Rejected because the link looks like a product page."] : []),
-      ...(isUtilityNavigation
+      ...(isUtilityNavigation || isBadMarketingTarget
         ? ["Rejected because the link looks like utility navigation."]
         : []),
       ...(isUnsupportedTarget
@@ -819,11 +939,12 @@ export function selectHubFollowLinks(args: {
       isNewUrl &&
       !isProductPage &&
       !isUtilityNavigation &&
+      !isBadMarketingTarget &&
       !isUnsupportedTarget &&
       (!args.requireConcreteGuide || effectiveConcreteSignal);
 
     const baseScore = eligible
-      ? oneHop.score + (effectiveConcreteSignal ? 3 : 0) - (isExploratoryCategory ? 1.5 : 0)
+      ? oneHop.score + (effectiveConcreteSignal ? 3 : 0)
       : -99;
 
     // Bonus additionnel pour les brand fallbacks
@@ -850,21 +971,16 @@ export function selectHubFollowLinks(args: {
   const concreteFallback = sortedEligible.filter(
     (candidate) => candidate.resolver === "brand-fallback",
   );
-  const exploratoryGeneric = sortedEligible.filter(
-    (candidate) =>
-      candidate.resolver === "generic" &&
-      !hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
-  );
-
-  // Priorité : brand-fallback > concreteGeneric > exploratoryGeneric
+  // Priorité : lien concret trouvé dans la page > brand-fallback.
+  // Le brand-fallback reste là pour les hubs pauvres en liens concrets.
+  // Les liens exploratoires de catégories produits ont généré trop de faux positifs
+  // (Gift Guide, Style Guide, Styling Book, Denim Fit Guide) et restent en diagnostic.
   const eligiblePool =
-    concreteFallback.length
-      ? concreteFallback
-      : concreteGeneric.length
-        ? concreteGeneric
-        : exploratoryGeneric;
+    concreteGeneric.length
+      ? concreteGeneric
+      : concreteFallback;
 
-  const eligible = eligiblePool.slice(0, eligiblePool === exploratoryGeneric ? 2 : 1);
+  const eligible = eligiblePool.slice(0, 1);
   const topRescored = [...rescored].sort((a, b) => b.score - a.score)[0];
   const selectedIds = new Set(eligible.map((candidate) => candidate.id));
   const reasoning: string[] = [];

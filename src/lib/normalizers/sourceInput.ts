@@ -4,6 +4,23 @@ function textValue(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+function textArrayValue(value: unknown): string[] | undefined {
+  if (Array.isArray(value)) {
+    const values = value
+      .map((item) => textValue(item))
+      .filter((item): item is string => Boolean(item));
+    return values.length ? values : undefined;
+  }
+
+  const text = textValue(value);
+  if (!text) return undefined;
+  const values = text
+    .split(/[\r\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return values.length ? values : undefined;
+}
+
 function normalizeImportedCategory(value: unknown): string | undefined {
   const category = textValue(value);
   if (!category) return undefined;
@@ -49,5 +66,10 @@ export function normalizeBrandSourceInput(raw: unknown): BrandSource | null {
       textValue(record.fallback_size_system) ??
       textValue(target.fallbackSizeSystem) ??
       textValue(target.fallback_size_system),
+    fallbackUrls:
+      textArrayValue(record.fallbackUrls) ??
+      textArrayValue(record.fallback_urls) ??
+      textArrayValue(target.fallbackUrls) ??
+      textArrayValue(target.fallback_urls),
   };
 }

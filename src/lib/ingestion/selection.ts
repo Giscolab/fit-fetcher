@@ -39,6 +39,16 @@ const ACCEPTABLE_CATEGORIES_FOR_TSHIRTS: ReadonlySet<string> = new Set([
   "jackets",
 ]);
 
+const TOP_COMPATIBLE_BODY_FIELDS: ReadonlySet<MeasurementField> = new Set([
+  "chest",
+  "waist",
+  "hips",
+  "height",
+  "sleeve",
+  "neck",
+  "shoulder",
+]);
+
 function scoreCategoryMatch(
   requestedCategory: GarmentCategory | null,
   candidate: CandidateSection,
@@ -76,6 +86,11 @@ function scoreCategoryMatch(
   if (match.mode === "generic-body") {
     reasons.push("Detected category matches the requested generic body guide.");
     return { score: 5, reasons, rejections };
+  }
+
+  if (requestedCategory === "tshirts" && bodyCandidateCanSupportTops(candidate)) {
+    reasons.push("Generic body measurements were limited to top-compatible fields for this tshirts request.");
+    return { score: 4, reasons, rejections };
   }
 
   if (candidate.detectedCategory === "generic-body-guide") {
@@ -208,9 +223,9 @@ function unitPreferenceBonus(candidate: CandidateSection): {
 
   if (candidate.originalUnitSystem === "mixed") {
     return {
-      score: -3,
-      reasons: [],
-      rejections: ["Candidate mixes cm and inches in the same table."],
+      score: -0.4,
+      reasons: ["Candidate mixes cm and inches, but extraction can parse explicit units per cell."],
+      rejections: [],
     };
   }
 
@@ -234,6 +249,40 @@ function candidateMeasurementFields(candidate: CandidateSection): MeasurementFie
     if (field) fields.add(field);
   }
   return Array.from(fields);
+}
+
+function bodyCandidateCanSupportTops(
+  candidate: CandidateSection,
+  fields = candidateMeasurementFields(candidate),
+): boolean {
+  if (candidate.detectedCategory !== "generic-body-guide") return false;
+  const hasTopAnchor = fields.includes("chest") || fields.includes("height");
+  if (!hasTopAnchor) return false;
+  const hasIncompatibleField = fields.some((field) => !TOP_COMPATIBLE_BODY_FIELDS.has(field));
+  if (hasIncompatibleField) return false;
+
+  const text = normalizeToken(
+    [
+      candidate.sectionTitle,
+      candidate.subheading ?? "",
+      candidate.headingPath.join(" "),
+      candidate.nearbyAdvisoryText,
+      candidate.rawHeaders.join(" "),
+      candidate.rawStubColumn.join(" "),
+      candidate.matrix.flat().join(" "),
+    ].join(" "),
+  );
+  return !containsAny(text, [
+    "inseam",
+    "inside leg",
+    "entrejambe",
+    "outseam",
+    "foot length",
+    "foot width",
+    "shoe size",
+    "footwear",
+    "chaussure",
+  ]);
 }
 
 function sameMeasurementShape(left: CandidateSection, right: CandidateSection): boolean {
@@ -298,10 +347,6 @@ function strictCandidateRejections(args: {
     rejections.push("Candidate does not expose at least two measurement fields.");
   }
 
-  if (candidate.originalUnitSystem === "mixed") {
-    rejections.push("Candidate mixes cm and inches in the same table.");
-  }
-
   if (
     candidate.matrixOrientation === "unknown" ||
     candidate.matrixOrientation === "conversion-grid"
@@ -332,9 +377,11 @@ function strictCandidateRejections(args: {
 
   // Catégorie : accepter la famille tops au sens large
   if (args.requestedCategory === "tshirts") {
+    const bodyAsTops = bodyCandidateCanSupportTops(candidate, fields);
     if (
-      categoryMatch.mode === "none" ||
-      !ACCEPTABLE_CATEGORIES_FOR_TSHIRTS.has(candidate.detectedCategory)
+      !bodyAsTops &&
+      (categoryMatch.mode === "none" ||
+        !ACCEPTABLE_CATEGORIES_FOR_TSHIRTS.has(candidate.detectedCategory))
     ) {
       rejections.push(
         `Candidate category "${candidate.detectedCategory}" is not a tops-family guide.`,
