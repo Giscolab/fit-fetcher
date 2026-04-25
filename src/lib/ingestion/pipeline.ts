@@ -711,9 +711,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
   if (
     canRetryWithRenderedDocument(args) &&
     (classification.documentKind === "irrelevant" ||
-      !selection.candidates.length ||
-      detectedFamilies.length > 1 ||
-      !selection.selectedCandidateId)
+      !selection.candidates.length)
   ) {
     return retryWithRenderedDocument(
       args,
@@ -742,38 +740,57 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
     };
   }
 
-  if (detectedFamilies.length > 1 && !selection.selectedCandidateId) {
-    // Plusieurs familles détectées, mais aucun candidat n'a été sélectionné
-    // dans la catégorie demandée. On rejette avec un message clair.
-    const familyList = detectedFamilies.join(", ");
-    return {
-      report: appendError(
-        {
-          ...report,
-          selectionReasoning: [
-            ...report.selectionReasoning,
-            `Multiple garment families detected (${familyList}) but none matched the requested category.`,
-          ],
-        },
-        {
-          code: "multiple-categories-detected",
-          message: `NO_VALID_SIZE_GUIDE: more than one garment category was detected (${familyList}) and no single candidate matched the requested category.`,
-          severity: "error",
-          details: detectedFamilies,
-        },
-        "ambiguous",
-      ),
-    };
-  }
+  if (detectedFamilies.length > 1) {
+    if (selection.selectedCandidateId) {
+      // Plusieurs familles détectées, mais un candidat a été sélectionné.
+      // On continue avec un warning au lieu de rejeter.
+      report.warnings.push({
+        code: "multiple-categories-detected",
+        message: `Multiple garment families detected (${detectedFamilies.join(", ")}) but a single candidate was selected for the requested category.`,
+        severity: "warning",
+      });
+    } else {
+      const bestTopsCandidate = selection.candidates.find(
+        (candidate) =>
+          candidate.garmentFamily === "tops" && candidate.selectionScore >= 4,
+      );
 
-  if (detectedFamilies.length > 1 && selection.selectedCandidateId) {
-    // Plusieurs familles détectées, mais un candidat a été sélectionné.
-    // On continue avec un warning au lieu de rejeter.
-    report.warnings.push({
-      code: "multiple-categories-detected",
-      message: `Multiple garment families detected (${detectedFamilies.join(", ")}) but a single candidate was selected for the requested category.`,
-      severity: "warning",
-    });
+      if (bestTopsCandidate) {
+        selection.selectedCandidateId = bestTopsCandidate.id;
+        selection.selectionReasoning = [
+          ...selection.selectionReasoning,
+          `Forced selection of "${bestTopsCandidate.sectionTitle}" (score ${bestTopsCandidate.selectionScore}) as best tops candidate on multi-category page.`,
+        ];
+        report.selectedCandidateId = bestTopsCandidate.id;
+        report.selectionReasoning = selection.selectionReasoning;
+        report.manualReviewRecommended = true;
+        report.warnings.push({
+          code: "multiple-categories-detected",
+          message: `Multiple garment families detected (${detectedFamilies.join(", ")}) but the best tops candidate was selected.`,
+          severity: "warning",
+        });
+      } else {
+        const familyList = detectedFamilies.join(", ");
+        return {
+          report: appendError(
+            {
+              ...report,
+              selectionReasoning: [
+                ...report.selectionReasoning,
+                `Multiple garment families detected (${familyList}) but none matched the requested category.`,
+              ],
+            },
+            {
+              code: "multiple-categories-detected",
+              message: `NO_VALID_SIZE_GUIDE: more than one garment category was detected (${familyList}) and no single candidate matched the requested category.`,
+              severity: "error",
+              details: detectedFamilies,
+            },
+            "ambiguous",
+          ),
+        };
+      }
+    }
   }
 
   if (!selection.selectedCandidateId || report.validationErrors.length > 0) {

@@ -17,7 +17,7 @@ function roundScore(score: number): number {
 }
 
 const MIN_SELECTION_SCORE = 4;
-const MIN_GAP_BETWEEN_TOP_CANDIDATES = 1.0;
+const MIN_GAP_BETWEEN_TOP_CANDIDATES = 0;
 
 // Systèmes de tailles acceptables quand on demande INT
 const ACCEPTABLE_SIZE_SYSTEMS_FOR_INT: ReadonlySet<string> = new Set([
