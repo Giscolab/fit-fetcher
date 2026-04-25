@@ -32,6 +32,7 @@ async function runFixture(args: {
   sizeSystem?: string;
   fallbackSizeSystem?: string;
   followed?: Record<string, { sourceUrl: string; html: string; markdown: string }>;
+  fetchDocument?: Parameters<typeof runIngestionPipeline>[0]["fetchDocument"];
   llmExtractCandidate?: Parameters<typeof runIngestionPipeline>[0]["llmExtractCandidate"];
 }) {
   return runIngestionPipeline({
@@ -45,13 +46,13 @@ async function runFixture(args: {
     fetchedUrl: args.fixture.url,
     html: args.fixture.html,
     markdown: args.fixture.markdown,
-    fetchDocument: args.followed
+    fetchDocument: args.fetchDocument ?? (args.followed
       ? async (url: string) => {
           const doc = args.followed?.[url];
           assert.ok(doc, `Missing followed fixture for ${url}`);
           return doc;
         }
-      : undefined,
+      : undefined),
     llmExtractCandidate: args.llmExtractCandidate,
   });
 }
@@ -102,6 +103,36 @@ S | See rendered chart | See rendered chart
 M | See rendered chart | See rendered chart
 L | See rendered chart | See rendered chart
 XL | See rendered chart | See rendered chart
+  `,
+};
+
+const renderedTopGuide = {
+  sourceUrl: "https://www.nike.com/size-fit/mens-tops-alpha",
+  html: `
+    <html>
+      <body>
+        <h1>Men's Tops Size Guide</h1>
+        <table>
+          <tr><th>Size</th><th>Chest (cm)</th><th>Waist (cm)</th><th>Hips (cm)</th></tr>
+          <tr><td>XS</td><td>80-86</td><td>66-71</td><td>81-86</td></tr>
+          <tr><td>S</td><td>86-92</td><td>71-76</td><td>86-91</td></tr>
+          <tr><td>M</td><td>92-98</td><td>76-81</td><td>91-96</td></tr>
+          <tr><td>L</td><td>98-104</td><td>81-86</td><td>96-101</td></tr>
+          <tr><td>XL</td><td>104-110</td><td>86-91</td><td>101-106</td></tr>
+        </table>
+      </body>
+    </html>
+  `,
+  markdown: `
+# Men's Tops Size Guide
+
+Size | Chest (cm) | Waist (cm) | Hips (cm)
+--- | --- | --- | ---
+XS | 80-86 | 66-71 | 81-86
+S | 86-92 | 71-76 | 86-91
+M | 92-98 | 76-81 | 91-96
+L | 98-104 | 81-86 | 96-101
+XL | 104-110 | 86-91 | 101-106
   `,
 };
 
@@ -175,6 +206,42 @@ test("Nike hub filters product links before one-hop ranking", async () => {
   assert.equal(feedbackLink?.selected, false);
   assert.ok(
     feedbackLink?.rejectionReasons.some((reason) => reason.includes("utility navigation")),
+  );
+});
+
+test("Pipeline refetches followed brand fallback pages with Firecrawl rendering", async () => {
+  const fallbackUrl = "https://www.nike.com/size-fit/mens-tops-alpha";
+  const fetchModes: string[] = [];
+  const result = await runFixture({
+    brand: "Nike",
+    fixture: {
+      url: "https://www.nike.com/size-fit-guide",
+      html: "<html><body><h1>Nike Size Fit Guide</h1><p>Find your fit.</p></body></html>",
+      markdown: "# Nike Size Fit Guide\n\nFind your fit.",
+    },
+    fetchDocument: async (url, options) => {
+      assert.equal(url, fallbackUrl);
+      fetchModes.push(options?.renderer ?? "auto");
+      if (options?.renderer === "firecrawl") {
+        return renderedTopGuide;
+      }
+      return {
+        sourceUrl: fallbackUrl,
+        html:
+          "<html><body><h1>Men's Tops Size Guide</h1><p>Loading rendered chart.</p></body></html>",
+        markdown: "# Men's Tops Size Guide\n\nLoading rendered chart.",
+      };
+    },
+  });
+
+  assert.ok(result.guide);
+  assert.deepEqual(fetchModes, ["auto", "firecrawl"]);
+  assert.equal(result.report.followedUrl, fallbackUrl);
+  assert.equal(result.guide.guide.sourceTraceChain[1]?.kind, "brand-fallback");
+  assert.ok(
+    result.report.documentReasoning.some((reason) =>
+      reason.includes("Firecrawl rendering"),
+    ),
   );
 });
 

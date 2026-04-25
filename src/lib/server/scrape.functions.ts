@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
 import { normalizeBrandSourceInput } from "@/lib/normalizers/sourceInput";
-import { scrapeSizeGuideDocument } from "@/lib/utils/firecrawl";
+import { scrapeSizeGuideDocument, scrapeWithFirecrawl } from "@/lib/utils/firecrawl";
+import type { FetchDocumentOptions } from "@/lib/ingestion/pipeline";
 import type {
   BrandSource,
   GeneratedGuide,
@@ -19,6 +20,14 @@ export interface ScrapeResponse {
   strictJson?: StrictSizeGuideOutput | StrictSizeGuideFailure;
   logs: string[];
   pipeline: IngestionPipelineReport;
+}
+
+async function fetchSizeGuideDocument(url: string, options?: FetchDocumentOptions) {
+  if (options?.renderer === "firecrawl") {
+    return scrapeWithFirecrawl(url);
+  }
+
+  return scrapeSizeGuideDocument(url);
 }
 
 function pushPipelineDiagnostics(logs: string[], report: IngestionPipelineReport) {
@@ -123,7 +132,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         fetchedUrl: scraped.sourceUrl,
         html: scraped.html,
         markdown: scraped.markdown,
-        fetchDocument: scrapeSizeGuideDocument,
+        fetchDocument: fetchSizeGuideDocument,
       });
 
       logs.push(

@@ -70,11 +70,34 @@ function requestedTraceStep(source: BrandSource, fetchedUrl: string): SourceTrac
   };
 }
 
-type FetchDocument = (url: string) => Promise<{
+export interface FetchDocumentOptions {
+  renderer?: "auto" | "firecrawl";
+  reason?: string;
+}
+
+type FetchDocument = (url: string, options?: FetchDocumentOptions) => Promise<{
   sourceUrl: string;
   html: string;
   markdown: string;
 }>;
+
+interface ProcessResolvedDocumentArgs {
+  source: BrandSource;
+  originalFetchedUrl: string;
+  currentUrl: string;
+  html: string;
+  markdown: string;
+  fetchDocument?: FetchDocument;
+  sourceTraceChain: SourceTraceStep[];
+  followedUrl?: string;
+  linkOriginId?: string;
+  navigationConfidence?: number;
+  remainingFollowHops: number;
+  followDepth: number;
+  priorReasoning?: string[];
+  llmExtractCandidate?: LlmCandidateExtractor;
+  renderedRetryAttempted?: boolean;
+}
 
 function appendError(
   report: IngestionPipelineReport,
@@ -240,6 +263,66 @@ function reasonForAiAttempt(args: {
   );
 }
 
+function canRetryWithRenderedDocument(args: ProcessResolvedDocumentArgs): boolean {
+  if (!args.fetchDocument || args.renderedRetryAttempted) return false;
+  return (
+    args.followDepth > 0 ||
+    Boolean(args.followedUrl) ||
+    args.sourceTraceChain.some((step) => step.kind === "brand-fallback")
+  );
+}
+
+function renderRefetchIssue(reason: string, error: unknown): ValidationIssue {
+  const message = error instanceof Error ? error.message : String(error);
+  return {
+    code: "rendered-refetch-failed",
+    severity: "error",
+    message: `NO_VALID_SIZE_GUIDE: Firecrawl rendering retry failed after static fetch failed. ${reason} ${message}`,
+  };
+}
+
+async function retryWithRenderedDocument(
+  args: ProcessResolvedDocumentArgs,
+  report: IngestionPipelineReport,
+  reason: string,
+): Promise<{
+  guide?: GeneratedGuide;
+  report: IngestionPipelineReport;
+}> {
+  const fetchDocument = args.fetchDocument;
+  if (!fetchDocument) return { report };
+
+  try {
+    const rendered = await fetchDocument(args.currentUrl, {
+      renderer: "firecrawl",
+      reason,
+    });
+
+    return processResolvedDocument({
+      ...args,
+      currentUrl: rendered.sourceUrl,
+      html: rendered.html,
+      markdown: rendered.markdown,
+      followedUrl: args.followedUrl ? rendered.sourceUrl : args.followedUrl,
+      priorReasoning: [...report.documentReasoning, reason],
+      renderedRetryAttempted: true,
+    });
+  } catch (error) {
+    return {
+      report: appendError(
+        {
+          ...report,
+          documentReasoning: [
+            ...report.documentReasoning,
+            `${reason} Firecrawl rendering retry failed.`,
+          ],
+        },
+        renderRefetchIssue(reason, error),
+      ),
+    };
+  }
+}
+
 async function runAiFallback(args: {
   sourceUrl: string;
   candidate: CandidateSection;
@@ -317,22 +400,7 @@ async function runAiFallback(args: {
   }
 }
 
-async function processResolvedDocument(args: {
-  source: BrandSource;
-  originalFetchedUrl: string;
-  currentUrl: string;
-  html: string;
-  markdown: string;
-  fetchDocument?: FetchDocument;
-  sourceTraceChain: SourceTraceStep[];
-  followedUrl?: string;
-  linkOriginId?: string;
-  navigationConfidence?: number;
-  remainingFollowHops: number;
-  followDepth: number;
-  priorReasoning?: string[];
-  llmExtractCandidate?: LlmCandidateExtractor;
-}): Promise<{
+async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promise<{
   guide?: GeneratedGuide;
   report: IngestionPipelineReport;
 }> {
@@ -384,6 +452,17 @@ async function processResolvedDocument(args: {
       warnings: initialWarnings,
       manualReviewRecommended: true,
     };
+
+    if (
+      canRetryWithRenderedDocument(args) &&
+      (args.remainingFollowHops <= 0 || !navigation.selected.length)
+    ) {
+      return retryWithRenderedDocument(
+        args,
+        hubReport,
+        "Static followed guide page stayed a hub without an extractable concrete table; retrying the same URL with Firecrawl rendering.",
+      );
+    }
 
     if (args.remainingFollowHops <= 0 || !args.fetchDocument) {
       return {
@@ -491,6 +570,7 @@ async function processResolvedDocument(args: {
     requestedSizeSystem,
     candidates: discoveredCandidates,
   });
+  const detectedFamilies = distinctDetectedFamilies(selection.candidates);
 
   let report: IngestionPipelineReport = {
     fetchedUrl: args.originalFetchedUrl,
@@ -515,6 +595,20 @@ async function processResolvedDocument(args: {
     manualReviewRecommended: selection.manualReviewRecommended,
   };
 
+  if (
+    canRetryWithRenderedDocument(args) &&
+    (classification.documentKind === "irrelevant" ||
+      !selection.candidates.length ||
+      detectedFamilies.length > 1 ||
+      !selection.selectedCandidateId)
+  ) {
+    return retryWithRenderedDocument(
+      args,
+      report,
+      "Static followed guide page did not expose a single selectable candidate; retrying the same URL with Firecrawl rendering.",
+    );
+  }
+
   if (classification.documentKind === "irrelevant") {
     return {
       report: appendError(report, {
@@ -535,7 +629,6 @@ async function processResolvedDocument(args: {
     };
   }
 
-  const detectedFamilies = distinctDetectedFamilies(selection.candidates);
   if (detectedFamilies.length > 1) {
     return {
       report: appendError(
