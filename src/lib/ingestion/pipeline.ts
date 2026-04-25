@@ -150,21 +150,6 @@ function uniqueAcceptedResults(
   return Array.from(bySource.values());
 }
 
-function buildSizeSystemAttempts(source: BrandSource): BrandSource[] {
-  const attempts = [source];
-  const requested = mapRequestedSizeSystem(source.sizeSystem);
-  const fallback = mapRequestedSizeSystem(source.fallbackSizeSystem);
-
-  if (fallback && fallback !== requested) {
-    attempts.push({
-      ...source,
-      sizeSystem: source.fallbackSizeSystem,
-    });
-  }
-
-  return attempts;
-}
-
 function fallbackAttemptIssue(args: {
   originalSource: BrandSource;
   fallbackSource: BrandSource;
@@ -186,6 +171,95 @@ function fallbackAttemptIssue(args: {
     message: `Primary size system ${primary} did not validate; accepted fallback size system ${fallback}.`,
     details: firstError ? [firstError] : undefined,
   };
+}
+
+function fallbackFailureIssue(args: {
+  originalSource: BrandSource;
+  fallbackSource: BrandSource;
+  firstReport?: IngestionPipelineReport;
+  fallbackReport?: IngestionPipelineReport;
+}): ValidationIssue {
+  const primary =
+    mapRequestedSizeSystem(args.originalSource.sizeSystem) ??
+    args.originalSource.sizeSystem ??
+    "unspecified";
+  const fallback =
+    mapRequestedSizeSystem(args.fallbackSource.sizeSystem) ??
+    args.fallbackSource.sizeSystem ??
+    "unspecified";
+  const details = [
+    args.firstReport?.validationErrors[0]?.message,
+    args.fallbackReport?.validationErrors[0]?.message,
+  ].filter((detail): detail is string => Boolean(detail));
+
+  return {
+    code: "fallback-size-system-skipped",
+    severity: "warning",
+    message: `Primary size system ${primary} failed for size-system reasons; fallback ${fallback} also did not produce a valid guide.`,
+    details: details.length ? details : undefined,
+  };
+}
+
+function sizeSystemFailureText(text: string | undefined): boolean {
+  if (!text) return false;
+  const normalized = text.toLowerCase();
+  const mentionsSizeSystem =
+    normalized.includes("size system") ||
+    normalized.includes("detected size") ||
+    normalized.includes("requested size");
+  return (
+    normalized.includes("alpha-size") ||
+    normalized.includes("international alpha") ||
+    (mentionsSizeSystem &&
+      (normalized.includes("does not match") ||
+        normalized.includes("mismatch") ||
+        normalized.includes("not compatible") ||
+        normalized.includes("does not expose") ||
+        normalized.includes("missing") ||
+        normalized.includes("unclear")))
+  );
+}
+
+function categoryFailureText(text: string | undefined): boolean {
+  if (!text) return false;
+  const normalized = text.toLowerCase();
+  return (
+    normalized.includes("multiple garment families") ||
+    normalized.includes("more than one garment category") ||
+    normalized.includes("no single candidate matched the requested category") ||
+    normalized.includes("does not match the requested category") ||
+    normalized.includes("different garment family") ||
+    normalized.includes("not a tops-family") ||
+    normalized.includes("not a tops/tshirts") ||
+    normalized.includes("generic body guidance")
+  );
+}
+
+function shouldAttemptFallbackSizeSystem(report: IngestionPipelineReport): boolean {
+  const validationTexts = report.validationErrors.flatMap((issue) => [
+    issue.code,
+    issue.message,
+    ...(issue.details ?? []),
+  ]);
+  const rejectionTexts = report.discoveredCandidates.flatMap(
+    (candidate) => candidate.rejectionReasons,
+  );
+  const allTexts = [
+    ...validationTexts,
+    ...report.selectionReasoning,
+    ...rejectionTexts,
+  ];
+  const hasSizeSystemFailure = allTexts.some(sizeSystemFailureText);
+  const hasCategoryFailure = allTexts.some(categoryFailureText);
+  const candidatesRejectedOnlyForSizeSystem =
+    report.discoveredCandidates.length > 0 &&
+    report.discoveredCandidates.every(
+      (candidate) =>
+        candidate.rejectionReasons.some(sizeSystemFailureText) &&
+        !candidate.rejectionReasons.some(categoryFailureText),
+    );
+
+  return (hasSizeSystemFailure || candidatesRejectedOnlyForSizeSystem) && !hasCategoryFailure;
 }
 
 function withFallbackDiagnostics(
@@ -263,12 +337,34 @@ function reasonForAiAttempt(args: {
   );
 }
 
+function isDirectGuideUrl(url: string): boolean {
+  const normalized = url.toLowerCase();
+  return (
+    /size-fit\//.test(normalized) ||
+    /size-guide\//.test(normalized) ||
+    /size-chart/.test(normalized) ||
+    /size_charts/.test(normalized) ||
+    /pages\/size-guides/.test(normalized)
+  );
+}
+
+function isRequestedDirectGuideUrl(args: ProcessResolvedDocumentArgs): boolean {
+  return (
+    args.followDepth === 0 &&
+    !args.followedUrl &&
+    args.sourceTraceChain.every((step) => step.kind === "requested-url") &&
+    isDirectGuideUrl(args.currentUrl)
+  );
+}
+
 function canRetryWithRenderedDocument(args: ProcessResolvedDocumentArgs): boolean {
   if (!args.fetchDocument || args.renderedRetryAttempted) return false;
+
   return (
     args.followDepth > 0 ||
     Boolean(args.followedUrl) ||
-    args.sourceTraceChain.some((step) => step.kind === "brand-fallback")
+    args.sourceTraceChain.some((step) => step.kind === "brand-fallback") ||
+    isRequestedDirectGuideUrl(args)
   );
 }
 
@@ -455,7 +551,9 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
 
     if (
       canRetryWithRenderedDocument(args) &&
-      (args.remainingFollowHops <= 0 || !navigation.selected.length)
+      (args.remainingFollowHops <= 0 ||
+        !navigation.selected.length ||
+        isRequestedDirectGuideUrl(args))
     ) {
       return retryWithRenderedDocument(
         args,
@@ -493,12 +591,17 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
       report: IngestionPipelineReport;
     }> = [];
 
-for (const link of navigation.selected) {
+    for (const link of navigation.selected) {
       const isBrandFallback = link.resolver === "brand-fallback";
+      const brandFallbackRenderReason =
+        "Brand fallback URL requires Firecrawl rendering because JavaScript is required to expose size tables.";
       const followed = await args.fetchDocument(
         link.url,
         isBrandFallback
-          ? { renderer: "firecrawl", reason: "Brand fallback URL requires JavaScript rendering to expose size tables." }
+          ? {
+              renderer: "firecrawl",
+              reason: brandFallbackRenderReason,
+            }
           : undefined,
       );
       const child = await processResolvedDocument({
@@ -514,7 +617,11 @@ for (const link of navigation.selected) {
         navigationConfidence: Math.min(0.98, 0.35 + link.score / 10),
         remainingFollowHops: args.remainingFollowHops - 1,
         followDepth: args.followDepth + 1,
-        priorReasoning: [...documentReasoning, ...navigation.reasoning],
+        priorReasoning: [
+          ...documentReasoning,
+          ...navigation.reasoning,
+          ...(isBrandFallback ? [brandFallbackRenderReason] : []),
+        ],
         llmExtractCandidate: args.llmExtractCandidate,
       });
 
@@ -827,56 +934,77 @@ export async function runIngestionPipeline(args: {
   guide?: GeneratedGuide;
   report: IngestionPipelineReport;
 }> {
-  const attempts = buildSizeSystemAttempts(args.source);
-  let firstFailure: IngestionPipelineReport | undefined;
-  let lastResult:
-    | {
-        guide?: GeneratedGuide;
-        report: IngestionPipelineReport;
-      }
-    | undefined;
+  const primaryResult = await processResolvedDocument({
+    source: args.source,
+    originalFetchedUrl: args.fetchedUrl,
+    currentUrl: args.fetchedUrl,
+    html: args.html,
+    markdown: args.markdown,
+    fetchDocument: args.fetchDocument,
+    sourceTraceChain: [requestedTraceStep(args.source, args.fetchedUrl)],
+    remainingFollowHops: 2,
+    followDepth: 0,
+    llmExtractCandidate: args.llmExtractCandidate,
+  });
 
-  for (const [index, source] of attempts.entries()) {
-    const result = await processResolvedDocument({
-      source,
-      originalFetchedUrl: args.fetchedUrl,
-      currentUrl: args.fetchedUrl,
-      html: args.html,
-      markdown: args.markdown,
-      fetchDocument: args.fetchDocument,
-      sourceTraceChain: [requestedTraceStep(source, args.fetchedUrl)],
-      remainingFollowHops: 2,
-      followDepth: 0,
-      llmExtractCandidate: args.llmExtractCandidate,
-    });
-
-    if (result.guide) {
-      if (index === 0) return result;
-
-      return withFallbackDiagnostics(
-        result,
-        fallbackAttemptIssue({
-          originalSource: args.source,
-          fallbackSource: source,
-          firstReport: firstFailure,
-        }),
-      );
-    }
-
-    firstFailure ??= result.report;
-    lastResult = result;
+  if (primaryResult.guide) {
+    return primaryResult;
   }
 
-  if (lastResult && attempts.length > 1) {
+  const primarySizeSystem = mapRequestedSizeSystem(args.source.sizeSystem);
+  const fallbackSizeSystem = mapRequestedSizeSystem(args.source.fallbackSizeSystem);
+
+  if (
+    !fallbackSizeSystem ||
+    fallbackSizeSystem === primarySizeSystem ||
+    !shouldAttemptFallbackSizeSystem(primaryResult.report)
+  ) {
+    return primaryResult;
+  }
+
+  const fallbackSource = {
+    ...args.source,
+    sizeSystem: args.source.fallbackSizeSystem,
+  };
+  const fallbackResult = await processResolvedDocument({
+    source: fallbackSource,
+    originalFetchedUrl: args.fetchedUrl,
+    currentUrl: args.fetchedUrl,
+    html: args.html,
+    markdown: args.markdown,
+    fetchDocument: args.fetchDocument,
+    sourceTraceChain: [requestedTraceStep(fallbackSource, args.fetchedUrl)],
+    remainingFollowHops: 2,
+    followDepth: 0,
+    llmExtractCandidate: args.llmExtractCandidate,
+  });
+
+  if (fallbackResult.guide) {
     return withFallbackDiagnostics(
-      lastResult,
+      fallbackResult,
       fallbackAttemptIssue({
         originalSource: args.source,
-        fallbackSource: attempts.at(-1) ?? args.source,
-        firstReport: firstFailure,
+        fallbackSource,
+        firstReport: primaryResult.report,
       }),
     );
   }
 
-  return lastResult!;
+  const fallbackIssue = fallbackFailureIssue({
+    originalSource: args.source,
+    fallbackSource,
+    firstReport: primaryResult.report,
+    fallbackReport: fallbackResult.report,
+  });
+
+  return {
+    report: {
+      ...primaryResult.report,
+      warnings: [...primaryResult.report.warnings, fallbackIssue],
+      documentReasoning: [
+        ...primaryResult.report.documentReasoning,
+        fallbackIssue.message,
+      ],
+    },
+  };
 }

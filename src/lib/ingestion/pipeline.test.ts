@@ -222,22 +222,52 @@ test("Pipeline refetches followed brand fallback pages with Firecrawl rendering"
     fetchDocument: async (url, options) => {
       assert.equal(url, fallbackUrl);
       fetchModes.push(options?.renderer ?? "auto");
-      if (options?.renderer === "firecrawl") {
-        return renderedTopGuide;
-      }
-      return {
-        sourceUrl: fallbackUrl,
-        html:
-          "<html><body><h1>Men's Tops Size Guide</h1><p>Loading rendered chart.</p></body></html>",
-        markdown: "# Men's Tops Size Guide\n\nLoading rendered chart.",
-      };
+      assert.equal(options?.renderer, "firecrawl");
+      return renderedTopGuide;
     },
   });
 
   assert.ok(result.guide);
-  assert.deepEqual(fetchModes, ["auto", "firecrawl"]);
+  assert.deepEqual(fetchModes, ["firecrawl"]);
   assert.equal(result.report.followedUrl, fallbackUrl);
   assert.equal(result.guide.guide.sourceTraceChain[1]?.kind, "brand-fallback");
+  assert.ok(
+    result.report.documentReasoning.some((reason) =>
+      reason.includes("Firecrawl rendering"),
+    ),
+  );
+});
+
+test("Pipeline refetches direct official guide URLs with Firecrawl rendering", async () => {
+  const directUrl = "https://www.nike.com/size-fit/mens-tops-alpha";
+  const fetchModes: string[] = [];
+  const result = await runFixture({
+    brand: "Nike",
+    fixture: {
+      url: directUrl,
+      html: `
+        <html>
+          <body>
+            <h1>Men's Tops Size Guide</h1>
+            <p>Loading chart.</p>
+            <a href="https://www.nike.com/size-fit-guide">Size Charts</a>
+          </body>
+        </html>
+      `,
+      markdown:
+        "# Men's Tops Size Guide\n\nLoading chart.\n\n[Size Charts](https://www.nike.com/size-fit-guide)",
+    },
+    fetchDocument: async (url, options) => {
+      assert.equal(url, directUrl);
+      fetchModes.push(options?.renderer ?? "auto");
+      assert.equal(options?.renderer, "firecrawl");
+      return renderedTopGuide;
+    },
+  });
+
+  assert.ok(result.guide);
+  assert.deepEqual(fetchModes, ["firecrawl"]);
+  assert.equal(result.report.resolvedSourceUrl, directUrl);
   assert.ok(
     result.report.documentReasoning.some((reason) =>
       reason.includes("Firecrawl rendering"),
@@ -271,6 +301,31 @@ test("Pipeline retries a fallback size system after the primary INT target fails
   assert.equal(result.guide.guide.originalSizeLabels[0], "34");
   assert.ok(
     result.report.warnings.some((warning) => warning.code === "fallback-size-system-used"),
+  );
+});
+
+test("Pipeline does not try fallback size system after a category failure", async () => {
+  const result = await runFixture({
+    brand: "Adidas",
+    fixture: fixtures.adidasMulti,
+    sizeSystem: "INT",
+    fallbackSizeSystem: "EU",
+  });
+
+  assert.equal(result.guide, undefined);
+  assert.equal(result.report.requestedSizeSystem, "INT");
+  assert.ok(
+    result.report.validationErrors.some(
+      (issue) => issue.code === "multiple-categories-detected",
+    ),
+  );
+  assert.equal(
+    result.report.warnings.some((warning) =>
+      ["fallback-size-system-used", "fallback-size-system-skipped"].includes(
+        warning.code,
+      ),
+    ),
+    false,
   );
 });
 
