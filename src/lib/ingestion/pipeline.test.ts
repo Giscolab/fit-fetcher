@@ -209,6 +209,31 @@ test("Nike hub filters product links before one-hop ranking", async () => {
   );
 });
 
+test("Navigation ignores image assets before Firecrawl rendering", () => {
+  const sourceUrl = "https://www.hm.com/size-guide";
+  const links = discoverLinkCandidates({
+    html: `
+      <a href="https://image.hm.com/assets/hm/example.jpg?imwidth=1536">
+        Men's tops size chart image
+      </a>
+      <a href="/sizeguide/men-tops">Men's Tops Size Guide</a>
+    `,
+    markdown: `
+![Men's tops size chart](https://image.hm.com/assets/hm/example.jpg?imwidth=1536)
+[Men's Tops Size Guide](/sizeguide/men-tops)
+    `,
+    sourceUrl,
+    requestedCategory: mapRequestedGarmentCategory("tshirts"),
+    requestedSizeSystem: mapRequestedSizeSystem("INT"),
+  });
+
+  assert.equal(
+    links.some((link) => link.url.includes("image.hm.com")),
+    false,
+  );
+  assert.ok(links.some((link) => link.url === "https://www.hm.com/sizeguide/men-tops"));
+});
+
 test("Pipeline refetches followed brand fallback pages with Firecrawl rendering", async () => {
   const fallbackUrl = "https://www.nike.com/size-fit/mens-tops-alpha";
   const fetchModes: string[] = [];

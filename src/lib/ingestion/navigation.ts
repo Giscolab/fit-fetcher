@@ -54,6 +54,20 @@ function resolveLink(baseUrl: string, href?: string): string | null {
   }
 }
 
+function isUnsupportedFetchTarget(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.toLowerCase();
+    return /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/.test(
+      pathname,
+    );
+  } catch {
+    return /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/i.test(
+      url,
+    );
+  }
+}
+
 function collectHeadingPath(
   $: cheerio.CheerioAPI,
   element: Element,
@@ -561,6 +575,7 @@ function discoverHtmlLinks(args: {
   $("a[href]").each((index, node) => {
     const url = resolveLink(args.sourceUrl, $(node).attr("href"));
     if (!url) return;
+    if (isUnsupportedFetchTarget(url)) return;
 
     const label = cleanText($(node).text()) || cleanText($(node).attr("title") ?? "");
     const headingPath = collectHeadingPath($, node);
@@ -607,8 +622,10 @@ function discoverMarkdownLinks(args: {
     const markdownLinkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
     let match: RegExpExecArray | null;
     while ((match = markdownLinkPattern.exec(line))) {
+      if (match.index > 0 && line[match.index - 1] === "!") continue;
       const url = resolveLink(args.sourceUrl, match[2]);
       if (!url) continue;
+      if (isUnsupportedFetchTarget(url)) continue;
       const label = cleanText(match[1]);
       const nearbyText = cleanText(
         [lines[index - 1] ?? "", line, lines[index + 1] ?? ""].join(" "),
@@ -772,6 +789,7 @@ export function selectHubFollowLinks(args: {
     );
     const isProductPage = isProductPageLink(candidate.url, candidate.label);
     const isUtilityNavigation = isUtilityNavigationLink(candidate.label, candidate.url);
+    const isUnsupportedTarget = isUnsupportedFetchTarget(candidate.url);
     const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, primaryContext);
     const isExploratoryCategory = isExploratoryCategoryLink(candidate.url, candidate.label);
     const oneHop = scoreOneHopGuideLink(primaryContext);
@@ -788,6 +806,9 @@ export function selectHubFollowLinks(args: {
       ...(isUtilityNavigation
         ? ["Rejected because the link looks like utility navigation."]
         : []),
+      ...(isUnsupportedTarget
+        ? ["Rejected because the link points to an unsupported binary asset."]
+        : []),
       ...(args.requireConcreteGuide && !effectiveConcreteSignal
         ? ["Rejected because second-hop links must point to a concrete size guide."]
         : []),
@@ -798,6 +819,7 @@ export function selectHubFollowLinks(args: {
       isNewUrl &&
       !isProductPage &&
       !isUtilityNavigation &&
+      !isUnsupportedTarget &&
       (!args.requireConcreteGuide || effectiveConcreteSignal);
 
     const baseScore = eligible
