@@ -542,6 +542,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
     const navigation = selectHubFollowLinks({
       linkCandidates,
       requireConcreteGuide: args.followDepth >= 1,
+      requestedCategory,
     });
     const hubReport: IngestionPipelineReport = {
       fetchedUrl: args.originalFetchedUrl,

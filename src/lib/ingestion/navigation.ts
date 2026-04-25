@@ -157,6 +157,11 @@ const FOOTWEAR_KEYWORDS = [
 const KIDS_KEYWORDS = [
   "kid", "kids", "child", "children", "junior",
   "baby", "infant", "toddler", "bebe", "bébé", "enfant", "enfants",
+  "boy", "boys", "girl", "girls",
+];
+const WOMEN_KEYWORDS = [
+  "women", "womens", "woman", "female",
+  "femme", "femmes", "lady", "ladies",
 ];
 const UTILITY_KEYWORDS = [
   "skip to footer content", "skip to main content", "skip to content",
@@ -179,6 +184,26 @@ const UTILITY_KEYWORDS = [
 ];
 
 // ── Fonctions de scoring multilingues ──────────────────────────────────
+
+function explicitLinkAudience(text: string): "men" | "women" | "kids" | "unisex" | "unknown" {
+  const normalized = normalizeToken(text);
+  if (containsAny(normalized, KIDS_KEYWORDS)) return "kids";
+  if (containsAny(normalized, WOMEN_KEYWORDS)) return "women";
+  if (containsAny(normalized, ["unisex", "gender neutral", "gender-neutral"])) return "unisex";
+  if (containsAny(normalized, MEN_KEYWORDS)) return "men";
+  return "unknown";
+}
+
+function incompatibleAudienceRejection(audienceText: string): string | null {
+  const audience = explicitLinkAudience(audienceText);
+  if (audience === "women") {
+    return "Rejected because the link explicitly targets women, not the requested men's guide.";
+  }
+  if (audience === "kids") {
+    return "Rejected because the link explicitly targets kids, not the requested men's guide.";
+  }
+  return null;
+}
 
 function isGuideLikeLink(text: string): boolean {
   const normalized = normalizeToken(text);
@@ -333,19 +358,26 @@ function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
   return guideSignal && !incompatibleSignal;
 }
 
-function scoreOneHopGuideLink(text: string): {
+function scoreOneHopGuideLink(text: string, audienceText = text): {
   score: number;
   reasons: string[];
   rejections: string[];
 } {
   const normalized = ` ${normalizeToken(text)} `;
+  const audience = explicitLinkAudience(audienceText);
   const reasons: string[] = [];
   const rejections: string[] = [];
   let score = 0;
 
-  if (containsAny(normalized, MEN_KEYWORDS)) {
+  if (audience === "men") {
     score += 3;
     reasons.push("One-hop score +3 for men's context.");
+  } else {
+    const audienceRejection = incompatibleAudienceRejection(audienceText);
+    if (audienceRejection) {
+      score -= 8;
+      rejections.push(audienceRejection);
+    }
   }
   if (containsAny(normalized, TOPS_KEYWORDS)) {
     score += 3;
@@ -367,7 +399,7 @@ function scoreOneHopGuideLink(text: string): {
     score -= 3;
     rejections.push("One-hop score -3 for bottoms context.");
   }
-  if (containsAny(normalized, KIDS_KEYWORDS)) {
+  if (audience === "kids") {
     score -= 5;
     rejections.push("One-hop score -5 for kids/baby context.");
   }
@@ -502,7 +534,7 @@ function createLinkCandidate(args: {
 
   const reasons: string[] = [];
   const rejectionReasons: string[] = [];
-  const oneHop = scoreOneHopGuideLink(context);
+  const oneHop = scoreOneHopGuideLink(context, `${label} ${args.url}`);
   const productPage = isProductPageLink(args.url, label);
   const utilityNavigation = isUtilityNavigationLink(label, args.url);
   const badMarketingTarget = isBadMarketingOrUtilityTarget(args.url, label);
@@ -889,6 +921,7 @@ export function discoverLinkCandidates(args: {
 export function selectHubFollowLinks(args: {
   linkCandidates: LinkCandidate[];
   requireConcreteGuide?: boolean;
+  requestedCategory?: GarmentCategory | null;
 }): {
   linkCandidates: LinkCandidate[];
   selected: LinkCandidate[];
@@ -912,14 +945,20 @@ export function selectHubFollowLinks(args: {
     const isBadMarketingTarget = isBadMarketingOrUtilityTarget(candidate.url, candidate.label);
     const isUnsupportedTarget = isUnsupportedFetchTarget(candidate.url);
     const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, primaryContext);
-    const oneHop = scoreOneHopGuideLink(primaryContext);
+    const oneHop = scoreOneHopGuideLink(context, primaryContext);
+    const primaryOneHop = scoreOneHopGuideLink(primaryContext, primaryContext);
 
     // Un brand fallback est toujours considéré comme ayant un signal concret
     const effectiveConcreteSignal =
       hasConcreteGuideSignal || candidate.resolver === "brand-fallback";
-
-    const disqualifications = [
-      ...oneHop.rejections,
+    const familyRejections =
+      args.requestedCategory === "tshirts"
+        ? primaryOneHop.rejections.filter((reason) =>
+            /footwear|bottoms|kids|women/i.test(reason),
+          )
+        : primaryOneHop.rejections.filter((reason) => /kids|women/i.test(reason));
+    const hardRejectReasons = [
+      ...familyRejections,
       ...(!isInternal ? ["Rejected because one-hop links must stay on the same domain."] : []),
       ...(!isNewUrl ? ["Rejected because one-hop links must not point to the current page."] : []),
       ...(isProductPage ? ["Rejected because the link looks like a product page."] : []),
@@ -934,21 +973,29 @@ export function selectHubFollowLinks(args: {
         : []),
     ];
 
+    const disqualifications = [
+      ...oneHop.rejections,
+      ...hardRejectReasons.filter((reason) => !oneHop.rejections.includes(reason)),
+    ];
+
     const eligible =
-      isInternal &&
-      isNewUrl &&
-      !isProductPage &&
-      !isUtilityNavigation &&
-      !isBadMarketingTarget &&
-      !isUnsupportedTarget &&
+      hardRejectReasons.length === 0 &&
       (!args.requireConcreteGuide || effectiveConcreteSignal);
 
+    const concreteGenericBonus =
+      candidate.resolver === "generic" && hasConcreteGuideSignal ? 4 : 0;
+    const genericApparelGuideBonus =
+      candidate.resolver === "generic" &&
+      hasConcreteGuideSignal &&
+      containsAny(primaryContext, ["apparel", "clothing", "tops", "tshirts", "shirts", "hauts"])
+        ? 3
+        : 0;
     const baseScore = eligible
-      ? oneHop.score + (effectiveConcreteSignal ? 3 : 0)
+      ? oneHop.score + (effectiveConcreteSignal ? 3 : 0) + concreteGenericBonus + genericApparelGuideBonus
       : -99;
 
     // Bonus additionnel pour les brand fallbacks
-    const brandBonus = candidate.resolver === "brand-fallback" && eligible ? 4 : 0;
+    const brandBonus = candidate.resolver === "brand-fallback" && eligible ? 2 : 0;
 
     return {
       ...candidate,
@@ -962,26 +1009,22 @@ export function selectHubFollowLinks(args: {
     .filter((candidate) => candidate.score >= 3)
     .sort((a, b) => b.score - a.score);
 
-  // Séparation par type
-  const concreteGeneric = sortedEligible.filter(
+  const concreteEligible = sortedEligible.filter(
     (candidate) =>
-      candidate.resolver === "generic" &&
+      candidate.resolver === "brand-fallback" ||
       hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
   );
-  const concreteFallback = sortedEligible.filter(
-    (candidate) => candidate.resolver === "brand-fallback",
-  );
-  // Priorité : lien concret trouvé dans la page > brand-fallback.
-  // Le brand-fallback reste là pour les hubs pauvres en liens concrets.
-  // Les liens exploratoires de catégories produits ont généré trop de faux positifs
-  // (Gift Guide, Style Guide, Styling Book, Denim Fit Guide) et restent en diagnostic.
-  const eligiblePool =
-    concreteGeneric.length
-      ? concreteGeneric
-      : concreteFallback;
+  // Les liens exploratoires de catégories produits ont généré trop de faux positifs.
+  // On choisit uniquement parmi les liens à intention guide concrète et les brand fallbacks.
+  const eligiblePool = concreteEligible;
 
   const eligible = eligiblePool.slice(0, 1);
   const topRescored = [...rescored].sort((a, b) => b.score - a.score)[0];
+  const topHardRejected = [...rescored]
+    .filter((candidate) =>
+      candidate.rejectionReasons.some((reason) => reason.startsWith("Rejected because")),
+    )
+    .sort((a, b) => b.score - a.score)[0];
   const selectedIds = new Set(eligible.map((candidate) => candidate.id));
   const reasoning: string[] = [];
 
@@ -991,12 +1034,18 @@ export function selectHubFollowLinks(args: {
     );
     for (const link of eligible) {
       reasoning.push(`One-hop candidate "${link.label}" scored ${link.score}.`);
+      reasoning.push(`Selected candidate id=${link.id} resolver=${link.resolver} finalScore=${link.score}.`);
     }
   } else {
     reasoning.push(
       topRescored
         ? `No one-hop internal guide link reached score >= 3. Best link "${topRescored.label}" scored ${topRescored.score}.`
         : "No one-hop internal guide links were discovered.",
+    );
+  }
+  if (topHardRejected) {
+    reasoning.push(
+      `Top hard-rejected candidate id=${topHardRejected.id} resolver=${topHardRejected.resolver} finalScore=${topHardRejected.score} hardRejectReason=${topHardRejected.rejectionReasons[0] ?? "none"}.`,
     );
   }
 

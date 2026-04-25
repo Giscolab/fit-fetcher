@@ -236,19 +236,23 @@ test("Navigation ignores image assets before Firecrawl rendering", () => {
 
 test("Navigation does not follow marketing utility links as size guides", () => {
   const sourceUrl = "https://www.hugoboss.com/size-guide";
+  const requestedCategory = mapRequestedGarmentCategory("tshirts");
   const links = discoverLinkCandidates({
     html: `
       <a href="/size-guide#cookie">Cookie settings</a>
       <a href="/en-us/gifts/">The Gift Guide</a>
       <a href="/rlmag/men">Style Guide: Men</a>
+      <a href="/size-chart/womens-tops">Women</a>
+      <a href="/size-chart/boys-tops">Boys</a>
+      <a href="/size-chart/girls-tops">Girls</a>
       <a href="/size-chart/men-tops">Men's Tops Size Chart</a>
     `,
     markdown: "",
     sourceUrl,
-    requestedCategory: mapRequestedGarmentCategory("tshirts"),
+    requestedCategory,
     requestedSizeSystem: mapRequestedSizeSystem("INT"),
   });
-  const navigation = selectHubFollowLinks({ linkCandidates: links });
+  const navigation = selectHubFollowLinks({ linkCandidates: links, requestedCategory });
 
   assert.deepEqual(
     navigation.selected.map((link) => link.url),
@@ -258,6 +262,34 @@ test("Navigation does not follow marketing utility links as size guides", () => 
     navigation.linkCandidates
       .filter((link) => ["Cookie settings", "The Gift Guide", "Style Guide: Men"].includes(link.label))
       .every((link) => link.selected === false),
+  );
+  const byLabel = new Map(navigation.linkCandidates.map((link) => [link.label, link]));
+
+  for (const label of ["Women", "Boys", "Girls"]) {
+    const candidate = byLabel.get(label);
+    assert.ok(candidate, `Missing candidate ${label}`);
+    assert.equal(
+      candidate.reasons.some((reason) => reason.includes("men's context")),
+      false,
+      `${label} must not receive men's context scoring`,
+    );
+    assert.equal(candidate.selected, false);
+  }
+
+  assert.ok(
+    byLabel.get("Women")?.rejectionReasons.some((reason) =>
+      reason.includes("explicitly targets women"),
+    ),
+  );
+  assert.ok(
+    byLabel.get("Boys")?.rejectionReasons.some((reason) =>
+      reason.includes("explicitly targets kids"),
+    ),
+  );
+  assert.ok(
+    byLabel.get("Girls")?.rejectionReasons.some((reason) =>
+      reason.includes("explicitly targets kids"),
+    ),
   );
 });
 

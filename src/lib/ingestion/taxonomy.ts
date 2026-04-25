@@ -167,6 +167,9 @@ export function mapRequestedGarmentCategory(raw?: string): GarmentCategory | nul
       "body",
       "body guide",
       "body measurement",
+      "body measurements",
+      "body measure",
+      "body measures",
       "guide morphologie",
       "guide des mesures",
       "generic body guide",
@@ -374,6 +377,9 @@ export function detectCategory(args: {
   if (
     containsAny(sectionText, [
       "body measurement",
+      "body measurements",
+      "body measure",
+      "body measures",
       "body guide",
       "guide des mesures",
       "size advice",
