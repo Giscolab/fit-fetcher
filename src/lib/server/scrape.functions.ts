@@ -34,6 +34,29 @@ function pushPipelineDiagnostics(logs: string[], report: IngestionPipelineReport
     );
     logs.push(`  Raison lien: ${reason}`);
   }
+
+  if (report.aiFallbackAttempt) {
+    logs.push("Extraction déterministe échouée; tentative du fallback Firecrawl LLM.");
+    logs.push(
+      [
+        `Fallback Firecrawl LLM status=${report.aiFallbackAttempt.status}`,
+        `rows=${report.aiFallbackAttempt.rowsCount}`,
+        `score=${report.aiFallbackAttempt.score}`,
+        `fields=${report.aiFallbackAttempt.extractedFieldKeys.join(", ") || "none"}`,
+      ].join(" "),
+    );
+    logs.push(`Raison fallback IA: ${report.aiFallbackAttempt.reason}`);
+  }
+}
+
+function failureReason(report: IngestionPipelineReport): string {
+  const baseReason =
+    report.validationErrors[0]?.message ??
+    "La page n'a pas pu être convertie en guide de tailles validé.";
+
+  if (!report.aiFallbackAttempt) return baseReason;
+
+  return `${baseReason} Fallback IA: ${report.aiFallbackAttempt.reason}`;
 }
 
 function validateExternalUrl(raw: string): URL {
@@ -153,9 +176,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
       }
 
       if (!guide) {
-        const reason =
-          report.validationErrors[0]?.message ??
-          "La page n'a pas pu être convertie en guide de tailles validé.";
+        const reason = failureReason(report);
         return {
           error: "NO_VALID_SIZE_GUIDE",
           reason,

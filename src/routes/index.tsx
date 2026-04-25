@@ -45,7 +45,8 @@ export const Route = createFileRoute("/")({
 
 function summarizeRun(result: ScrapeResponse) {
   if (result.guide) {
-    return `${result.guide.guide.sourceSectionTitle} · ${result.guide.guide.validationStatus}`;
+    const ai = result.pipeline.aiFallbackAttempt ? " · IA fallback" : "";
+    return `${result.guide.guide.sourceSectionTitle} · ${result.guide.guide.validationStatus}${ai}`;
   }
   return (
     result.reason ??
@@ -133,6 +134,7 @@ function HomePage() {
 
         setResults((previous) => {
           const next = [...previous];
+          const lastExtraction = response.pipeline.candidateExtractions.at(-1);
           next[i] = {
             ...next[i],
             status: deriveStatus(response),
@@ -140,7 +142,7 @@ function HomePage() {
             pipeline: response.pipeline,
             rowsCount:
               response.guide?.guide.rows.length ??
-              response.pipeline.candidateExtractions[0]?.rows.length,
+              lastExtraction?.rows.length,
             message: summarizeRun(response),
             logs: response.logs,
           };

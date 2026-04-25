@@ -7,6 +7,7 @@ import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
 import { selectCandidate } from "@/lib/ingestion/selection";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
 import { parseRangeCm } from "@/lib/normalizers/units";
+import type { SizeRow } from "@/lib/types";
 
 function makeSource(
   brand: string,
@@ -31,6 +32,7 @@ async function runFixture(args: {
   sizeSystem?: string;
   fallbackSizeSystem?: string;
   followed?: Record<string, { sourceUrl: string; html: string; markdown: string }>;
+  llmExtractCandidate?: Parameters<typeof runIngestionPipeline>[0]["llmExtractCandidate"];
 }) {
   return runIngestionPipeline({
     source: makeSource(
@@ -50,8 +52,58 @@ async function runFixture(args: {
           return doc;
         }
       : undefined,
+    llmExtractCandidate: args.llmExtractCandidate,
   });
 }
+
+function llmTopRows(includeInseam = false): SizeRow[] {
+  return ["XS", "S", "M", "L", "XL"].map((label, index) => ({
+    label,
+    originalLabel: label,
+    canonicalLabel: label,
+    fitVariant: "standard",
+    evidenceRowLabel: label,
+    rawMeasurements: {},
+    chestCmMin: 80 + index * 6,
+    chestCmMax: 86 + index * 6,
+    ...(includeInseam
+      ? {
+          inseamCmMin: 76 + index,
+          inseamCmMax: 78 + index,
+        }
+      : {}),
+  }));
+}
+
+const llmOnlyTopFixture = {
+  url: "https://example.com/llm-only-tops",
+  html: `
+    <html>
+      <body>
+        <h1>Men's Tops Size Guide</h1>
+        <table>
+          <tr><th>Size</th><th>Chest (cm)</th><th>Height (cm)</th></tr>
+          <tr><td>XS</td><td>See rendered chart</td><td>See rendered chart</td></tr>
+          <tr><td>S</td><td>See rendered chart</td><td>See rendered chart</td></tr>
+          <tr><td>M</td><td>See rendered chart</td><td>See rendered chart</td></tr>
+          <tr><td>L</td><td>See rendered chart</td><td>See rendered chart</td></tr>
+          <tr><td>XL</td><td>See rendered chart</td><td>See rendered chart</td></tr>
+        </table>
+      </body>
+    </html>
+  `,
+  markdown: `
+# Men's Tops Size Guide
+
+Size | Chest (cm) | Height (cm)
+--- | --- | ---
+XS | See rendered chart | See rendered chart
+S | See rendered chart | See rendered chart
+M | See rendered chart | See rendered chart
+L | See rendered chart | See rendered chart
+XL | See rendered chart | See rendered chart
+  `,
+};
 
 test("Nike transposed tops table extracts all visible INT rows without collapsing tall variants", async () => {
   const result = await runFixture({
@@ -153,6 +205,76 @@ test("Pipeline retries a fallback size system after the primary INT target fails
   assert.ok(
     result.report.warnings.some((warning) => warning.code === "fallback-size-system-used"),
   );
+});
+
+test("Pipeline accepts Firecrawl LLM fallback only after strict validation passes", async () => {
+  const result = await runFixture({
+    brand: "LLM Tops",
+    fixture: llmOnlyTopFixture,
+    llmExtractCandidate: async () => ({
+      rows: llmTopRows(),
+      extractedFieldKeys: ["chest"],
+      warnings: [],
+      score: 0.74,
+    }),
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.report.validationStatus, "accepted");
+  assert.equal(result.report.aiFallbackAttempt?.status, "accepted");
+  assert.equal(result.report.candidateExtractions[0]?.strategy, "none");
+  assert.equal(result.report.candidateExtractions[1]?.strategy, "llm");
+  assert.equal(result.guide.guide.extractionConfidence, 0.74);
+  assert.equal(result.guide.guide.rows.length, 5);
+});
+
+test("Pipeline blocks Nike-like LLM rows that fuse tops and bottoms evidence", async () => {
+  const result = await runFixture({
+    brand: "Invalid LLM Tops",
+    fixture: llmOnlyTopFixture,
+    llmExtractCandidate: async () => ({
+      rows: llmTopRows(true),
+      extractedFieldKeys: ["chest", "inseam"],
+      warnings: [],
+      score: 0.74,
+    }),
+  });
+
+  assert.equal(result.guide, undefined);
+  assert.equal(result.report.manualReviewRecommended, true);
+  assert.equal(result.report.aiFallbackAttempt?.status, "rejected");
+  assert.equal(result.report.candidateExtractions.at(-1)?.strategy, "llm");
+  assert.equal(result.report.candidateExtractions.at(-1)?.rows.length, 5);
+  assert.ok(
+    result.report.validationErrors.some((issue) =>
+      ["fused-top-bottom-evidence", "top-has-inseam"].includes(issue.code),
+    ),
+  );
+});
+
+test("Pipeline does not run LLM fallback when no candidate section exists", async () => {
+  let llmCalls = 0;
+  const result = await runFixture({
+    brand: "No Candidate",
+    fixture: {
+      url: "https://example.com/no-size-guide",
+      html: "<html><body><h1>Shipping and returns</h1><p>No size data here.</p></body></html>",
+      markdown: "# Shipping and returns\n\nNo size data here.",
+    },
+    llmExtractCandidate: async () => {
+      llmCalls += 1;
+      return {
+        rows: llmTopRows(),
+        extractedFieldKeys: ["chest"],
+        warnings: [],
+        score: 0.74,
+      };
+    },
+  });
+
+  assert.equal(result.guide, undefined);
+  assert.equal(llmCalls, 0);
+  assert.equal(result.report.aiFallbackAttempt, undefined);
 });
 
 test("Adidas multi-guide page fails instead of extracting from a mixed category page", async () => {

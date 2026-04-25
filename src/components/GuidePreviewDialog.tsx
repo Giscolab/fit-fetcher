@@ -22,6 +22,7 @@ import { shoppingAssistantGuideFilename } from "@/lib/normalizers/guideBuilder";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
 import type {
   BrandResult,
+  CandidateExtraction,
   CandidateSection,
   LinkCandidate,
   SizeRow,
@@ -233,6 +234,67 @@ function CandidateCard({
   );
 }
 
+function ExtractionCard({ extraction }: { extraction: CandidateExtraction }) {
+  const visibleCols = MEASURE_COLS.filter((column) =>
+    extraction.rows.some((row) => row[column.min] != null || row[column.max] != null),
+  );
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-sm font-semibold">Extraction {extraction.strategy}</h3>
+        <Badge variant="outline">{extraction.validationStatus}</Badge>
+        <Badge variant="outline">{extraction.rows.length} ligne(s)</Badge>
+        {extraction.extractedFieldKeys.map((field) => (
+          <Badge key={field} variant="outline">
+            {field}
+          </Badge>
+        ))}
+      </div>
+
+      {!!extraction.validationErrors.length && (
+        <div className="text-xs text-destructive/90">
+          Rejets: {extraction.validationErrors.map((issue) => issue.code).join(", ")}
+        </div>
+      )}
+      {!!extraction.warnings.length && (
+        <div className="text-xs text-muted-foreground">
+          Avertissements: {extraction.warnings.map((issue) => issue.code).join(", ")}
+        </div>
+      )}
+
+      {extraction.rows.length > 0 ? (
+        <div className="overflow-auto rounded border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Libellé</TableHead>
+                {visibleCols.map((column) => (
+                  <TableHead key={column.label}>{column.label}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {extraction.rows.slice(0, 8).map((row, index) => (
+                <TableRow key={`${row.originalLabel}-${index}`}>
+                  <TableCell className="font-medium">{row.originalLabel}</TableCell>
+                  {visibleCols.map((column) => (
+                    <TableCell key={column.label} className="text-muted-foreground">
+                      {fmt(row, column.min, column.max)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">Aucune ligne extraite.</p>
+      )}
+    </div>
+  );
+}
+
 export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
   const guide = result?.guide;
   const pipeline = result?.pipeline;
@@ -429,6 +491,24 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                   destructive
                 />
                 <IssueList title="Avertissements" issues={pipeline.warnings} />
+                {pipeline.aiFallbackAttempt && (
+                  <Alert>
+                    <ShieldCheck className="size-4" />
+                    <AlertTitle>Fallback IA Firecrawl</AlertTitle>
+                    <AlertDescription className="space-y-2">
+                      <p>
+                        Statut {pipeline.aiFallbackAttempt.status} ·{" "}
+                        {pipeline.aiFallbackAttempt.rowsCount} ligne(s) · score{" "}
+                        {pipeline.aiFallbackAttempt.score.toFixed(2)}
+                      </p>
+                      <p>
+                        Champs:{" "}
+                        {pipeline.aiFallbackAttempt.extractedFieldKeys.join(", ") || "aucun"}
+                      </p>
+                      <p>{pipeline.aiFallbackAttempt.reason}</p>
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <TraceChain steps={pipeline.sourceTraceChain} />
 
                 {!!pipeline.documentReasoning.length && (
@@ -450,6 +530,20 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                         <p key={index}>{line}</p>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {!!pipeline.candidateExtractions.length && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold">
+                      Extractions candidates ({pipeline.candidateExtractions.length})
+                    </h3>
+                    {pipeline.candidateExtractions.map((extraction, index) => (
+                      <ExtractionCard
+                        key={`${extraction.candidateId}-${extraction.strategy}-${index}`}
+                        extraction={extraction}
+                      />
+                    ))}
                   </div>
                 )}
 

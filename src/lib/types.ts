@@ -365,13 +365,24 @@ export interface CandidateSection {
 
 export interface CandidateExtraction {
   candidateId: string;
-  strategy: "table" | "aria-grid" | "markdown-table" | "none";
+  strategy: "table" | "aria-grid" | "markdown-table" | "llm" | "none";
   rows: SizeRow[];
   extractedFieldKeys: MeasurementField[];
   extractionConfidence: number;
   validationStatus: ValidationStatus;
   validationErrors: ValidationIssue[];
   warnings: ValidationIssue[];
+}
+
+export interface AiFallbackAttempt {
+  candidateId: string;
+  status: ValidationStatus | "error";
+  reason: string;
+  rowsCount: number;
+  extractedFieldKeys: MeasurementField[];
+  score: number;
+  warnings: ValidationIssue[];
+  validationErrors: ValidationIssue[];
 }
 
 export interface Guide {
@@ -435,6 +446,7 @@ export interface IngestionPipelineReport {
   rejectedCandidateIds: string[];
   selectionReasoning: string[];
   candidateExtractions: CandidateExtraction[];
+  aiFallbackAttempt?: AiFallbackAttempt;
   validationStatus: ValidationStatus;
   validationErrors: ValidationIssue[];
   warnings: ValidationIssue[];

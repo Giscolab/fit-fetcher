@@ -97,22 +97,59 @@ function collectNearbyText(
   return chunks.join(" ").slice(0, 320);
 }
 
+// ── Mots-clés multilingues pour la navigation ──────────────────────────
+
+const MEN_KEYWORDS = ["men", "mens", "homme", "hommes", "man", "male"];
+const WOMEN_KEYWORDS = ["women", "womans", "woman", "femme", "femmes", "lady", "ladies"];
+const TOPS_KEYWORDS = [
+  "top", "tops", "haut", "hauts",
+  "shirt", "shirts", "chemise", "chemises",
+  "tee", "tees", "t-shirt", "t-shirts",
+  "tshirt", "tshirts",
+];
+const BOTTOMS_KEYWORDS = [
+  "pant", "pants", "trouser", "trousers", "pantalon", "pantalons",
+  "bottom", "bottoms", "bas", "jean", "jeans", "short", "shorts",
+  "inseam", "entrejambe",
+];
+const SIZE_KEYWORDS = [
+  "size", "taille", "tailles", "fit", "guide",
+  "chart", "charts", "alpha", "officiel", "official",
+  "sizing", "measurement", "measurements", "mesure", "mesures",
+];
+const FOOTWEAR_KEYWORDS = [
+  "shoe", "shoes", "footwear", "chaussure", "chaussures",
+  "foot length", "foot width",
+];
+const KIDS_KEYWORDS = [
+  "kid", "kids", "child", "children", "junior",
+  "baby", "infant", "toddler", "bebe", "bébé", "enfant", "enfants",
+];
+const UTILITY_KEYWORDS = [
+  "skip to footer content", "skip to main content", "skip to content",
+  "acceder au contenu principal", "accéder au contenu principal",
+  "main content", "create account", "sign in", "log in", "login",
+  "cart", "bag", "wishlist", "menu", "search",
+  "send us feedback", "site feedback", "your opinion counts",
+  "contact us", "customer service", "help", "support",
+  "accessibility", "privacy", "terms", "newsletter",
+  "gifts for him", "gifts for her", "gifts for mom",
+  "spring selection", "summer selection", "new arrivals",
+  "sale", "deals", "uniqlo u",
+  "shop by gender", "gender",
+  "explore", "my account", "account",
+];
+
+// ── Fonctions de scoring multilingues ──────────────────────────────────
+
 function isGuideLikeLink(text: string): boolean {
-  return containsAny(normalizeToken(text), [
-    "size",
-    "fit",
-    "guide",
-    "chart",
-    "tops",
-    "tees",
-    "shirts",
-    "apparel",
-    "clothing",
-    "homme",
-    "femme",
-    "women",
-    "men",
-  ]);
+  const normalized = normalizeToken(text);
+  if (containsAny(normalized, SIZE_KEYWORDS)) return true;
+  if (containsAny(normalized, TOPS_KEYWORDS)) return true;
+  if (containsAny(normalized, ["apparel", "clothing", "vetement", "vêtement", "vetements", "vêtements"])) return true;
+  if (containsAny(normalized, MEN_KEYWORDS)) return true;
+  if (containsAny(normalized, WOMEN_KEYWORDS)) return true;
+  return false;
 }
 
 function isProductPageLink(url: string, text: string): boolean {
@@ -125,8 +162,9 @@ function isProductPageLink(url: string, text: string): boolean {
     }
   })();
   const hasGuideSignal =
-    /\b(size|chart|guide|alpha|measurement|measurements)\b/i.test(raw) ||
-    /size[-_/]?(fit|chart|guide)/i.test(url);
+    /\b(size|chart|guide|alpha|measurement|measurements|taille|tailles|officiel)\b/i.test(raw) ||
+    /size[-_/]?(fit|chart|guide)/i.test(url) ||
+    /mens?[-_]?tops?[-_]?alpha|mens?_tops?_alpha|tops?[-_]?alpha|apparel[-_/]size/i.test(path);
   const hasPrice = /[$]\s?\d/.test(text) || /\b(?:usd|gbp|cad|aud)\s?\d/i.test(text);
   const hasProductPath =
     /\/(?:p|product|products|sku)\//i.test(path) ||
@@ -157,33 +195,17 @@ function isUtilityNavigationLink(label: string, url: string): boolean {
       return url.toLowerCase();
     }
   })();
-  const hasGuideSignal = /\b(size|sizing|fit|chart|guide|alpha|measurements?)\b/.test(
-    normalizedLabel,
-  );
 
-  if (hasGuideSignal) return false;
+  // Ne jamais rejeter un lien qui a un signal de guide de taille
+  if (containsAny(normalizedLabel, SIZE_KEYWORDS)) return false;
+  if (containsAny(normalizedLabel, TOPS_KEYWORDS)) return false;
+  if (containsAny(normalizedLabel, ["apparel", "clothing"])) return false;
+
+  // Ancres et liens de navigation interne
   if (/^\/?(?:#|main|content|skip)/.test(path)) return true;
-  if (
-    /^(skip(?: to)?(?: main)? content|main content|shop by gender|gender|menu|search|account|sign in|log in|cart|bag|wishlist)$/.test(
-      normalizedLabel,
-    )
-  ) {
-    return true;
-  }
-  if (
-    /^(send us feedback|feedback|your opinion counts|contact us|customer service|help|support|accessibility|privacy|terms|newsletter)$/.test(
-      normalizedLabel,
-    )
-  ) {
-    return true;
-  }
-  if (
-    /^(gifts for him|gifts for her|spring selection|summer selection|new arrivals|sale|deals|uniqlo u)$/.test(
-      normalizedLabel,
-    )
-  ) {
-    return true;
-  }
+
+  // Mots-clés utilitaires multilingues
+  if (containsAny(normalizedLabel, UTILITY_KEYWORDS)) return true;
 
   return false;
 }
@@ -199,13 +221,16 @@ function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
     }
   })();
   const guideSignal =
-    /\b(size|sizing|fit|chart|guide|alpha|measurements?)\b/.test(normalized) ||
+    containsAny(normalized, SIZE_KEYWORDS) ||
     /(?:size[-_/]?(?:fit|chart|guide)|\/size-fit\/|mens?[-_]?tops?[-_]?alpha|mens?_tops?_alpha|tops?[-_]?alpha|apparel[-_/]size)/i.test(
       path,
     );
-  const incompatibleSignal = /\b(shoe|shoes|footwear|kid|kids|baby|pant|pants|bottom|bottoms|inseam|bra|bras)\b/.test(
-    normalized,
-  );
+  const incompatibleSignal = containsAny(normalized, [
+    ...FOOTWEAR_KEYWORDS,
+    ...KIDS_KEYWORDS,
+    ...BOTTOMS_KEYWORDS,
+    "bra", "bras",
+  ]);
 
   return guideSignal && !incompatibleSignal;
 }
@@ -224,18 +249,14 @@ function isExploratoryCategoryLink(url: string, label: string): boolean {
   const categoryPath =
     /\/(?:[a-z]{2}\/)?w\//i.test(path) ||
     /\/(?:c|collections?)\//i.test(path) ||
-    /\/(?:men|mens|women|womens|kids)[-_/]?[^/?#]*(?:tops?|tees?|shirts?|clothing|apparel)/i.test(path) ||
+    /\/(?:men|mens|women|womens|kids|homme|femme)[-_/]?[^/?#]*(?:tops?|tees?|shirts?|clothing|apparel|haut|hauts)/i.test(path) ||
     /\/(?:men|mens|women|womens)[-_](?:tops?|tees?|shirts?|clothing|apparel)/i.test(path);
   const categoryLabel = containsAny(normalized, [
-    "top",
-    "tops",
-    "tee",
-    "tees",
-    "shirt",
-    "shirts",
-    "graphic tees",
-    "apparel",
-    "clothing",
+    "top", "tops", "haut", "hauts",
+    "tee", "tees", "t-shirt", "t-shirts",
+    "shirt", "shirts", "chemise", "chemises",
+    "graphic tees", "apparel", "clothing",
+    "vetement", "vêtement",
   ]);
 
   return categoryPath && categoryLabel;
@@ -251,31 +272,31 @@ function scoreOneHopGuideLink(text: string): {
   const rejections: string[] = [];
   let score = 0;
 
-  if (/\b(men|mens)\b/.test(normalized)) {
+  if (containsAny(normalized, MEN_KEYWORDS)) {
     score += 3;
     reasons.push("One-hop score +3 for men's context.");
   }
-  if (/\b(top|tops|shirt|shirts|tee|tees)\b/.test(normalized)) {
+  if (containsAny(normalized, TOPS_KEYWORDS)) {
     score += 3;
     reasons.push("One-hop score +3 for tops/shirts/tees context.");
   }
-  if (/\bsize\b/.test(normalized)) {
+  if (containsAny(normalized, SIZE_KEYWORDS)) {
     score += 2;
     reasons.push("One-hop score +2 for size context.");
   }
-  if (/\b(chart|guide)\b/.test(normalized)) {
+  if (containsAny(normalized, ["chart", "guide", "alpha"])) {
     score += 2;
     reasons.push("One-hop score +2 for chart/guide context.");
   }
-  if (/\b(shoe|shoes|footwear)\b/.test(normalized)) {
+  if (containsAny(normalized, FOOTWEAR_KEYWORDS)) {
     score -= 3;
     rejections.push("One-hop score -3 for footwear context.");
   }
-  if (/\b(pant|pants|bottom|bottoms)\b/.test(normalized)) {
+  if (containsAny(normalized, BOTTOMS_KEYWORDS)) {
     score -= 3;
     rejections.push("One-hop score -3 for bottoms context.");
   }
-  if (/\b(kid|kids|baby|infant|toddler)\b/.test(normalized)) {
+  if (containsAny(normalized, KIDS_KEYWORDS)) {
     score -= 5;
     rejections.push("One-hop score -5 for kids/baby context.");
   }
@@ -323,23 +344,27 @@ function scoreBrandFallbackBonus(url: string, text: string): {
 } {
   const normalized = normalizeToken(`${url} ${text}`);
 
-  if (containsAny(normalized, ["underarmour"])) {
-    if (containsAny(normalized, ["top", "tops", "shirt", "shirts"])) {
+  // Bonus de base pour tout brand fallback : +5 pour garantir qu'il passe devant
+  // les liens génériques faibles, mais reste derrière un bon lien concret.
+  let baseScore = 5;
+
+  if (containsAny(normalized, ["underarmour", "under armour"])) {
+    if (containsAny(normalized, TOPS_KEYWORDS)) {
       return {
-        score: 1.5,
+        score: baseScore + 1.5,
         reason: "Under Armour fallback favored an apparel tops link.",
       };
     }
   }
 
   if (containsAny(normalized, ["newbalance", "new balance"])) {
-    if (containsAny(normalized, ["apparel", "clothing", "tops", "shirts"])) {
+    if (containsAny(normalized, ["apparel", "clothing", ...TOPS_KEYWORDS])) {
       return {
-        score: 1.5,
+        score: baseScore + 1.5,
         reason: "New Balance fallback favored apparel over footwear.",
       };
     }
-    if (containsAny(normalized, ["shoe", "shoes", "footwear"])) {
+    if (containsAny(normalized, FOOTWEAR_KEYWORDS)) {
       return {
         score: -2,
         reason: "New Balance fallback penalized footwear-only links for apparel requests.",
@@ -347,17 +372,23 @@ function scoreBrandFallbackBonus(url: string, text: string): {
     }
   }
 
-  if (containsAny(normalized, ["puma", "adidas", "reebok"])) {
-    if (containsAny(normalized, ["apparel", "clothing", "top", "tops", "shirt", "shirts"])) {
+  if (containsAny(normalized, ["puma", "adidas", "reebok", "nike"])) {
+    if (containsAny(normalized, ["apparel", "clothing", ...TOPS_KEYWORDS])) {
       return {
-        score: 1,
+        score: baseScore + 1,
         reason: "Brand fallback favored an apparel-oriented guide link.",
       };
     }
   }
 
-  return { score: 0 };
+  // Même sans mot-clé spécifique, un brand fallback reste prioritaire
+  return {
+    score: baseScore,
+    reason: "Brand fallback link is preferred over generic links on hub pages.",
+  };
 }
+
+// ── Création de liens candidats ────────────────────────────────────────
 
 function createLinkCandidate(args: {
   id: string;
@@ -472,12 +503,12 @@ function createLinkCandidate(args: {
     }
   }
 
-  if (containsAny(normalizeToken(context), ["shoe", "shoes", "footwear"])) {
+  if (containsAny(normalizeToken(context), FOOTWEAR_KEYWORDS)) {
     score -= args.requestedCategory === "tshirts" ? 4 : 1;
     rejectionReasons.push("Footwear-focused links are not valid for this apparel request.");
   }
 
-  if (containsAny(normalizeToken(context), ["bottom", "bottoms", "pant", "pants", "inseam"])) {
+  if (containsAny(normalizeToken(context), BOTTOMS_KEYWORDS)) {
     score -= args.requestedCategory === "tshirts" ? 3 : 0;
     if (args.requestedCategory === "tshirts") {
       rejectionReasons.push("Bottoms-focused links are not valid for this tops request.");
@@ -501,6 +532,8 @@ function createLinkCandidate(args: {
     resolver: args.resolver,
   };
 }
+
+// ── Déduplication et découverte ────────────────────────────────────────
 
 function dedupeLinks(links: LinkCandidate[]): LinkCandidate[] {
   const seen = new Map<string, LinkCandidate>();
@@ -602,6 +635,8 @@ function discoverMarkdownLinks(args: {
   return links;
 }
 
+// ── Fallbacks officiels par marque ──────────────────────────────────────
+
 function officialBrandFallbackUrls(args: {
   sourceUrl: string;
   requestedCategory: GarmentCategory | null;
@@ -656,6 +691,24 @@ function officialBrandFallbackUrls(args: {
     return [{ url: "https://eu.puma.com/de/en/size-charts.html", label: "PUMA guide officiel tailles homme" }];
   }
 
+  if (host.includes("reebok.")) {
+    if (isTop) {
+      return [{ url: "https://www.reebok.com/us/men-tops-size-chart", label: "Reebok guide officiel hauts homme" }];
+    }
+    return [{ url: "https://www.reebok.com/us/size-chart-men", label: "Reebok guide officiel tailles homme" }];
+  }
+
+  if (host.includes("underarmour.") || host.includes("under armour.")) {
+    if (isTop) {
+      return [{ url: "https://www.underarmour.com/en-us/t/size-guide/mens-tops/", label: "Under Armour guide officiel hauts homme" }];
+    }
+    return [{ url: "https://www.underarmour.com/en-us/t/size-guide/mens/", label: "Under Armour guide officiel tailles homme" }];
+  }
+
+  if (host.includes("newbalance.") || host.includes("new balance.")) {
+    return [{ url: "https://www.newbalance.com/size-guide/apparel/", label: "New Balance guide officiel vêtements homme" }];
+  }
+
   return [];
 }
 
@@ -672,13 +725,15 @@ function discoverBrandFallbackLinks(args: {
       label: fallback.label,
       headingPath: ["Guide officiel connu"],
       nearbyText:
-        "Lien de secours officiel utilisé lorsque la page fournie ne contient pas directement de tableau exploitable.",
+        "Official brand size guide fallback. Guide des tailles officiel. Men's tops size chart. Lien de secours officiel utilisé lorsque la page fournie ne contient pas directement de tableau exploitable.",
       requestedCategory: args.requestedCategory,
       requestedSizeSystem: args.requestedSizeSystem,
       resolver: "brand-fallback",
     }),
   );
 }
+
+// ── API publiques ──────────────────────────────────────────────────────
 
 export function discoverLinkCandidates(args: {
   html: string;
@@ -720,6 +775,11 @@ export function selectHubFollowLinks(args: {
     const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, primaryContext);
     const isExploratoryCategory = isExploratoryCategoryLink(candidate.url, candidate.label);
     const oneHop = scoreOneHopGuideLink(primaryContext);
+
+    // Un brand fallback est toujours considéré comme ayant un signal concret
+    const effectiveConcreteSignal =
+      hasConcreteGuideSignal || candidate.resolver === "brand-fallback";
+
     const disqualifications = [
       ...oneHop.rejections,
       ...(!isInternal ? ["Rejected because one-hop links must stay on the same domain."] : []),
@@ -728,43 +788,60 @@ export function selectHubFollowLinks(args: {
       ...(isUtilityNavigation
         ? ["Rejected because the link looks like utility navigation."]
         : []),
-      ...(args.requireConcreteGuide && !hasConcreteGuideSignal
+      ...(args.requireConcreteGuide && !effectiveConcreteSignal
         ? ["Rejected because second-hop links must point to a concrete size guide."]
         : []),
     ];
-    const score =
+
+    const eligible =
       isInternal &&
       isNewUrl &&
       !isProductPage &&
       !isUtilityNavigation &&
-      (!args.requireConcreteGuide || hasConcreteGuideSignal)
-        ? oneHop.score + (hasConcreteGuideSignal ? 3 : 0) - (isExploratoryCategory ? 1.5 : 0)
-        : -99;
+      (!args.requireConcreteGuide || effectiveConcreteSignal);
+
+    const baseScore = eligible
+      ? oneHop.score + (effectiveConcreteSignal ? 3 : 0) - (isExploratoryCategory ? 1.5 : 0)
+      : -99;
+
+    // Bonus additionnel pour les brand fallbacks
+    const brandBonus = candidate.resolver === "brand-fallback" && eligible ? 4 : 0;
 
     return {
       ...candidate,
-      score,
+      score: baseScore + brandBonus,
       reasons: oneHop.reasons,
       rejectionReasons: disqualifications,
     };
   });
+
   const sortedEligible = rescored
     .filter((candidate) => candidate.score >= 3)
     .sort((a, b) => b.score - a.score);
-  const concreteGeneric = sortedEligible.filter((candidate) =>
-    candidate.resolver === "generic" &&
-    hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
+
+  // Séparation par type
+  const concreteGeneric = sortedEligible.filter(
+    (candidate) =>
+      candidate.resolver === "generic" &&
+      hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
   );
-  const concreteFallback = sortedEligible.filter((candidate) => candidate.resolver === "brand-fallback");
-  const exploratoryGeneric = sortedEligible.filter((candidate) =>
-    candidate.resolver === "generic" &&
-    !hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
+  const concreteFallback = sortedEligible.filter(
+    (candidate) => candidate.resolver === "brand-fallback",
   );
-  const eligiblePool = concreteGeneric.length
-    ? concreteGeneric
-    : concreteFallback.length
+  const exploratoryGeneric = sortedEligible.filter(
+    (candidate) =>
+      candidate.resolver === "generic" &&
+      !hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
+  );
+
+  // Priorité : brand-fallback > concreteGeneric > exploratoryGeneric
+  const eligiblePool =
+    concreteFallback.length
       ? concreteFallback
-      : exploratoryGeneric;
+      : concreteGeneric.length
+        ? concreteGeneric
+        : exploratoryGeneric;
+
   const eligible = eligiblePool.slice(0, eligiblePool === exploratoryGeneric ? 2 : 1);
   const topRescored = [...rescored].sort((a, b) => b.score - a.score)[0];
   const selectedIds = new Set(eligible.map((candidate) => candidate.id));
@@ -797,6 +874,8 @@ export function selectHubFollowLinks(args: {
       : 0,
   };
 }
+
+// ── Classification de document ─────────────────────────────────────────
 
 function countTableLikeSignals(html: string, markdown: string): number {
   const tableCount =
@@ -833,11 +912,11 @@ function countStructuredGuideBlocks(html: string, markdown: string): number {
 function countDistinctCategorySignals(text: string): number {
   const normalized = normalizeToken(text);
   let count = 0;
-  if (containsAny(normalized, ["top", "tops", "shirt", "shirts", "tee", "tees"])) count++;
-  if (containsAny(normalized, ["bottom", "bottoms", "pant", "pants", "inseam"])) count++;
-  if (containsAny(normalized, ["shoe", "shoes", "footwear", "foot length"])) count++;
+  if (containsAny(normalized, TOPS_KEYWORDS)) count++;
+  if (containsAny(normalized, BOTTOMS_KEYWORDS)) count++;
+  if (containsAny(normalized, FOOTWEAR_KEYWORDS)) count++;
   if (containsAny(normalized, ["bra", "cup size"])) count++;
-  if (containsAny(normalized, ["kid", "kids", "baby"])) count++;
+  if (containsAny(normalized, KIDS_KEYWORDS)) count++;
   return count;
 }
 

@@ -76,7 +76,10 @@ function summaryMessage(result: BrandResult): string {
     );
     if (selected) {
       const followed = result.pipeline?.followedUrl ? " · lien suivi" : "";
-      return `${selected.sectionTitle} · ${selected.matrixOrientation} · ${result.pipeline?.validationStatus}${followed}`;
+      const ai = result.pipeline?.aiFallbackAttempt
+        ? ` · IA ${result.pipeline.aiFallbackAttempt.status}`
+        : "";
+      return `${selected.sectionTitle} · ${selected.matrixOrientation} · ${result.pipeline?.validationStatus}${ai}${followed}`;
     }
   }
   if (result.pipeline?.documentReasoning.length) {

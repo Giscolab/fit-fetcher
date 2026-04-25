@@ -1,5 +1,6 @@
 import { discoverCandidateSections } from "@/lib/ingestion/discovery";
 import { extractCandidate } from "@/lib/ingestion/extraction";
+import { extractCandidateGuideWithLLM } from "@/lib/extractors/llm";
 import {
   buildFollowTraceStep,
   classifyDocument,
@@ -14,13 +15,21 @@ import {
 import { validateExtraction } from "@/lib/ingestion/validation";
 import { buildGeneratedGuide } from "@/lib/normalizers/guideBuilder";
 import type {
+  AiFallbackAttempt,
   BrandSource,
+  CandidateExtraction,
+  CandidateSection,
+  GarmentCategory,
   GeneratedGuide,
   IngestionPipelineReport,
+  SizeSystem,
   SourceTraceStep,
   ValidationIssue,
   ValidationStatus,
 } from "@/lib/types";
+
+type LlmCandidateExtractor = typeof extractCandidateGuideWithLLM;
+type ExtractionValidation = ReturnType<typeof validateExtraction>;
 
 function deriveInitialIssues(source: BrandSource): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
@@ -185,6 +194,129 @@ function withFallbackDiagnostics(
   };
 }
 
+function isGuideReady(validation: ExtractionValidation): boolean {
+  return (
+    validation.validationStatus === "accepted" &&
+    validation.validationErrors.length === 0 &&
+    validation.warnings.length === 0 &&
+    Boolean(validation.resolvedCategory) &&
+    Boolean(validation.resolvedSizeSystem)
+  );
+}
+
+function llmWarningIssue(candidateId: string, message: string): ValidationIssue {
+  return {
+    code: "llm-warning",
+    message,
+    severity: "warning",
+    candidateId,
+  };
+}
+
+function llmErrorIssue(candidateId: string, error: unknown): ValidationIssue {
+  const message = error instanceof Error ? error.message : String(error);
+  return {
+    code: "llm-fallback-error",
+    message: `Firecrawl LLM fallback failed: ${message}`,
+    severity: "warning",
+    candidateId,
+  };
+}
+
+function reasonForAiAttempt(args: {
+  validation: ExtractionValidation;
+  rowsCount: number;
+}): string {
+  if (isGuideReady(args.validation)) {
+    return "Firecrawl LLM fallback returned rows that passed strict validation.";
+  }
+
+  return (
+    args.validation.validationErrors[0]?.message ??
+    args.validation.warnings[0]?.message ??
+    (args.rowsCount > 0
+      ? "Firecrawl LLM fallback returned rows, but strict validation did not accept them."
+      : "Firecrawl LLM fallback returned no usable rows.")
+  );
+}
+
+async function runAiFallback(args: {
+  sourceUrl: string;
+  candidate: CandidateSection;
+  requestedCategory: GarmentCategory | null;
+  requestedSizeSystem: SizeSystem | null;
+  llmExtractCandidate: LlmCandidateExtractor;
+}): Promise<{
+  extraction?: CandidateExtraction;
+  validation?: ExtractionValidation;
+  attempt: AiFallbackAttempt;
+}> {
+  try {
+    const llm = await args.llmExtractCandidate({
+      url: args.sourceUrl,
+      candidate: args.candidate,
+      requestedCategory: args.requestedCategory,
+      requestedSizeSystem: args.requestedSizeSystem,
+    });
+    const extraction: CandidateExtraction = {
+      candidateId: args.candidate.id,
+      strategy: "llm",
+      rows: llm.rows,
+      extractedFieldKeys: llm.extractedFieldKeys,
+      extractionConfidence: llm.score,
+      validationStatus: "warning",
+      validationErrors: [],
+      warnings: llm.warnings.map((warning) =>
+        llmWarningIssue(args.candidate.id, warning),
+      ),
+    };
+    const validation = validateExtraction({
+      requestedCategory: args.requestedCategory,
+      requestedSizeSystem: args.requestedSizeSystem,
+      candidate: args.candidate,
+      extraction,
+    });
+    const validatedExtraction: CandidateExtraction = {
+      ...extraction,
+      validationStatus: validation.validationStatus,
+      validationErrors: validation.validationErrors,
+      warnings: validation.warnings,
+    };
+
+    return {
+      extraction: validatedExtraction,
+      validation,
+      attempt: {
+        candidateId: args.candidate.id,
+        status: validation.validationStatus,
+        reason: reasonForAiAttempt({
+          validation,
+          rowsCount: llm.rows.length,
+        }),
+        rowsCount: llm.rows.length,
+        extractedFieldKeys: llm.extractedFieldKeys,
+        score: llm.score,
+        warnings: validation.warnings,
+        validationErrors: validation.validationErrors,
+      },
+    };
+  } catch (error) {
+    const issue = llmErrorIssue(args.candidate.id, error);
+    return {
+      attempt: {
+        candidateId: args.candidate.id,
+        status: "error",
+        reason: issue.message,
+        rowsCount: 0,
+        extractedFieldKeys: [],
+        score: 0,
+        warnings: [issue],
+        validationErrors: [],
+      },
+    };
+  }
+}
+
 async function processResolvedDocument(args: {
   source: BrandSource;
   originalFetchedUrl: string;
@@ -199,6 +331,7 @@ async function processResolvedDocument(args: {
   remainingFollowHops: number;
   followDepth: number;
   priorReasoning?: string[];
+  llmExtractCandidate?: LlmCandidateExtractor;
 }): Promise<{
   guide?: GeneratedGuide;
   report: IngestionPipelineReport;
@@ -297,6 +430,7 @@ async function processResolvedDocument(args: {
         remainingFollowHops: args.remainingFollowHops - 1,
         followDepth: args.followDepth + 1,
         priorReasoning: [...documentReasoning, ...navigation.reasoning],
+        llmExtractCandidate: args.llmExtractCandidate,
       });
 
       followedResults.push({
@@ -483,26 +617,83 @@ async function processResolvedDocument(args: {
     manualReviewRecommended: validation.validationStatus !== "accepted",
   };
 
-  if (
-    validation.validationStatus !== "accepted" ||
-    validation.validationErrors.length > 0 ||
-    validation.warnings.length > 0 ||
-    !validation.resolvedCategory ||
-    !validation.resolvedSizeSystem
-  ) {
-    return { report };
+  let finalExtraction = candidateExtraction;
+  let finalValidation = validation;
+
+  if (!isGuideReady(validation)) {
+    const aiFallback = await runAiFallback({
+      sourceUrl: selectedCandidate.sourceUrl,
+      candidate: selectedCandidate,
+      requestedCategory,
+      requestedSizeSystem,
+      llmExtractCandidate: args.llmExtractCandidate ?? extractCandidateGuideWithLLM,
+    });
+    const candidateExtractions = aiFallback.extraction
+      ? [candidateExtraction, aiFallback.extraction]
+      : [candidateExtraction];
+    const aiGuideReady =
+      aiFallback.validation != null && isGuideReady(aiFallback.validation);
+    const aiReasoning = aiFallback.extraction
+      ? aiGuideReady
+        ? "Deterministic extraction failed; Firecrawl LLM fallback validated the selected section."
+        : "Deterministic extraction failed; Firecrawl LLM fallback also failed strict validation."
+      : "Deterministic extraction failed; Firecrawl LLM fallback could not run.";
+
+    if (aiFallback.extraction && aiFallback.validation && aiGuideReady) {
+      finalExtraction = aiFallback.extraction;
+      finalValidation = aiFallback.validation;
+      report = {
+        ...report,
+        documentReasoning: [...report.documentReasoning, aiReasoning],
+        candidateExtractions,
+        aiFallbackAttempt: aiFallback.attempt,
+        validationStatus: aiFallback.validation.validationStatus,
+        validationErrors: aiFallback.validation.validationErrors,
+        warnings: aiFallback.validation.warnings,
+        manualReviewRecommended: false,
+      };
+    } else {
+      report = {
+        ...report,
+        documentReasoning: [...report.documentReasoning, aiReasoning],
+        candidateExtractions,
+        aiFallbackAttempt: aiFallback.attempt,
+        validationStatus: aiFallback.validation?.validationStatus ?? report.validationStatus,
+        validationErrors: [
+          ...report.validationErrors,
+          ...(aiFallback.validation?.validationErrors ?? []),
+        ],
+        warnings: [
+          ...report.warnings,
+          ...(aiFallback.validation?.warnings ?? aiFallback.attempt.warnings),
+        ],
+        manualReviewRecommended: true,
+      };
+      return { report };
+    }
+  }
+
+  if (!finalValidation.resolvedCategory || !finalValidation.resolvedSizeSystem) {
+    return {
+      report: appendError(report, {
+        code: "resolved-target-missing",
+        message:
+          "NO_VALID_SIZE_GUIDE: accepted extraction did not resolve a final category or size system.",
+        severity: "error",
+      }),
+    };
   }
 
   const guide = buildGeneratedGuide({
     source: args.source,
-    rows: extraction.rows,
-    garmentCategory: validation.resolvedCategory,
-    sizeSystem: validation.resolvedSizeSystem,
+    rows: finalExtraction.rows,
+    garmentCategory: finalValidation.resolvedCategory,
+    sizeSystem: finalValidation.resolvedSizeSystem,
     candidate: selectedCandidate,
-    extraction,
-    validationStatus: validation.validationStatus,
-    validationErrors: validation.validationErrors,
-    warnings: validation.warnings,
+    extraction: finalExtraction,
+    validationStatus: finalValidation.validationStatus,
+    validationErrors: finalValidation.validationErrors,
+    warnings: finalValidation.warnings,
   });
 
   return { guide, report };
@@ -514,6 +705,7 @@ export async function runIngestionPipeline(args: {
   html: string;
   markdown: string;
   fetchDocument?: FetchDocument;
+  llmExtractCandidate?: LlmCandidateExtractor;
 }): Promise<{
   guide?: GeneratedGuide;
   report: IngestionPipelineReport;
@@ -538,6 +730,7 @@ export async function runIngestionPipeline(args: {
       sourceTraceChain: [requestedTraceStep(source, args.fetchedUrl)],
       remainingFollowHops: 2,
       followDepth: 0,
+      llmExtractCandidate: args.llmExtractCandidate,
     });
 
     if (result.guide) {
