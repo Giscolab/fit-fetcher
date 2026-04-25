@@ -17,10 +17,9 @@ function roundScore(score: number): number {
 }
 
 const MIN_SELECTION_SCORE = 4;
+const MIN_GAP_BETWEEN_TOP_CANDIDATES = 1.0;
 
 // Systèmes de tailles acceptables quand on demande INT
-// Nike utilise "Alpha" qui est détecté comme INT (S, M, L, XL)
-// mais d'autres marques utilisent US, EU, UK, FR, IT qui sont convertibles
 const ACCEPTABLE_SIZE_SYSTEMS_FOR_INT: ReadonlySet<string> = new Set([
   "INT",
   "US",
@@ -28,7 +27,7 @@ const ACCEPTABLE_SIZE_SYSTEMS_FOR_INT: ReadonlySet<string> = new Set([
   "UK",
   "FR",
   "IT",
-  "NUMERIC", // Tailles numériques sans système explicite
+  "NUMERIC",
 ]);
 
 // Catégories acceptables quand on demande tshirts
@@ -124,17 +123,21 @@ function scoreSizeSystemMatch(
       rejections.push("The section does not expose a clear size system.");
       return { score: -0.5, reasons, rejections };
     }
-    reasons.push(`Detected ${candidate.detectedSizeSystem} size system is compatible with INT request.`);
+    reasons.push(`Detected ${candidate.detectedSizeSystem} size system is convertible and compatible with requested INT.`);
     return { score: 2.5, reasons, rejections };
   }
 
+  // Si on demande un système numérique spécifique, accepter NUMERIC générique
   if (
     candidate.detectedSizeSystem === "NUMERIC" &&
-    ["EU", "FR", "IT", "US", "UK"].includes(requestedSizeSystem)
+    requestedSizeSystem !== "INT" &&
+    requestedSizeSystem !== "WAIST_INSEAM" &&
+    requestedSizeSystem !== "FOOTWEAR" &&
+    requestedSizeSystem !== "SOCK" &&
+    requestedSizeSystem !== "BRA"
   ) {
-    reasons.push("This section is numeric, but the specific numeric size system is not explicit.");
-    rejections.push("Numeric sizes without explicit system markers are ambiguous.");
-    return { score: 0.5, reasons, rejections };
+    reasons.push("Detected numeric size system may match the requested system after extraction.");
+    return { score: 1.5, reasons, rejections };
   }
 
   if (candidate.detectedSizeSystem === "UNKNOWN") {
@@ -318,7 +321,8 @@ function strictCandidateRejections(args: {
   } else if (args.requestedSizeSystem) {
     if (
       candidate.detectedSizeSystem !== args.requestedSizeSystem &&
-      candidate.detectedSizeSystem !== "UNKNOWN"
+      candidate.detectedSizeSystem !== "UNKNOWN" &&
+      candidate.detectedSizeSystem !== "NUMERIC"
     ) {
       rejections.push(
         `Candidate size system "${candidate.detectedSizeSystem}" does not match requested "${args.requestedSizeSystem}".`,
@@ -424,7 +428,9 @@ export function selectCandidate(args: {
     top.selectionScore >= MIN_SELECTION_SCORE &&
     top.isTabular &&
     top.matrixOrientation !== "conversion-grid" &&
-    (!runnerUp || top.selectionScore - runnerUp.selectionScore >= 2 || runnerUpIsUnitDuplicate)
+    (!runnerUp ||
+      top.selectionScore - runnerUp.selectionScore >= MIN_GAP_BETWEEN_TOP_CANDIDATES ||
+      runnerUpIsUnitDuplicate)
       ? top
       : undefined;
 

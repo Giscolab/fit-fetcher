@@ -24,7 +24,11 @@ export interface ScrapeResponse {
 
 async function fetchSizeGuideDocument(url: string, options?: FetchDocumentOptions) {
   if (options?.renderer === "firecrawl") {
-    return scrapeWithFirecrawl(url);
+    const result = await scrapeWithFirecrawl(url);
+    console.log(`[pipeline] Firecrawl rendered ${url}: ${result.html.length} chars HTML, ${result.markdown.length} chars markdown`);
+    // Afficher les 500 premiers caractères du markdown pour voir si le tableau est présent
+    console.log(`[pipeline] Markdown preview: ${result.markdown.slice(0, 500)}`);
+    return result;
   }
 
   return scrapeSizeGuideDocument(url);
