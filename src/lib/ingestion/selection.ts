@@ -18,6 +18,28 @@ function roundScore(score: number): number {
 
 const MIN_SELECTION_SCORE = 4;
 
+// Systèmes de tailles acceptables quand on demande INT
+// Nike utilise "Alpha" qui est détecté comme INT (S, M, L, XL)
+// mais d'autres marques utilisent US, EU, UK, FR, IT qui sont convertibles
+const ACCEPTABLE_SIZE_SYSTEMS_FOR_INT: ReadonlySet<string> = new Set([
+  "INT",
+  "US",
+  "EU",
+  "UK",
+  "FR",
+  "IT",
+  "NUMERIC", // Tailles numériques sans système explicite
+]);
+
+// Catégories acceptables quand on demande tshirts
+const ACCEPTABLE_CATEGORIES_FOR_TSHIRTS: ReadonlySet<string> = new Set([
+  "tshirts",
+  "tops",
+  "shirts",
+  "hoodies",
+  "jackets",
+]);
+
 function scoreCategoryMatch(
   requestedCategory: GarmentCategory | null,
   candidate: CandidateSection,
@@ -90,9 +112,20 @@ function scoreSizeSystemMatch(
     return { score: 0, reasons, rejections };
   }
 
+  // Correspondance exacte : bonus maximal
   if (candidate.detectedSizeSystem === requestedSizeSystem) {
     reasons.push("Detected size system matches the requested size system.");
     return { score: 4, reasons, rejections };
+  }
+
+  // Pour INT, accepter les systèmes numériques convertibles
+  if (requestedSizeSystem === "INT" && ACCEPTABLE_SIZE_SYSTEMS_FOR_INT.has(candidate.detectedSizeSystem)) {
+    if (candidate.detectedSizeSystem === "UNKNOWN") {
+      rejections.push("The section does not expose a clear size system.");
+      return { score: -0.5, reasons, rejections };
+    }
+    reasons.push(`Detected ${candidate.detectedSizeSystem} size system is compatible with INT request.`);
+    return { score: 2.5, reasons, rejections };
   }
 
   if (
@@ -244,6 +277,8 @@ function strictCandidateRejections(args: {
     categoryMappingMode: candidate.categoryMappingMode,
   });
 
+  // ── Rejets absolus (indépendants de la requête) ──────────────────────
+
   if (candidate.documentKind === "guide-hub-page") {
     rejections.push("Guide hub pages cannot be extracted directly.");
   }
@@ -271,13 +306,35 @@ function strictCandidateRejections(args: {
     rejections.push("Candidate matrix orientation is ambiguous or a conversion grid.");
   }
 
-  if (args.requestedSizeSystem === "INT" && candidate.detectedSizeSystem !== "INT") {
-    rejections.push("Candidate is not an international alpha-size table.");
+  // ── Rejets conditionnels (dépendants de la requête) ──────────────────
+
+  // Size system : ne rejeter que si vraiment incompatible
+  if (args.requestedSizeSystem === "INT") {
+    if (!ACCEPTABLE_SIZE_SYSTEMS_FOR_INT.has(candidate.detectedSizeSystem)) {
+      rejections.push(
+        `Candidate size system "${candidate.detectedSizeSystem}" is not compatible with requested INT.`,
+      );
+    }
+  } else if (args.requestedSizeSystem) {
+    if (
+      candidate.detectedSizeSystem !== args.requestedSizeSystem &&
+      candidate.detectedSizeSystem !== "UNKNOWN"
+    ) {
+      rejections.push(
+        `Candidate size system "${candidate.detectedSizeSystem}" does not match requested "${args.requestedSizeSystem}".`,
+      );
+    }
   }
 
+  // Catégorie : accepter la famille tops au sens large
   if (args.requestedCategory === "tshirts") {
-    if (categoryMatch.mode === "none" || candidate.garmentFamily !== "tops") {
-      rejections.push("Candidate is not a tops/tshirts guide.");
+    if (
+      categoryMatch.mode === "none" ||
+      !ACCEPTABLE_CATEGORIES_FOR_TSHIRTS.has(candidate.detectedCategory)
+    ) {
+      rejections.push(
+        `Candidate category "${candidate.detectedCategory}" is not a tops-family guide.`,
+      );
     }
     if (!fields.includes("chest") && !fields.includes("height")) {
       rejections.push("Candidate lacks a chest, bust, or torso measurement.");
