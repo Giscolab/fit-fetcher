@@ -3,7 +3,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import "../styles.css";
-import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
   return (
@@ -43,12 +42,6 @@ export const Route = createRootRoute({
       { name: "twitter:description", content: "Size Weaver scrapes and normalizes official brand size guides from the web into importable JSON files." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84e0d079-d7ed-43fd-ad89-2374564c8d07/id-preview-93333beb--b09818c5-f8d1-4f00-a816-72096c6e1911.lovable.app-1776593429781.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84e0d079-d7ed-43fd-ad89-2374564c8d07/id-preview-93333beb--b09818c5-f8d1-4f00-a816-72096c6e1911.lovable.app-1776593429781.png" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
     ],
   }),
   shellComponent: RootShell,
