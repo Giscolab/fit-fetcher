@@ -9,6 +9,19 @@ const nikeTopsTable = `
   </table>
 </section>`;
 
+const nikeInchTableWithMetricFitTips = `
+<section>
+  <h2>Men's Tops</h2>
+  <table>
+    <tr><th>Measure</th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th></tr>
+    <tr><th>Chest (in)</th><td>31.5-35</td><td>35-37.5</td><td>37.5-41</td><td>41-44</td><td>44-48.5</td></tr>
+    <tr><th>Waist (in)</th><td>25.5-29</td><td>29-32</td><td>32-35</td><td>35-38</td><td>38-43</td></tr>
+    <tr><th>Hips (in)</th><td>31.5-35</td><td>35-37.5</td><td>37.5-41</td><td>41-44</td><td>44-47</td></tr>
+  </table>
+  <h3>How To Measure</h3>
+  <p>Tall Tops Sizes (6' - 6'5"/183-196cm): 1.75"/4.5cm longer in length than regular tops.</p>
+</section>`;
+
 const adidasTopTable = `
 <section>
   <h2>Men's Shirts & Tops</h2>
@@ -19,6 +32,27 @@ const adidasTopTable = `
     <tr><th>Waist (cm)</th><td>67-71</td><td>72-77</td><td>78-83</td><td>84-91</td><td>92-99</td><td>100-107</td><td>108-115</td><td>116-123</td><td>124-131</td></tr>
     <tr><th>Hips (cm)</th><td>82-86</td><td>87-92</td><td>93-98</td><td>99-106</td><td>107-114</td><td>115-122</td><td>123-130</td><td>131-138</td><td>139-146</td></tr>
   </table>
+</section>`;
+
+const adidasDualUnitTopTables = `
+<section>
+  <h2>Men's Shirts & Tops Sizing</h2>
+  <h3>Inches</h3>
+  <table>
+    <tr><th>Product label</th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th></tr>
+    <tr><th>Chest</th><td>32.5-34"</td><td>34.5-36"</td><td>36.5-39"</td><td>39.5-42.5"</td><td>43-46.5"</td></tr>
+    <tr><th>Waist</th><td>27.5-29"</td><td>29.5-31.5"</td><td>32-34.5"</td><td>35-38"</td><td>38.5-42"</td></tr>
+    <tr><th>Hip</th><td>32-33.5"</td><td>34-36"</td><td>36.5-39"</td><td>39.5-42"</td><td>42.5-45.5"</td></tr>
+  </table>
+  <h3>cm</h3>
+  <table>
+    <tr><th>Product label</th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th></tr>
+    <tr><th>Chest</th><td>83-86 cm</td><td>87-92 cm</td><td>93-100 cm</td><td>101-108 cm</td><td>109-118 cm</td></tr>
+    <tr><th>Waist</th><td>71-74 cm</td><td>75-80 cm</td><td>81-88 cm</td><td>89-96 cm</td><td>97-106 cm</td></tr>
+    <tr><th>Hip</th><td>82-85 cm</td><td>86-91 cm</td><td>92-99 cm</td><td>100-107 cm</td><td>108-116 cm</td></tr>
+  </table>
+  <h3>How to measure</h3>
+  <p>Hold the tape horizontally to measure chest, waist and hips.</p>
 </section>`;
 
 const adidasBottomsTable = `
@@ -70,6 +104,21 @@ export const fixtures = {
 | Hips (cm) | 80-85 | 86-91 | 92-99 | 100-107 | 100-107 | 124-136 | 136-148 |
 `,
   },
+  nikeInchesWithMetricFitTips: {
+    url: "https://www.nike.com/size-fit/mens-tops-alpha",
+    html: `<!doctype html><html><body>${nikeInchTableWithMetricFitTips}</body></html>`,
+    markdown: `
+## Men's Tops
+| Measure | XS | S | M | L | XL |
+| --- | --- | --- | --- | --- | --- |
+| Chest (in) | 31.5-35 | 35-37.5 | 37.5-41 | 41-44 | 44-48.5 |
+| Waist (in) | 25.5-29 | 29-32 | 32-35 | 35-38 | 38-43 |
+| Hips (in) | 31.5-35 | 35-37.5 | 37.5-41 | 41-44 | 44-47 |
+
+### How To Measure
+Tall Tops Sizes (6' - 6'5"/183-196cm): 1.75"/4.5cm longer in length than regular tops.
+`,
+  },
   nikeHubWithProductLink: {
     url: "https://www.nike.com/size-fit-guide",
     html: `<!doctype html><html><body>
@@ -78,6 +127,7 @@ export const fixtures = {
       <a href="/gb/w/mens-graphic-tees">Tops & Graphic Tees</a>
       <a href="/t/dri-fit-legend-mens-fitness-t-shirt-abc123">Nike Dri-FIT Legend Men's Fitness T-Shirt $35</a>
       <a href="/gb/size-fit/mens-shoes">Men's Shoes Size Guide</a>
+      <a href="/help/a/size-fit-guide-feedback">Send Us Feedback</a>
     </body></html>`,
     markdown: `
 # Size & Fit Guide
@@ -85,6 +135,7 @@ export const fixtures = {
 [Tops & Graphic Tees](/gb/w/mens-graphic-tees)
 [Nike Dri-FIT Legend Men's Fitness T-Shirt $35](/t/dri-fit-legend-mens-fitness-t-shirt-abc123)
 [Men's Shoes Size Guide](/gb/size-fit/mens-shoes)
+[Send Us Feedback](/help/a/size-fit-guide-feedback)
 `,
     followed: {
       "https://www.nike.com/gb/w/mens-graphic-tees": {
@@ -102,6 +153,18 @@ export const fixtures = {
       },
       "https://www.nike.com/size-fit/mens_tops_alpha": {
         sourceUrl: "https://www.nike.com/size-fit/mens_tops_alpha",
+        html: `<!doctype html><html><body>${nikeTopsTable}</body></html>`,
+        markdown: `
+## Men's Tops & Tees
+| Measure | XXS | XS | S Tall | M | M Tall | 3XL | 4XL |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Chest (cm) | 76-81 | 82-88 | 89-96 | 97-104 | 97-104 | 124-136 | 136-148 |
+| Waist (cm) | 61-66 | 67-73 | 74-81 | 82-89 | 82-89 | 112-124 | 124-136 |
+| Hips (cm) | 80-85 | 86-91 | 92-99 | 100-107 | 100-107 | 124-136 | 136-148 |
+`,
+      },
+      "https://www.nike.com/size-fit/mens-tops-alpha": {
+        sourceUrl: "https://www.nike.com/size-fit/mens-tops-alpha",
         html: `<!doctype html><html><body>${nikeTopsTable}</body></html>`,
         markdown: `
 ## Men's Tops & Tees
@@ -154,6 +217,29 @@ export const fixtures = {
 | S | 78-83 | 80-81 |
 | M | 84-91 | 81-82 |
 | L | 92-99 | 82-83 |
+`,
+  },
+  adidasDualUnitTops: {
+    url: "https://www.adidas.com/us/help/size_charts/men-shirts_tops",
+    html: `<!doctype html><html><body>${adidasDualUnitTopTables}</body></html>`,
+    markdown: `
+## Men's Shirts & Tops Sizing
+### Inches
+| Product label | XS | S | M | L | XL |
+| --- | --- | --- | --- | --- | --- |
+| Chest | 32.5-34" | 34.5-36" | 36.5-39" | 39.5-42.5" | 43-46.5" |
+| Waist | 27.5-29" | 29.5-31.5" | 32-34.5" | 35-38" | 38.5-42" |
+| Hip | 32-33.5" | 34-36" | 36.5-39" | 39.5-42" | 42.5-45.5" |
+
+### cm
+| Product label | XS | S | M | L | XL |
+| --- | --- | --- | --- | --- | --- |
+| Chest | 83-86 cm | 87-92 cm | 93-100 cm | 101-108 cm | 109-118 cm |
+| Waist | 71-74 cm | 75-80 cm | 81-88 cm | 89-96 cm | 97-106 cm |
+| Hip | 82-85 cm | 86-91 cm | 92-99 cm | 100-107 cm | 108-116 cm |
+
+### How to measure
+Hold the tape horizontally to measure chest, waist and hips.
 `,
   },
   adidasHub: {

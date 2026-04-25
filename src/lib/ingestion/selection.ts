@@ -147,6 +147,42 @@ function orientationBonus(candidate: CandidateSection): {
   };
 }
 
+function unitPreferenceBonus(candidate: CandidateSection): {
+  score: number;
+  reasons: string[];
+  rejections: string[];
+} {
+  if (candidate.originalUnitSystem === "cm") {
+    return {
+      score: 1.2,
+      reasons: ["Centimeter measurements can be extracted without unit conversion."],
+      rejections: [],
+    };
+  }
+
+  if (candidate.originalUnitSystem === "in") {
+    return {
+      score: 0.4,
+      reasons: ["Inch measurements can be converted to centimeters deterministically."],
+      rejections: [],
+    };
+  }
+
+  if (candidate.originalUnitSystem === "mixed") {
+    return {
+      score: -3,
+      reasons: [],
+      rejections: ["Candidate mixes cm and inches in the same table."],
+    };
+  }
+
+  return {
+    score: 0,
+    reasons: [],
+    rejections: [],
+  };
+}
+
 function candidateMeasurementFields(candidate: CandidateSection): MeasurementField[] {
   const fields = new Set<MeasurementField>();
   for (const label of [
@@ -160,6 +196,25 @@ function candidateMeasurementFields(candidate: CandidateSection): MeasurementFie
     if (field) fields.add(field);
   }
   return Array.from(fields);
+}
+
+function sameMeasurementShape(left: CandidateSection, right: CandidateSection): boolean {
+  const leftFields = candidateMeasurementFields(left).sort().join("|");
+  const rightFields = candidateMeasurementFields(right).sort().join("|");
+  const leftSizes = left.rawSizeAxisLabels.map((label) => normalizeToken(label)).join("|");
+  const rightSizes = right.rawSizeAxisLabels.map((label) => normalizeToken(label)).join("|");
+
+  return (
+    left.detectedCategory === right.detectedCategory &&
+    left.garmentFamily === right.garmentFamily &&
+    left.matrixOrientation === right.matrixOrientation &&
+    leftFields === rightFields &&
+    leftSizes === rightSizes &&
+    left.originalUnitSystem !== right.originalUnitSystem &&
+    [left.originalUnitSystem, right.originalUnitSystem].every((unit) =>
+      unit === "cm" || unit === "in",
+    )
+  );
 }
 
 function strictCandidateRejections(args: {
@@ -201,6 +256,10 @@ function strictCandidateRejections(args: {
 
   if (fields.length < 2) {
     rejections.push("Candidate does not expose at least two measurement fields.");
+  }
+
+  if (candidate.originalUnitSystem === "mixed") {
+    rejections.push("Candidate mixes cm and inches in the same table.");
   }
 
   if (
@@ -256,12 +315,14 @@ export function selectCandidate(args: {
     const category = scoreCategoryMatch(args.requestedCategory, candidate);
     const sizeSystem = scoreSizeSystemMatch(args.requestedSizeSystem, candidate);
     const orientation = orientationBonus(candidate);
+    const unit = unitPreferenceBonus(candidate);
     const score =
       strictRejections.length > 0
         ? -20 - strictRejections.length
         : category.score +
           sizeSystem.score +
           orientation.score +
+          unit.score +
           (candidate.isTabular ? 2 : -2) +
           Math.min(candidate.rawSizeAxisLabels.length, 10) * 0.15 +
           candidate.extractionConfidence * 2 +
@@ -280,6 +341,7 @@ export function selectCandidate(args: {
         ...category.reasons,
         ...sizeSystem.reasons,
         ...orientation.reasons,
+        ...unit.reasons,
       ],
       rejectionReasons: [
         ...strictRejections,
@@ -287,6 +349,7 @@ export function selectCandidate(args: {
         ...category.rejections,
         ...sizeSystem.rejections,
         ...orientation.rejections,
+        ...unit.rejections,
       ],
       warnings,
     };
@@ -295,12 +358,14 @@ export function selectCandidate(args: {
   const sorted = [...scored].sort((a, b) => b.selectionScore - a.selectionScore);
   const top = sorted[0];
   const runnerUp = sorted[1];
+  const runnerUpIsUnitDuplicate =
+    Boolean(top && runnerUp && sameMeasurementShape(top, runnerUp));
   const selected =
     top &&
     top.selectionScore >= 7 &&
     top.isTabular &&
     top.matrixOrientation !== "conversion-grid" &&
-    (!runnerUp || top.selectionScore - runnerUp.selectionScore >= 2)
+    (!runnerUp || top.selectionScore - runnerUp.selectionScore >= 2 || runnerUpIsUnitDuplicate)
       ? top
       : undefined;
 
@@ -309,15 +374,26 @@ export function selectCandidate(args: {
     selectionReasoning.push(
       `Selected ${selected.sectionTitle} with score ${selected.selectionScore}.`,
     );
+    if (runnerUpIsUnitDuplicate && runnerUp) {
+      selectionReasoning.push(
+        `Ignored ${runnerUp.sectionTitle} as a duplicate measurement table in another unit.`,
+      );
+    }
     selectionReasoning.push(...selected.matchReasons.slice(0, 6));
   } else if (top) {
     selectionReasoning.push(
       `No candidate was selected automatically. Best score was ${top.selectionScore} for ${top.sectionTitle}.`,
     );
     if (runnerUp) {
-      selectionReasoning.push(
-        `The next best candidate ${runnerUp.sectionTitle} scored ${runnerUp.selectionScore}, so the match was not unique enough under strict validation.`,
-      );
+      if (runnerUpIsUnitDuplicate) {
+        selectionReasoning.push(
+          `The next best candidate ${runnerUp.sectionTitle} scored ${runnerUp.selectionScore}, but it has the same measurement shape in another unit.`,
+        );
+      } else {
+        selectionReasoning.push(
+          `The next best candidate ${runnerUp.sectionTitle} scored ${runnerUp.selectionScore}, so the match was not unique enough under strict validation.`,
+        );
+      }
     }
     selectionReasoning.push(...top.rejectionReasons.slice(0, 5));
   } else {

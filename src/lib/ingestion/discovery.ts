@@ -275,6 +275,15 @@ function createCandidate(args: {
     ...matrixMeta.rawHeaders,
     ...matrixMeta.rawStubColumn,
   ].join(" ");
+  const matrixUnit = detectMeasurementUnit(
+    [
+      ...matrixMeta.rawHeaders,
+      ...matrixMeta.rawStubColumn,
+      ...matrixMeta.rawSizeAxisLabels,
+      ...matrix.flat(),
+    ].join(" "),
+  );
+  const contextUnit = detectMeasurementUnit(contextText);
   const category = detectCategory({
     sectionTitle: args.sectionTitle,
     subheading: args.subheading,
@@ -348,7 +357,7 @@ function createCandidate(args: {
       sizeAxisLabels: matrixMeta.rawSizeAxisLabels,
       context: contextText,
     }),
-    originalUnitSystem: detectMeasurementUnit(`${contextText} ${matrix.flat().join(" ")}`),
+    originalUnitSystem: matrixUnit !== "unknown" ? matrixUnit : contextUnit,
     matrixOrientation: matrixMeta.matrixOrientation,
     categoryMappingMode: categoryMapping.mode,
     categoryMappingReason: categoryMapping.reason,

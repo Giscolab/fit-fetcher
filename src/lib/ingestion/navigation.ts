@@ -171,6 +171,13 @@ function isUtilityNavigationLink(label: string, url: string): boolean {
     return true;
   }
   if (
+    /^(send us feedback|feedback|your opinion counts|contact us|customer service|help|support|accessibility|privacy|terms|newsletter)$/.test(
+      normalizedLabel,
+    )
+  ) {
+    return true;
+  }
+  if (
     /^(gifts for him|gifts for her|spring selection|summer selection|new arrivals|sale|deals|uniqlo u)$/.test(
       normalizedLabel,
     )
@@ -201,6 +208,37 @@ function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
   );
 
   return guideSignal && !incompatibleSignal;
+}
+
+function isExploratoryCategoryLink(url: string, label: string): boolean {
+  if (hasConcreteSizeGuideLinkSignal(url, `${label} ${url}`)) return false;
+
+  const normalized = normalizeToken(`${label} ${url}`);
+  const path = (() => {
+    try {
+      return new URL(url).pathname.toLowerCase();
+    } catch {
+      return url.toLowerCase();
+    }
+  })();
+  const categoryPath =
+    /\/(?:[a-z]{2}\/)?w\//i.test(path) ||
+    /\/(?:c|collections?)\//i.test(path) ||
+    /\/(?:men|mens|women|womens|kids)[-_/]?[^/?#]*(?:tops?|tees?|shirts?|clothing|apparel)/i.test(path) ||
+    /\/(?:men|mens|women|womens)[-_](?:tops?|tees?|shirts?|clothing|apparel)/i.test(path);
+  const categoryLabel = containsAny(normalized, [
+    "top",
+    "tops",
+    "tee",
+    "tees",
+    "shirt",
+    "shirts",
+    "graphic tees",
+    "apparel",
+    "clothing",
+  ]);
+
+  return categoryPath && categoryLabel;
 }
 
 function scoreOneHopGuideLink(text: string): {
@@ -608,7 +646,10 @@ function officialBrandFallbackUrls(args: {
     if (isShoe) {
       return [{ url: "https://www.adidas.com/us/help/size_charts/men-shoes", label: "adidas guide officiel chaussures homme" }];
     }
-    return [{ url: "https://www.adidas.com/us/help/size_charts", label: "adidas guide officiel vêtements homme" }];
+    if (isBottom) {
+      return [{ url: "https://www.adidas.com/us/help/size_charts/men-pants_shorts", label: "adidas guide officiel bas homme" }];
+    }
+    return [{ url: "https://www.adidas.com/us/help/size_charts/men-shirts_tops", label: "adidas guide officiel hauts homme" }];
   }
 
   if (host.includes("puma.")) {
@@ -677,6 +718,7 @@ export function selectHubFollowLinks(args: {
     const isProductPage = isProductPageLink(candidate.url, candidate.label);
     const isUtilityNavigation = isUtilityNavigationLink(candidate.label, candidate.url);
     const hasConcreteGuideSignal = hasConcreteSizeGuideLinkSignal(candidate.url, primaryContext);
+    const isExploratoryCategory = isExploratoryCategoryLink(candidate.url, candidate.label);
     const oneHop = scoreOneHopGuideLink(primaryContext);
     const disqualifications = [
       ...oneHop.rejections,
@@ -696,7 +738,7 @@ export function selectHubFollowLinks(args: {
       !isProductPage &&
       !isUtilityNavigation &&
       (!args.requireConcreteGuide || hasConcreteGuideSignal)
-        ? oneHop.score + (hasConcreteGuideSignal ? 3 : 0)
+        ? oneHop.score + (hasConcreteGuideSignal ? 3 : 0) - (isExploratoryCategory ? 1.5 : 0)
         : -99;
 
     return {
@@ -709,9 +751,21 @@ export function selectHubFollowLinks(args: {
   const sortedEligible = rescored
     .filter((candidate) => candidate.score >= 3)
     .sort((a, b) => b.score - a.score);
-  const eligibleGeneric = sortedEligible.filter((candidate) => candidate.resolver === "generic");
-  const eligibleFallback = sortedEligible.filter((candidate) => candidate.resolver === "brand-fallback");
-  const eligible = (eligibleGeneric.length ? eligibleGeneric : eligibleFallback).slice(0, 2);
+  const concreteGeneric = sortedEligible.filter((candidate) =>
+    candidate.resolver === "generic" &&
+    hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
+  );
+  const concreteFallback = sortedEligible.filter((candidate) => candidate.resolver === "brand-fallback");
+  const exploratoryGeneric = sortedEligible.filter((candidate) =>
+    candidate.resolver === "generic" &&
+    !hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
+  );
+  const eligiblePool = concreteGeneric.length
+    ? concreteGeneric
+    : concreteFallback.length
+      ? concreteFallback
+      : exploratoryGeneric;
+  const eligible = eligiblePool.slice(0, eligiblePool === exploratoryGeneric ? 2 : 1);
   const topRescored = [...rescored].sort((a, b) => b.score - a.score)[0];
   const selectedIds = new Set(eligible.map((candidate) => candidate.id));
   const reasoning: string[] = [];

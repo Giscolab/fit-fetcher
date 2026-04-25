@@ -333,6 +333,9 @@ export function detectCategory(args: {
     args.nearbyText,
   ];
   const text = normalizeToken(labelSources.join(" "));
+  const sectionText = normalizeToken(
+    [args.sectionTitle, args.subheading ?? "", ...args.headers].join(" "),
+  );
   const reasons: string[] = [];
   const hasChest = args.fields.includes("chest");
   const hasInseam = args.fields.includes("inseam");
@@ -350,7 +353,7 @@ export function detectCategory(args: {
   }
 
   if (
-    containsAny(text, [
+    containsAny(sectionText, [
       "body measurement",
       "body guide",
       "guide des mesures",
@@ -359,7 +362,7 @@ export function detectCategory(args: {
       "how to measure",
     ])
   ) {
-    reasons.push("Section is labeled as body guidance or size advice.");
+    reasons.push("Section title is labeled as body guidance or size advice.");
     return {
       garmentFamily: "body",
       detectedCategory: "generic-body-guide",

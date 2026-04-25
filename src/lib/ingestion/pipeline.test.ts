@@ -68,6 +68,18 @@ test("Nike transposed tops table extracts all visible INT rows without collapsin
   assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.seatHipsCm?.max, 85);
 });
 
+test("Nike table keeps inch units even when nearby fit tips mention centimeters", async () => {
+  const result = await runFixture({
+    brand: "Nike",
+    fixture: fixtures.nikeInchesWithMetricFitTips,
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.guide.guide.originalUnitSystem, "in");
+  assert.equal(result.guide.guide.sourceType, "category-specific-page");
+  assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.chestCm?.min, 80);
+});
+
 test("Adidas fractional inch ranges are converted without losing the upper bound", () => {
   assert.deepEqual(parseRangeCm('32 1/2–34"', "in"), [82.6, 86.4]);
   assert.deepEqual(parseRangeCm('43–46 1/2"', "in"), [109.2, 118.1]);
@@ -81,13 +93,12 @@ test("Nike hub filters product links before one-hop ranking", async () => {
   });
 
   assert.ok(result.guide);
-  assert.equal(result.report.followedUrl, "https://www.nike.com/size-fit/mens_tops_alpha");
+  assert.equal(result.report.followedUrl, "https://www.nike.com/size-fit/mens-tops-alpha");
   assert.deepEqual(
     result.guide.guide.sourceTraceChain.map((step) => step.url),
     [
       "https://www.nike.com/size-fit-guide",
-      "https://www.nike.com/gb/w/mens-graphic-tees",
-      "https://www.nike.com/size-fit/mens_tops_alpha",
+      "https://www.nike.com/size-fit/mens-tops-alpha",
     ],
   );
   const productLink = result.report.linkCandidates.find((link) =>
@@ -97,6 +108,25 @@ test("Nike hub filters product links before one-hop ranking", async () => {
   assert.ok(
     productLink?.rejectionReasons.some((reason) => reason.includes("product page")),
   );
+  const feedbackLink = result.report.linkCandidates.find((link) =>
+    link.label.includes("Feedback"),
+  );
+  assert.equal(feedbackLink?.selected, false);
+  assert.ok(
+    feedbackLink?.rejectionReasons.some((reason) => reason.includes("utility navigation")),
+  );
+});
+
+test("Adidas direct page prefers the cm table over a duplicate inch table", async () => {
+  const result = await runFixture({
+    brand: "Adidas",
+    fixture: fixtures.adidasDualUnitTops,
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.guide.guide.originalUnitSystem, "cm");
+  assert.deepEqual(result.guide.guide.originalSizeLabels, ["XS", "S", "M", "L", "XL"]);
+  assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.chestCm?.min, 83);
 });
 
 test("Adidas multi-guide page fails instead of extracting from a mixed category page", async () => {

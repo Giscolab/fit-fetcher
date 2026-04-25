@@ -21,6 +21,21 @@ export interface ScrapeResponse {
   pipeline: IngestionPipelineReport;
 }
 
+function pushPipelineDiagnostics(logs: string[], report: IngestionPipelineReport) {
+  for (const reason of report.documentReasoning) {
+    logs.push(`Diagnostic document: ${reason}`);
+  }
+
+  for (const link of report.linkCandidates.slice(0, 8)) {
+    const state = link.selected ? "sélectionné" : "rejeté";
+    const reason = link.rejectionReasons[0] ?? link.reasons[0] ?? "aucune raison détaillée";
+    logs.push(
+      `Lien ${state}: "${link.label}" score=${link.score} resolver=${link.resolver} url=${link.url}`,
+    );
+    logs.push(`  Raison lien: ${reason}`);
+  }
+}
+
 function validateExternalUrl(raw: string): URL {
   let parsed: URL;
   try {
@@ -104,6 +119,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
       if (report.linkCandidates.length > 0) {
         logs.push(`${report.linkCandidates.length} lien(s) interne(s) candidat(s) détecté(s).`);
       }
+      pushPipelineDiagnostics(logs, report);
 
       if (report.selectedCandidateId) {
         const selected = report.discoveredCandidates.find(
@@ -128,6 +144,9 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
       }
       for (const issue of report.validationErrors) {
         logs.push(`Erreur de validation: ${issue.message}`);
+        for (const detail of issue.details ?? []) {
+          logs.push(`  Détail validation: ${detail}`);
+        }
       }
       for (const warning of report.warnings) {
         logs.push(`Avertissement: ${warning.message}`);
