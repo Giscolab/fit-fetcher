@@ -16,6 +16,8 @@ function roundScore(score: number): number {
   return Math.round(score * 100) / 100;
 }
 
+const MIN_SELECTION_SCORE = 4;
+
 function scoreCategoryMatch(
   requestedCategory: GarmentCategory | null,
   candidate: CandidateSection,
@@ -362,7 +364,7 @@ export function selectCandidate(args: {
     Boolean(top && runnerUp && sameMeasurementShape(top, runnerUp));
   const selected =
     top &&
-    top.selectionScore >= 7 &&
+    top.selectionScore >= MIN_SELECTION_SCORE &&
     top.isTabular &&
     top.matrixOrientation !== "conversion-grid" &&
     (!runnerUp || top.selectionScore - runnerUp.selectionScore >= 2 || runnerUpIsUnitDuplicate)

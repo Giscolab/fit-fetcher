@@ -8,7 +8,11 @@ function normalizeImportedCategory(value: unknown): string | undefined {
   const category = textValue(value);
   if (!category) return undefined;
   const normalized = category.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  return normalized === "top" || normalized === "tops" ? "tshirts" : category;
+  if (normalized === "top" || normalized === "tops") return "tshirts";
+  if (normalized === "generic" || normalized === "body" || normalized === "body guide") {
+    return "generic-body-guide";
+  }
+  return category;
 }
 
 export function normalizeBrandSourceInput(raw: unknown): BrandSource | null {
@@ -40,5 +44,10 @@ export function normalizeBrandSourceInput(raw: unknown): BrandSource | null {
       textValue(record.size_system) ??
       textValue(target.sizeSystem) ??
       textValue(target.size_system),
+    fallbackSizeSystem:
+      textValue(record.fallbackSizeSystem) ??
+      textValue(record.fallback_size_system) ??
+      textValue(target.fallbackSizeSystem) ??
+      textValue(target.fallback_size_system),
   };
 }

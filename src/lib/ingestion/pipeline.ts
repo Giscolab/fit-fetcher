@@ -118,6 +118,73 @@ function uniqueAcceptedResults(
   return Array.from(bySource.values());
 }
 
+function buildSizeSystemAttempts(source: BrandSource): BrandSource[] {
+  const attempts = [source];
+  const requested = mapRequestedSizeSystem(source.sizeSystem);
+  const fallback = mapRequestedSizeSystem(source.fallbackSizeSystem);
+
+  if (fallback && fallback !== requested) {
+    attempts.push({
+      ...source,
+      sizeSystem: source.fallbackSizeSystem,
+    });
+  }
+
+  return attempts;
+}
+
+function fallbackAttemptIssue(args: {
+  originalSource: BrandSource;
+  fallbackSource: BrandSource;
+  firstReport?: IngestionPipelineReport;
+}): ValidationIssue {
+  const primary =
+    mapRequestedSizeSystem(args.originalSource.sizeSystem) ??
+    args.originalSource.sizeSystem ??
+    "unspecified";
+  const fallback =
+    mapRequestedSizeSystem(args.fallbackSource.sizeSystem) ??
+    args.fallbackSource.sizeSystem ??
+    "unspecified";
+  const firstError = args.firstReport?.validationErrors[0]?.message;
+
+  return {
+    code: "fallback-size-system-used",
+    severity: "warning",
+    message: `Primary size system ${primary} did not validate; accepted fallback size system ${fallback}.`,
+    details: firstError ? [firstError] : undefined,
+  };
+}
+
+function withFallbackDiagnostics(
+  result: {
+    guide?: GeneratedGuide;
+    report: IngestionPipelineReport;
+  },
+  issue: ValidationIssue,
+): {
+  guide?: GeneratedGuide;
+  report: IngestionPipelineReport;
+} {
+  return {
+    guide: result.guide
+      ? {
+          ...result.guide,
+          guide: {
+            ...result.guide.guide,
+            warnings: [issue, ...result.guide.guide.warnings],
+          },
+          shoppingAssistantWarnings: [issue, ...result.guide.shoppingAssistantWarnings],
+        }
+      : undefined,
+    report: {
+      ...result.report,
+      documentReasoning: [issue.message, ...result.report.documentReasoning],
+      warnings: [issue, ...result.report.warnings],
+    },
+  };
+}
+
 async function processResolvedDocument(args: {
   source: BrandSource;
   originalFetchedUrl: string;
@@ -451,15 +518,55 @@ export async function runIngestionPipeline(args: {
   guide?: GeneratedGuide;
   report: IngestionPipelineReport;
 }> {
-  return processResolvedDocument({
-    source: args.source,
-    originalFetchedUrl: args.fetchedUrl,
-    currentUrl: args.fetchedUrl,
-    html: args.html,
-    markdown: args.markdown,
-    fetchDocument: args.fetchDocument,
-    sourceTraceChain: [requestedTraceStep(args.source, args.fetchedUrl)],
-    remainingFollowHops: 2,
-    followDepth: 0,
-  });
+  const attempts = buildSizeSystemAttempts(args.source);
+  let firstFailure: IngestionPipelineReport | undefined;
+  let lastResult:
+    | {
+        guide?: GeneratedGuide;
+        report: IngestionPipelineReport;
+      }
+    | undefined;
+
+  for (const [index, source] of attempts.entries()) {
+    const result = await processResolvedDocument({
+      source,
+      originalFetchedUrl: args.fetchedUrl,
+      currentUrl: args.fetchedUrl,
+      html: args.html,
+      markdown: args.markdown,
+      fetchDocument: args.fetchDocument,
+      sourceTraceChain: [requestedTraceStep(source, args.fetchedUrl)],
+      remainingFollowHops: 2,
+      followDepth: 0,
+    });
+
+    if (result.guide) {
+      if (index === 0) return result;
+
+      return withFallbackDiagnostics(
+        result,
+        fallbackAttemptIssue({
+          originalSource: args.source,
+          fallbackSource: source,
+          firstReport: firstFailure,
+        }),
+      );
+    }
+
+    firstFailure ??= result.report;
+    lastResult = result;
+  }
+
+  if (lastResult && attempts.length > 1) {
+    return withFallbackDiagnostics(
+      lastResult,
+      fallbackAttemptIssue({
+        originalSource: args.source,
+        fallbackSource: attempts.at(-1) ?? args.source,
+        firstReport: firstFailure,
+      }),
+    );
+  }
+
+  return lastResult!;
 }

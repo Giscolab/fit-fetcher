@@ -8,12 +8,19 @@ import { selectCandidate } from "@/lib/ingestion/selection";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
 import { parseRangeCm } from "@/lib/normalizers/units";
 
-function makeSource(brand: string, url: string, garmentCategory = "tshirts", sizeSystem = "INT") {
+function makeSource(
+  brand: string,
+  url: string,
+  garmentCategory = "tshirts",
+  sizeSystem = "INT",
+  fallbackSizeSystem?: string,
+) {
   return {
     brand,
     size_guide_url: url,
     garmentCategory,
     sizeSystem,
+    fallbackSizeSystem,
   };
 }
 
@@ -22,6 +29,7 @@ async function runFixture(args: {
   fixture: { url: string; html: string; markdown: string };
   garmentCategory?: string;
   sizeSystem?: string;
+  fallbackSizeSystem?: string;
   followed?: Record<string, { sourceUrl: string; html: string; markdown: string }>;
 }) {
   return runIngestionPipeline({
@@ -30,6 +38,7 @@ async function runFixture(args: {
       args.fixture.url,
       args.garmentCategory,
       args.sizeSystem,
+      args.fallbackSizeSystem,
     ),
     fetchedUrl: args.fixture.url,
     html: args.fixture.html,
@@ -127,6 +136,23 @@ test("Adidas direct page prefers the cm table over a duplicate inch table", asyn
   assert.equal(result.guide.guide.originalUnitSystem, "cm");
   assert.deepEqual(result.guide.guide.originalSizeLabels, ["XS", "S", "M", "L", "XL"]);
   assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.chestCm?.min, 83);
+});
+
+test("Pipeline retries a fallback size system after the primary INT target fails", async () => {
+  const result = await runFixture({
+    brand: "Fallback US",
+    fixture: fixtures.usNumericTops,
+    sizeSystem: "INT",
+    fallbackSizeSystem: "US",
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.report.requestedSizeSystem, "US");
+  assert.equal(result.guide.guide.sizeSystem, "US");
+  assert.equal(result.guide.guide.originalSizeLabels[0], "34");
+  assert.ok(
+    result.report.warnings.some((warning) => warning.code === "fallback-size-system-used"),
+  );
 });
 
 test("Adidas multi-guide page fails instead of extracting from a mixed category page", async () => {

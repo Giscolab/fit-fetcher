@@ -52,7 +52,7 @@ export function UploadBox({ onLoaded }: Props) {
           <p className="mt-1 text-sm text-muted-foreground">
             Format:{" "}
             <code className="break-words rounded bg-muted px-1.5 py-0.5 text-[0.72rem] text-foreground">
-              {"{ sources: [{ brand, entry_url, target: { category, sizeSystem } }] }"}
+              {"{ sources: [{ brand, entry_url, target: { category, sizeSystem, fallbackSizeSystem } }] }"}
             </code>
           </p>
         </div>

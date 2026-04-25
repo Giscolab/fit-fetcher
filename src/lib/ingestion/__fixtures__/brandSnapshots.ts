@@ -55,6 +55,18 @@ const adidasDualUnitTopTables = `
   <p>Hold the tape horizontally to measure chest, waist and hips.</p>
 </section>`;
 
+const usNumericTopTable = `
+<section>
+  <h2>Men's Tops US</h2>
+  <table>
+    <tr><th>US Size</th><th>Chest (cm)</th><th>Waist (cm)</th></tr>
+    <tr><td>34</td><td>86-91</td><td>71-76</td></tr>
+    <tr><td>36</td><td>92-97</td><td>77-82</td></tr>
+    <tr><td>38</td><td>98-103</td><td>83-88</td></tr>
+    <tr><td>40</td><td>104-109</td><td>89-94</td></tr>
+  </table>
+</section>`;
+
 const adidasBottomsTable = `
 <section>
   <h2>Men's Bottoms</h2>
@@ -240,6 +252,19 @@ Tall Tops Sizes (6' - 6'5"/183-196cm): 1.75"/4.5cm longer in length than regular
 
 ### How to measure
 Hold the tape horizontally to measure chest, waist and hips.
+`,
+  },
+  usNumericTops: {
+    url: "https://example.com/us-tops",
+    html: `<!doctype html><html><body>${usNumericTopTable}</body></html>`,
+    markdown: `
+## Men's Tops US
+| US Size | Chest (cm) | Waist (cm) |
+| --- | --- | --- |
+| 34 | 86-91 | 71-76 |
+| 36 | 92-97 | 77-82 |
+| 38 | 98-103 | 83-88 |
+| 40 | 104-109 | 89-94 |
 `,
   },
   adidasHub: {

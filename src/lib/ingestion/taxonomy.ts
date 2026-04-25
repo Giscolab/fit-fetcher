@@ -159,6 +159,8 @@ export function mapRequestedGarmentCategory(raw?: string): GarmentCategory | nul
   }
   if (
     containsAny(text, [
+      "generic",
+      "body",
       "body guide",
       "body measurement",
       "guide morphologie",
@@ -174,7 +176,9 @@ export function mapRequestedGarmentCategory(raw?: string): GarmentCategory | nul
 export function mapRequestedSizeSystem(raw?: string): SizeSystem | null {
   const text = normalizeToken(raw ?? "");
   if (!text) return null;
-  if (text === "int" || text === "international") return "INT";
+  if (text === "int" || text === "international" || text === "alpha" || text === "letter") {
+    return "INT";
+  }
   if (text === "eu" || text === "europe" || text === "european") return "EU";
   if (text === "fr" || text === "france" || text === "francais") return "FR";
   if (text === "us" || text === "usa" || text === "american") return "US";
@@ -281,12 +285,16 @@ export function detectSizeSystem(args: {
     ].join(" "),
   );
 
-  const explicitFromAxis = [
+  const axisDetections = [
     detectAxisSizeSystem(args.sizeAxisLabels ?? []),
     detectAxisSizeSystem(args.rowLabels),
     detectAxisSizeSystem(args.headers),
-  ].find((system) => system !== "UNKNOWN");
+  ];
+  const explicitFromAxis = axisDetections.find(
+    (system) => system !== "UNKNOWN" && system !== "NUMERIC",
+  );
   if (explicitFromAxis) return explicitFromAxis;
+  if (axisDetections.includes("NUMERIC")) return "NUMERIC";
 
   if (containsAny(context, ["footwear", "shoe size", "chaussure", "shoes"])) {
     return "FOOTWEAR";
@@ -641,7 +649,10 @@ export function resolveRequestedCategoryMatch(args: {
 
   if (
     args.requestedCategory === "tshirts" &&
-    (args.detectedCategory === "tops" || args.detectedCategory === "shirts")
+    (args.detectedCategory === "tops" ||
+      args.detectedCategory === "shirts" ||
+      args.detectedCategory === "hoodies" ||
+      args.detectedCategory === "jackets")
   ) {
     return {
       matchedCategory: "tshirts",
