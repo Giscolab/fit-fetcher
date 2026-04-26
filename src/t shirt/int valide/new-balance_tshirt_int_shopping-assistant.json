@@ -1,0 +1,242 @@
+{
+  "brand": {
+    "id": "brand-new-balance",
+    "name": "New Balance",
+    "country": null,
+    "website": "https://www.newbalance.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:42:31.053Z",
+    "updatedAt": "2026-04-25T18:42:31.053Z"
+  },
+  "guide": {
+    "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+    "brandId": "brand-new-balance",
+    "name": "New Balance – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: HTML table. Audience détectée: unknown. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.newbalance.com/customercare-sizeguide-apparel.html",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u-row-1",
+        "guideId": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+        "label": "XS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 83.8,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "waistCm": {
+            "min": 68.6,
+            "max": 73.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "seatHipsCm": {
+            "min": 81.3,
+            "max": 86.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u-row-2",
+        "guideId": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+        "label": "S",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "waistCm": {
+            "min": 73.7,
+            "max": 78.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "seatHipsCm": {
+            "min": 86.4,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u-row-3",
+        "guideId": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+        "label": "M",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 96.5,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "waistCm": {
+            "min": 78.7,
+            "max": 86.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "seatHipsCm": {
+            "min": 94,
+            "max": 101.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u-row-4",
+        "guideId": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+        "label": "L",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 104.1,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "waistCm": {
+            "min": 86.4,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "seatHipsCm": {
+            "min": 101.6,
+            "max": 109.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u-row-5",
+        "guideId": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+        "label": "XL",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 111.8,
+            "max": 121.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "waistCm": {
+            "min": 94,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "seatHipsCm": {
+            "min": 109.2,
+            "max": 116.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u-row-6",
+        "guideId": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+        "label": "XXL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 121.9,
+            "max": 134.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "waistCm": {
+            "min": 104.1,
+            "max": 116.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "seatHipsCm": {
+            "min": 116.8,
+            "max": 127,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          }
+        },
+        "notes": "Libellé source: 2XL."
+      },
+      {
+        "id": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u-row-7",
+        "guideId": "sa-guide-new-balance-tshirts-int-moeosgel-qbyv0w3u",
+        "label": "3XL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 134.6,
+            "max": 144.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "waistCm": {
+            "min": 116.8,
+            "max": 127,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          },
+          "seatHipsCm": {
+            "min": 127,
+            "max": 137.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.newbalance.com/customercare-sizeguide-apparel.html"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-25T18:42:31.053Z",
+    "updatedAt": "2026-04-25T18:42:31.053Z"
+  }
+}

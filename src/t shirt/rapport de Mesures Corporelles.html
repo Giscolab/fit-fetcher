@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesures Réelles – Assistant Shopping</title>
+    <meta name="description" content="Votre profil de mesures corporelles réelles pour un shopping optimal. Copiez vos mensurations en un clic.">
+    <meta name="theme-color" content="#0f172a" id="themeColorMeta">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%90%3C/text%3E%3C/svg%3E">
+    <style>
+        /* ============================================================
+           VARIABLES CSS – Appliquées sur <html> via data-theme
+           ============================================================ */
+        :root {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --accent-light: #3b82f6;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --hover-bg: #eff6ff;
+            --hover-bg2: #dbeafe;
+            --active-bg: #bfdbfe;
+            --copied-bg: #ecfdf5;
+            --copied-text: #065f46;
+            --success: #10b981;
+            --shadow: 0 4px 12px rgba(0,0,0,0.04);
+            --radius: 14px;
+            --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+            --body-bg: #f1f5f9;
+            --header-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color-scheme: light;
+        }
+
+        html[data-theme="light"] {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --accent-light: #3b82f6;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --hover-bg: #eff6ff;
+            --hover-bg2: #dbeafe;
+            --active-bg: #bfdbfe;
+            --copied-bg: #ecfdf5;
+            --copied-text: #065f46;
+            --body-bg: #f1f5f9;
+            --header-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color-scheme: light;
+        }
+
+        html[data-theme="dark"] {
+            --primary: #0f172a;
+            --accent: #60a5fa;
+            --accent-light: #93bbfd;
+            --card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --border: #334155;
+            --hover-bg: #1e293b;
+            --hover-bg2: #334155;
+            --active-bg: #475569;
+            --copied-bg: #064e3b;
+            --copied-text: #a7f3d0;
+            --body-bg: #0f172a;
+            --header-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--body-bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.5;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 620px;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* ---- HEADER ---- */
+        .header {
+            background: var(--header-gradient);
+            color: white;
+            padding: 28px 24px 22px;
+            position: relative;
+            text-align: center;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                105deg,
+                transparent 40%,
+                rgba(255,255,255,0.05) 45%,
+                rgba(255,255,255,0.08) 50%,
+                rgba(255,255,255,0.05) 55%,
+                transparent 60%
+            );
+            animation: headerShimmer 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes headerShimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50%      { transform: translateX(100%); }
+        }
+        .header .subtitle {
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin: 0 0 6px;
+        }
+        .header .update {
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        .header-actions {
+            position: absolute;
+            top: 18px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 5;
+        }
+        .lang-btn,
+        .theme-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+        .theme-btn {
+            padding: 8px 12px;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+        .lang-btn:hover,
+        .theme-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.4);
+        }
+        .lang-btn:focus-visible,
+        .theme-btn:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 2px;
+        }
+
+        /* ---- MAIN ---- */
+        main {
+            padding: 0;
+        }
+        .section {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            animation: sectionFadeIn 0.5s ease both;
+            contain: layout style;
+        }
+        .section:last-of-type {
+            border-bottom: none;
+        }
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+        .section-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .measure-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ---- MEASURE BUTTONS ---- */
+        .measure-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: var(--hover-bg);
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 14px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--text-main);
+            transition: all var(--transition);
+            outline: none;
+            opacity: 1;
+            animation: fadeInUp 0.4s ease both;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes sectionFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .measure-btn:hover {
+            background: var(--hover-bg2);
+            border-color: var(--accent-light);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+        }
+        .measure-btn:focus-visible {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+            background: var(--hover-bg2);
+        }
+        .measure-btn:active {
+            transform: scale(0.98);
+            background: var(--active-bg);
+        }
+        .measure-btn.copied {
+            border-color: var(--success) !important;
+            background: var(--copied-bg) !important;
+            animation: pulseGreen 0.5s ease;
+        }
+        .measure-btn.copied .label,
+        .measure-btn.copied .unit {
+            color: var(--copied-text);
+        }
+        @keyframes pulseGreen {
+            0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+            70%  { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+            100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+
+        .measure-btn .label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+        .measure-btn .value {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+        .measure-btn .unit {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-sub);
+            transition: color 0.15s;
+        }
+
+        /* ---- ACTIONS BAR (Copier + Partager) ---- */
+        .actions-bar {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition);
+        }
+        .action-btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+        .action-btn.copied {
+            animation: pulseGreen 0.5s ease;
+        }
+
+        .copy-all-btn {
+            background: var(--accent);
+            color: white;
+        }
+        .copy-all-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+        }
+        .copy-all-btn:active {
+            filter: brightness(0.95);
+            transform: scale(0.98);
+        }
+        .copy-all-btn.copied {
+            background: var(--success) !important;
+            filter: none;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .share-btn {
+            background: var(--hover-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+        .share-btn:hover {
+            background: var(--hover-bg2);
+            border-color: var(--accent-light);
+            transform: translateY(-1px);
+        }
+        .share-btn:active {
+            background: var(--active-bg);
+            transform: scale(0.98);
+        }
+        .share-btn[hidden] {
+            display: none;
+        }
+
+        /* ---- FOOTER ---- */
+        .hint {
+            display: block;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            padding: 16px 24px 20px;
+            background: var(--hover-bg);
+            border-top: 1px solid var(--border);
+            transition: background-color 0.3s;
+        }
+
+        /* ---- NOSCRIPT ---- */
+        .noscript-msg {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* ---- SR ONLY ---- */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ---- TOAST (visuel uniquement) ---- */
+        #toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px) scale(0.95);
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        #toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 480px) {
+            .header {
+                padding-top: 82px;
+            }
+            .header-actions {
+                top: 14px;
+                right: 50%;
+                transform: translateX(50%);
+                flex-direction: row;
+            }
+            .measure-grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            .lang-btn, .theme-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+            .actions-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        /* ---- REDUCED MOTION ---- */
+        @media (prefers-reduced-motion: reduce) {
+            .measure-btn, #toast, .lang-btn, .theme-btn,
+            .section, .action-btn, .header::before {
+                transition: none !important;
+                animation: none !important;
+            }
+            .measure-btn, .section {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+            #toast {
+                transform: translateX(-50%) translateY(0) scale(1) !important;
+            }
+        }
+
+        /* ---- IMPRESSION ---- */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .container {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+            }
+            .header {
+                background: #1e293b !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .header::before {
+                display: none !important;
+            }
+            .header-actions,
+            .actions-bar,
+            .hint,
+            #toast,
+            .sr-only {
+                display: none !important;
+            }
+            .measure-btn {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+                cursor: default !important;
+                page-break-inside: avoid;
+            }
+            .measure-btn .label { color: #555 !important; }
+            .measure-btn .value  { color: #000 !important; }
+            .measure-btn .unit   { color: #777 !important; }
+            .section {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+                contain: none;
+                page-break-inside: avoid;
+            }
+            .section-title { color: #1e293b !important; }
+            @page {
+                margin: 1.5cm;
+                size: auto;
+            }
+        }
+    </style>
+
+    <!-- ================================================================
+         ANTI-FLASH : thème + langue appliqués AVANT rendu.
+         Style inline de secours si le CSS est retardé.
+         ================================================================ -->
+    <script>
+        (function(){
+            function safeGet(key) {
+                try { return localStorage.getItem(key); } catch(e) { return null; }
+            }
+            var saved = safeGet('theme');
+            var isDark = false;
+            if (saved === 'dark' || saved === 'light') {
+                isDark = saved === 'dark';
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                isDark = true;
+            }
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            document.documentElement.style.backgroundColor = isDark ? '#0f172a' : '#f1f5f9';
+            document.documentElement.style.color = isDark ? '#f1f5f9' : '#1e293b';
+
+            var savedLang = safeGet('lang');
+            if (savedLang === 'fr' || savedLang === 'en') {
+                document.documentElement.lang = savedLang;
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-actions">
+                <button class="theme-btn" id="themeToggle" type="button"
+                        aria-label="Activer le mode sombre" title="Activer le mode sombre"
+                        aria-pressed="false">
+                    🌙
+                </button>
+                <button class="lang-btn" id="langToggle" type="button"
+                        aria-label="Passer en anglais" title="Passer en anglais">
+                    <span aria-hidden="true">🌐</span>
+                    <span id="langText">EN</span>
+                </button>
+            </div>
+            <p class="subtitle" data-i18n="profile_label">Profil de Mesures Réelles</p>
+            <h1 data-i18n="app_title">Assistant Shopping</h1>
+            <p class="update" data-i18n="update_date">Mise à jour : 18 avril 2026</p>
+        </header>
+
+        <main id="sectionsContainer">
+            <noscript>
+                <div class="noscript-msg" data-i18n-noscript="noscript">
+                    JavaScript est requis pour afficher vos mesures et copier les valeurs.
+                </div>
+            </noscript>
+        </main>
+
+        <div class="actions-bar">
+            <button class="action-btn copy-all-btn" id="copyAllBtn" type="button"
+                    aria-label="Copier toutes les mesures dans le presse-papiers"
+                    title="Copier toutes les mesures">
+                <span aria-hidden="true">📋</span>
+                <span data-i18n="copy_all">Copier toutes les mesures</span>
+            </button>
+            <button class="action-btn share-btn" id="shareBtn" type="button" hidden
+                    aria-label="Partager les mesures"
+                    title="Partager les mesures">
+                <span aria-hidden="true">📤</span>
+                <span data-i18n="share">Partager</span>
+            </button>
+        </div>
+
+        <footer class="hint" data-i18n="tip">
+            💡 Cliquez sur une mesure pour la copier.
+        </footer>
+    </div>
+
+    <div id="toast" aria-hidden="true"></div>
+    <div id="srAnnounce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+    <script>
+        (function(){
+            'use strict';
+
+            // ============================================================
+            // DONNÉES CENTRALISÉES
+            // ============================================================
+            var measurementData = [
+                { category:'composition', icon:'📊', items:[
+                    {id:'weight',       labelFr:'Poids',              labelEn:'Weight',            value:'60.0', unit:'kg'},
+                    {id:'lean_mass',    labelFr:'Masse Maigre',       labelEn:'Lean Body Mass',    value:'49.7', unit:'kg'},
+                    {id:'body_fat',     labelFr:'Graisse Corporelle', labelEn:'Body Fat',          value:'17.2', unit:'%'},
+                    {id:'surface',      labelFr:'Surface Corporelle', labelEn:'Body Surface Area', value:'1.7',  unit:'m²'}
+                ]},
+                { category:'upper_body', icon:'👕', items:[
+                    {id:'chest',   labelFr:'Poitrine',           labelEn:'Chest',       value:'87.0', unit:'cm'},
+                    {id:'stomach', labelFr:'Ventre',             labelEn:'Stomach',     value:'86.0', unit:'cm'},
+                    {id:'waist',   labelFr:'Taille',             labelEn:'Waist',       value:'77.1', unit:'cm'},
+                    {id:'hips',    labelFr:'Fessiers (Hanches)', labelEn:'Seat (Hips)', value:'90.2', unit:'cm'}
+                ]},
+                { category:'arms', icon:'💪', items:[
+                    {id:'left_biceps',   labelFr:'Biceps Gauche',     labelEn:'Left Biceps',   value:'25.0', unit:'cm'},
+                    {id:'right_biceps',  labelFr:'Biceps Droit',      labelEn:'Right Biceps',  value:'25.0', unit:'cm'},
+                    {id:'left_forearm',  labelFr:'Avant-bras Gauche', labelEn:'Left Forearm',  value:'24.2', unit:'cm'},
+                    {id:'right_forearm', labelFr:'Avant-bras Droit',  labelEn:'Right Forearm', value:'23.8', unit:'cm'}
+                ]},
+                { category:'lower_body', icon:'🦵', items:[
+                    {id:'left_thigh',  labelFr:'Cuisse Gauche', labelEn:'Left Thigh',  value:'47.8', unit:'cm'},
+                    {id:'right_thigh', labelFr:'Cuisse Droite', labelEn:'Right Thigh', value:'48.0', unit:'cm'},
+                    {id:'left_calf',   labelFr:'Mollet Gauche', labelEn:'Left Calf',   value:'34.3', unit:'cm'},
+                    {id:'right_calf',  labelFr:'Mollet Droit',  labelEn:'Right Calf',  value:'34.4', unit:'cm'}
+                ]}
+            ];
+
+            var categoryLabels = {
+                composition:  { fr:'Composition & Poids', en:'Composition & Weight' },
+                upper_body:   { fr:'Haut du corps',       en:'Upper Body' },
+                arms:         { fr:'Bras',                 en:'Arms' },
+                lower_body:   { fr:'Jambes',               en:'Lower Body' }
+            };
+
+            // ============================================================
+            // ÉTAT & TRADUCTIONS
+            // ============================================================
+            var currentLang = document.documentElement.lang || 'fr';
+
+            var i18n = {
+                profile_label:   { fr:'Profil de Mesures Réelles',       en:'Real Body Measurements' },
+                app_title:       { fr:'Assistant Shopping',              en:'Shopping Assistant' },
+                update_date:     { fr:'Mise à jour : 18 avril 2026',    en:'Updated: April 18, 2026' },
+                tip:             { fr:'💡 Cliquez sur une mesure pour la copier.', en:'💡 Click a measure to copy it.' },
+                toast_copied:    { fr:' copié !',   en:' copied!' },
+                lang_tooltip:    { fr:'Passer en anglais',               en:'Switch to French' },
+                lang_label:      { fr:'EN',                              en:'FR' },
+                copy_hint:       { fr:'cliquer pour copier',             en:'click to copy' },
+                theme_dark:      { fr:'Activer le mode sombre',          en:'Activate dark mode' },
+                theme_light:     { fr:'Activer le mode clair',           en:'Activate light mode' },
+                noscript:        { fr:'JavaScript est requis pour afficher vos mesures et copier les valeurs.', en:'JavaScript is required to display your measurements and copy values.' },
+                copy_all:        { fr:'Copier toutes les mesures',       en:'Copy all measurements' },
+                copy_all_title:  { fr:'Copier toutes les mesures dans le presse-papiers', en:'Copy all measurements to clipboard' },
+                toast_all_ok:    { fr:'Toutes les mesures copiées !',    en:'All measurements copied!' },
+                share:           { fr:'Partager',                        en:'Share' },
+                share_title:     { fr:'Partager les mesures',            en:'Share measurements' },
+                share_fail:      { fr:'Partage annulé',                  en:'Share cancelled' },
+                share_fallback:  { fr:'Mesures copiées (partage indisponible)', en:'Measurements copied (share unavailable)' },
+                share_unavailable: { fr:'Partage non disponible sur ce navigateur', en:'Share not available on this browser' },
+                toast_fail:      { fr:'Échec de la copie',               en:'Copy failed' },
+                share_label:     { fr:'Mesures Réelles',                 en:'Real Measurements' }
+            };
+
+            // ============================================================
+            // HELPERS localStorage protégés
+            // ============================================================
+            function safeGet(key) {
+                try { return localStorage.getItem(key); } catch(e) { return null; }
+            }
+            function safeSet(key, value) {
+                try { localStorage.setItem(key, value); } catch(e) { /* privé / quotas */ }
+            }
+
+            // ============================================================
+            // RÉFÉRENCES DOM
+            // ============================================================
+            var sectionsContainer = document.getElementById('sectionsContainer');
+            var langToggle        = document.getElementById('langToggle');
+            var langText          = document.getElementById('langText');
+            var themeToggle       = document.getElementById('themeToggle');
+            var themeColorMeta    = document.getElementById('themeColorMeta');
+            var toast             = document.getElementById('toast');
+            var srAnnounce        = document.getElementById('srAnnounce');
+            var copyAllBtn        = document.getElementById('copyAllBtn');
+            var shareBtn          = document.getElementById('shareBtn');
+            var toastTimer        = null;
+
+            // ============================================================
+            // RECHERCHE D'ITEM PAR ID
+            // ============================================================
+            function findItemById(id) {
+                for (var s = 0; s < measurementData.length; s++) {
+                    for (var i = 0; i < measurementData[s].items.length; i++) {
+                        if (measurementData[s].items[i].id === id) return measurementData[s].items[i];
+                    }
+                }
+                return null;
+            }
+
+            // ============================================================
+            // FEEDBACK : toast visuel, annonce SR, haptique
+            // ============================================================
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2200);
+            }
+
+            function announceToSR(text) {
+                if (!srAnnounce) return;
+                srAnnounce.textContent = '';
+                void srAnnounce.offsetWidth;
+                srAnnounce.textContent = text;
+            }
+
+            function hapticFeedback() {
+                if (navigator.vibrate && typeof navigator.vibrate === 'function') {
+                    navigator.vibrate(10);
+                }
+            }
+
+            // ============================================================
+            // CONSTRUCTION DOM
+            // ============================================================
+            function createMeasureButton(item, index, sectionDelay) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'measure-btn';
+                btn.dataset.itemId = item.id;
+                btn.dataset.value  = item.value;
+                btn.style.animationDelay = (sectionDelay + index * 0.03) + 's';
+
+                var labelSpan = document.createElement('span');
+                labelSpan.className = 'label';
+                labelSpan.dataset.itemLabel = item.id;
+
+                var valueSpan = document.createElement('span');
+                valueSpan.className = 'value';
+
+                var numberSpan = document.createElement('span');
+                numberSpan.textContent = item.value;
+                valueSpan.appendChild(numberSpan);
+
+                var unitSpan = document.createElement('span');
+                unitSpan.className = 'unit';
+                unitSpan.textContent = item.unit;
+                valueSpan.appendChild(unitSpan);
+
+                btn.appendChild(labelSpan);
+                btn.appendChild(valueSpan);
+                return btn;
+            }
+
+            function buildAllSections() {
+                var noscript = sectionsContainer.querySelector('noscript');
+                sectionsContainer.innerHTML = '';
+                if (noscript) sectionsContainer.appendChild(noscript);
+
+                var cumulativeDelay = 0;
+
+                measurementData.forEach(function(section, sIdx) {
+                    var sectionEl = document.createElement('section');
+                    sectionEl.className = 'section';
+                    sectionEl.dataset.category = section.category;
+                    sectionEl.style.animationDelay = (sIdx * 0.08) + 's';
+
+                    var titleEl = document.createElement('h2');
+                    titleEl.className = 'section-title';
+
+                    var iconSpan = document.createElement('span');
+                    iconSpan.className = 'section-icon';
+                    iconSpan.setAttribute('aria-hidden', 'true');
+                    iconSpan.textContent = section.icon;
+
+                    var textSpan = document.createElement('span');
+                    textSpan.dataset.catLabel = section.category;
+
+                    titleEl.appendChild(iconSpan);
+                    titleEl.appendChild(textSpan);
+
+                    var gridEl = document.createElement('div');
+                    gridEl.className = 'measure-grid';
+
+                    section.items.forEach(function(item, idx) {
+                        gridEl.appendChild(createMeasureButton(item, idx, cumulativeDelay));
+                    });
+
+                    cumulativeDelay += section.items.length * 0.03 + 0.08;
+
+                    sectionEl.appendChild(titleEl);
+                    sectionEl.appendChild(gridEl);
+                    sectionsContainer.appendChild(sectionEl);
+                });
+
+                refreshAllTexts();
+            }
+
+            // ============================================================
+            // RAFRAÎCHISSEMENT DES TEXTES
+            // ============================================================
+            function refreshAllTexts() {
+                var el, key, cat, itemId, found, labelText, btn;
+
+                var i18nEls = document.querySelectorAll('[data-i18n]');
+                for (var i = 0; i < i18nEls.length; i++) {
+                    key = i18nEls[i].getAttribute('data-i18n');
+                    if (i18n[key] && i18n[key][currentLang]) {
+                        i18nEls[i].textContent = i18n[key][currentLang];
+                    }
+                }
+
+                var nsEls = document.querySelectorAll('[data-i18n-noscript]');
+                for (var n = 0; n < nsEls.length; n++) {
+                    var nsKey = nsEls[n].getAttribute('data-i18n-noscript');
+                    if (i18n[nsKey] && i18n[nsKey][currentLang]) {
+                        nsEls[n].textContent = i18n[nsKey][currentLang];
+                    }
+                }
+
+                var catEls = document.querySelectorAll('[data-cat-label]');
+                for (var c = 0; c < catEls.length; c++) {
+                    cat = catEls[c].getAttribute('data-cat-label');
+                    if (categoryLabels[cat] && categoryLabels[cat][currentLang]) {
+                        catEls[c].textContent = categoryLabels[cat][currentLang];
+                    }
+                }
+
+                var itemEls = document.querySelectorAll('[data-item-label]');
+                for (var j = 0; j < itemEls.length; j++) {
+                    itemId = itemEls[j].getAttribute('data-item-label');
+                    found = findItemById(itemId);
+                    if (found) {
+                        labelText = currentLang === 'fr' ? found.labelFr : found.labelEn;
+                        itemEls[j].textContent = labelText;
+                        btn = itemEls[j].closest('.measure-btn');
+                        if (btn) {
+                            btn.setAttribute('aria-label',
+                                labelText + ' : ' + found.value + ' ' + found.unit +
+                                ' \u2013 ' + i18n.copy_hint[currentLang]);
+                        }
+                    }
+                }
+
+                langText.textContent = i18n.lang_label[currentLang];
+                langToggle.setAttribute('aria-label', i18n.lang_tooltip[currentLang]);
+                langToggle.title = i18n.lang_tooltip[currentLang];
+
+                if (copyAllBtn) {
+                    copyAllBtn.setAttribute('aria-label', i18n.copy_all_title[currentLang]);
+                    copyAllBtn.title = i18n.copy_all_title[currentLang];
+                }
+                if (shareBtn) {
+                    shareBtn.setAttribute('aria-label', i18n.share_title[currentLang]);
+                    shareBtn.title = i18n.share_title[currentLang];
+                }
+
+                updateThemeButtonUI();
+                document.documentElement.lang = currentLang;
+            }
+
+            // ============================================================
+            // DÉLÉGATION D'ÉVÉNEMENTS — clic sur les boutons mesure
+            // ============================================================
+            sectionsContainer.addEventListener('click', function(e) {
+                var btn = e.target.closest('.measure-btn');
+                if (!btn) return;
+                var item = findItemById(btn.dataset.itemId);
+                if (item) handleCopy(item, btn);
+            });
+
+            // ============================================================
+            // NAVIGATION CLAVIER — flèches entre boutons mesure
+            // ============================================================
+            sectionsContainer.addEventListener('keydown', function(e) {
+                var btn = e.target.closest('.measure-btn');
+                if (!btn) return;
+
+                var grid = btn.closest('.measure-grid');
+                if (!grid) return;
+
+                var gridBtns = Array.prototype.slice.call(grid.querySelectorAll('.measure-btn'));
+                var localIdx = gridBtns.indexOf(btn);
+                if (localIdx === -1) return;
+
+                var section = btn.closest('.section');
+                var allSections = Array.prototype.slice.call(
+                    sectionsContainer.querySelectorAll(':scope > section')
+                );
+                var sectionIdx = allSections.indexOf(section);
+                var cols = window.innerWidth <= 480 ? 1 : 2;
+                var nextBtn = null;
+
+                switch (e.key) {
+                    case 'ArrowRight':
+                        if (localIdx + 1 < gridBtns.length) {
+                            nextBtn = gridBtns[localIdx + 1];
+                        } else if (sectionIdx + 1 < allSections.length) {
+                            var ng = allSections[sectionIdx + 1].querySelector('.measure-grid');
+                            if (ng) nextBtn = ng.querySelector('.measure-btn');
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        if (localIdx - 1 >= 0) {
+                            nextBtn = gridBtns[localIdx - 1];
+                        } else if (sectionIdx - 1 >= 0) {
+                            var pg = allSections[sectionIdx - 1].querySelector('.measure-grid');
+                            if (pg) {
+                                var pBtns = Array.prototype.slice.call(pg.querySelectorAll('.measure-btn'));
+                                nextBtn = pBtns[pBtns.length - 1];
+                            }
+                        }
+                        break;
+                    case 'ArrowDown':
+                        if (localIdx + cols < gridBtns.length) {
+                            nextBtn = gridBtns[localIdx + cols];
+                        } else if (sectionIdx + 1 < allSections.length) {
+                            var col = localIdx % cols;
+                            var ng2 = allSections[sectionIdx + 1].querySelector('.measure-grid');
+                            if (ng2) {
+                                var nBtns = Array.prototype.slice.call(ng2.querySelectorAll('.measure-btn'));
+                                nextBtn = nBtns[col] || nBtns[0] || null;
+                            }
+                        }
+                        break;
+                    case 'ArrowUp':
+                        if (localIdx - cols >= 0) {
+                            nextBtn = gridBtns[localIdx - cols];
+                        } else if (sectionIdx - 1 >= 0) {
+                            var col2 = localIdx % cols;
+                            var pg2 = allSections[sectionIdx - 1].querySelector('.measure-grid');
+                            if (pg2) {
+                                var pBtns2 = Array.prototype.slice.call(pg2.querySelectorAll('.measure-btn'));
+                                var lastRowStart = Math.floor((pBtns2.length - 1) / cols) * cols;
+                                var targetIdx = lastRowStart + col2;
+                                nextBtn = (targetIdx < pBtns2.length)
+                                    ? pBtns2[targetIdx]
+                                    : pBtns2[pBtns2.length - 1];
+                            }
+                        }
+                        break;
+                    case 'Home':
+                        nextBtn = gridBtns[0];
+                        break;
+                    case 'End':
+                        nextBtn = gridBtns[gridBtns.length - 1];
+                        break;
+                    default:
+                        return;
+                }
+
+                if (nextBtn) {
+                    e.preventDefault();
+                    nextBtn.focus();
+                }
+            });
+
+            // ============================================================
+            // THÈME
+            // ============================================================
+            function applyTheme(mode, persist) {
+                var isDark = mode === 'dark';
+                document.documentElement.setAttribute('data-theme', mode);
+                document.documentElement.style.backgroundColor = '';
+                document.documentElement.style.color = '';
+                if (themeColorMeta) {
+                    themeColorMeta.setAttribute('content', isDark ? '#0f172a' : '#f1f5f9');
+                }
+                if (persist) safeSet('theme', mode);
+                updateThemeButtonUI();
+            }
+
+            function updateThemeButtonUI() {
+                var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                themeToggle.textContent = isDark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+                var label = isDark ? i18n.theme_light[currentLang] : i18n.theme_dark[currentLang];
+                themeToggle.setAttribute('aria-label', label);
+                themeToggle.title = label;
+                themeToggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+            }
+
+            function initTheme() {
+                var saved = safeGet('theme');
+                var prefersDark = window.matchMedia
+                    ? window.matchMedia('(prefers-color-scheme: dark)')
+                    : null;
+
+                if (saved === 'dark' || saved === 'light') {
+                    applyTheme(saved, false);
+                } else {
+                    applyTheme((prefersDark && prefersDark.matches) ? 'dark' : 'light', false);
+                }
+
+                if (prefersDark) {
+                    var onThemeChange = function(e) {
+                        if (!safeGet('theme')) {
+                            applyTheme(e.matches ? 'dark' : 'light', false);
+                        }
+                    };
+                    if (typeof prefersDark.addEventListener === 'function') {
+                        prefersDark.addEventListener('change', onThemeChange);
+                    } else if (typeof prefersDark.addListener === 'function') {
+                        prefersDark.addListener(onThemeChange);
+                    }
+                }
+            }
+
+            themeToggle.addEventListener('click', function() {
+                var current = document.documentElement.getAttribute('data-theme');
+                applyTheme(current === 'dark' ? 'light' : 'dark', true);
+            });
+
+            // ============================================================
+            // COPIE UNITAIRE
+            // ============================================================
+            function handleCopy(item, btn) {
+                var value = item.value;
+
+                try {
+                    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                        navigator.clipboard.writeText(value).then(function() {
+                            onCopySuccess(item, btn);
+                        }).catch(function() {
+                            if (fallbackCopy(value)) onCopySuccess(item, btn);
+                            else onCopyFail();
+                        });
+                        return;
+                    }
+                } catch (e) { /* contexte restreint */ }
+
+                if (fallbackCopy(value)) {
+                    onCopySuccess(item, btn);
+                } else {
+                    onCopyFail();
+                }
+            }
+
+            function onCopySuccess(item, btn) {
+                var label = currentLang === 'fr' ? item.labelFr : item.labelEn;
+                var msg = label + ' (' + item.value + ' ' + item.unit + ')' + i18n.toast_copied[currentLang];
+                showToast(msg);
+                announceToSR(msg);
+                hapticFeedback();
+                btn.classList.add('copied');
+                setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+            }
+
+            function onCopyFail() {
+                var msg = '\u274C ' + i18n.toast_fail[currentLang];
+                showToast(msg);
+                announceToSR(msg);
+            }
+
+            function fallbackCopy(text) {
+                var ta = document.createElement('textarea');
+                var ok = false;
+                try {
+                    ta.value = text;
+                    ta.setAttribute('readonly', '');
+                    ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none;width:1px;height:1px;';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    ok = document.execCommand('copy');
+                } catch (e) {
+                    ok = false;
+                } finally {
+                    if (ta.parentNode) ta.parentNode.removeChild(ta);
+                }
+                return ok;
+            }
+
+            // ============================================================
+            // COPIER TOUT — clipboard uniquement, pas de share
+            // ============================================================
+            function buildFormattedText() {
+                var lines = [];
+                var isFr = currentLang === 'fr';
+                lines.push(isFr ? 'Mesures Réelles \u2013 18 avril 2026' : 'Real Measurements \u2013 April 18, 2026');
+                lines.push('');
+
+                measurementData.forEach(function(section) {
+                    lines.push(categoryLabels[section.category][currentLang]);
+                    section.items.forEach(function(item) {
+                        var lbl = isFr ? item.labelFr : item.labelEn;
+                        lines.push('  ' + lbl + ' : ' + item.value + ' ' + item.unit);
+                    });
+                    lines.push('');
+                });
+
+                return lines.join('\n');
+            }
+
+            function handleCopyAll() {
+                var text = buildFormattedText();
+
+                try {
+                    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                        navigator.clipboard.writeText(text).then(function() {
+                            onCopyAllSuccess();
+                        }).catch(function() {
+                            if (fallbackCopy(text)) onCopyAllSuccess();
+                            else onCopyFail();
+                        });
+                        return;
+                    }
+                } catch (e) { /* contexte restreint */ }
+
+                if (fallbackCopy(text)) {
+                    onCopyAllSuccess();
+                } else {
+                    onCopyFail();
+                }
+            }
+
+            function onCopyAllSuccess() {
+                var msg = i18n.toast_all_ok[currentLang];
+                showToast(msg);
+                announceToSR(msg);
+                hapticFeedback();
+                copyAllBtn.classList.add('copied');
+                setTimeout(function() { copyAllBtn.classList.remove('copied'); }, 1200);
+            }
+
+            copyAllBtn.addEventListener('click', handleCopyAll);
+
+            // ============================================================
+            // PARTAGER — Web Share API uniquement, bouton masqué sinon
+            // ============================================================
+            function initShareButton() {
+                if (navigator.share && typeof navigator.share === 'function') {
+                    shareBtn.removeAttribute('hidden');
+                }
+            }
+
+            shareBtn.addEventListener('click', function() {
+                var text = buildFormattedText();
+
+                navigator.share({
+                    title: i18n.share_label[currentLang],
+                    text: text
+                }).then(function() {
+                    /* Succès silencieux : l'utilisateur a choisi sa cible */
+                }).catch(function(err) {
+                    if (err.name === 'AbortError') {
+                        /* Annulé par l'utilisateur — silencieux */
+                        return;
+                    }
+                    /* Erreur réelle du share → fallback clipboard */
+                    if (fallbackCopy(text)) {
+                        var msg = i18n.share_fallback[currentLang];
+                        showToast(msg);
+                        announceToSR(msg);
+                    } else {
+                        var failMsg = i18n.toast_fail[currentLang];
+                        showToast(failMsg);
+                        announceToSR(failMsg);
+                    }
+                });
+            });
+
+            // ============================================================
+            // LANGUE
+            // ============================================================
+            function changeLanguage(lang) {
+                currentLang = lang;
+                safeSet('lang', lang);
+                refreshAllTexts();
+            }
+
+            function initLanguage() {
+                var saved = safeGet('lang');
+                changeLanguage((saved === 'fr' || saved === 'en') ? saved : 'fr');
+            }
+
+            langToggle.addEventListener('click', function() {
+                changeLanguage(currentLang === 'fr' ? 'en' : 'fr');
+            });
+
+            // ============================================================
+            // NETTOYAGE ANTI-FLASH
+            // ============================================================
+            function cleanupInlineStyles() {
+                document.documentElement.style.backgroundColor = '';
+                document.documentElement.style.color = '';
+            }
+
+            // ============================================================
+            // INIT
+            // ============================================================
+            function init() {
+                initTheme();
+                initLanguage();
+                buildAllSections();
+                initShareButton();
+
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(cleanupInlineStyles);
+                } else {
+                    cleanupInlineStyles();
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>

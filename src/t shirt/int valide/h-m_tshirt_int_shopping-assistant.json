@@ -1,0 +1,170 @@
+{
+  "brand": {
+    "id": "brand-h-m",
+    "name": "H&M",
+    "country": null,
+    "website": "https://th.hm.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:42:35.593Z",
+    "updatedAt": "2026-04-25T18:42:35.593Z"
+  },
+  "guide": {
+    "id": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj",
+    "brandId": "brand-h-m",
+    "name": "H&M – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: HTML table. Audience détectée: unknown. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://th.hm.com/th_en/customer-service/sizeguide/men.html",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj-row-1",
+        "guideId": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj",
+        "label": "XS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 81.3,
+            "max": 83.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          },
+          "waistCm": {
+            "min": 68.6,
+            "max": 73.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj-row-2",
+        "guideId": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj",
+        "label": "S",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 83.8,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          },
+          "waistCm": {
+            "min": 73.7,
+            "max": 76.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj-row-3",
+        "guideId": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj",
+        "label": "M",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          },
+          "waistCm": {
+            "min": 76.2,
+            "max": 81.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj-row-4",
+        "guideId": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj",
+        "label": "L",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 94,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          },
+          "waistCm": {
+            "min": 81.3,
+            "max": 83.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj-row-5",
+        "guideId": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj",
+        "label": "XL",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 96.5,
+            "max": 101.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          },
+          "waistCm": {
+            "min": 83.8,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj-row-6",
+        "guideId": "sa-guide-h-m-tshirts-int-moeosjwp-m55sd1rj",
+        "label": "XXL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 101.6,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          },
+          "waistCm": {
+            "min": 88.9,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://th.hm.com/th_en/customer-service/sizeguide/men.html"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-25T18:42:35.593Z",
+    "updatedAt": "2026-04-25T18:42:35.593Z"
+  }
+}

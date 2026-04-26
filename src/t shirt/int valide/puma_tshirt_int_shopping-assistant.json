@@ -1,0 +1,302 @@
+{
+  "brand": {
+    "id": "brand-puma",
+    "name": "Puma",
+    "country": null,
+    "website": "https://nz.puma.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:42:13.586Z",
+    "updatedAt": "2026-04-25T18:42:13.586Z"
+  },
+  "guide": {
+    "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+    "brandId": "brand-puma",
+    "name": "Puma – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: Men's Body Measurements. Audience détectée: men. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://nz.puma.com/nz/en/sizecharts/sizecharts.html",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-1",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "XXS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 73,
+            "max": 80,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 60,
+            "max": 67,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 72,
+            "max": 79,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-2",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "XS",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 81,
+            "max": 81,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 68,
+            "max": 75,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 80,
+            "max": 87,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-3",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "S",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 89,
+            "max": 96,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 76,
+            "max": 83,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 88,
+            "max": 95,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-4",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "M",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 97,
+            "max": 104,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 84,
+            "max": 91,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 96,
+            "max": 103,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-5",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "L",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 105,
+            "max": 113,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 92,
+            "max": 100,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 104,
+            "max": 112,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-6",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "XL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 114,
+            "max": 123,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 101,
+            "max": 110,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 113,
+            "max": 122,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-7",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "XXL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 124,
+            "max": 133,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 111,
+            "max": 121,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 123,
+            "max": 132,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": "Libellé source: 2XL."
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-8",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "3XL",
+        "sortOrder": 7,
+        "dimensions": {
+          "chestCm": {
+            "min": 134,
+            "max": 143,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 122,
+            "max": 132,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 133,
+            "max": 142,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j-row-9",
+        "guideId": "sa-guide-puma-tshirts-int-moeos2xe-i3l1mi8j",
+        "label": "4XL",
+        "sortOrder": 8,
+        "dimensions": {
+          "chestCm": {
+            "min": 144,
+            "max": 153,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "waistCm": {
+            "min": 133,
+            "max": 143,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          },
+          "seatHipsCm": {
+            "min": 143,
+            "max": 152,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://nz.puma.com/nz/en/sizecharts/sizecharts.html"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-25T18:42:13.586Z",
+    "updatedAt": "2026-04-25T18:42:13.586Z"
+  }
+}

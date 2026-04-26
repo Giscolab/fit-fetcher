@@ -1,0 +1,302 @@
+{
+  "brand": {
+    "id": "brand-reebok",
+    "name": "Reebok",
+    "country": null,
+    "website": "https://www.reebok.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:42:14.588Z",
+    "updatedAt": "2026-04-25T18:42:14.588Z"
+  },
+  "guide": {
+    "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+    "brandId": "brand-reebok",
+    "name": "Reebok – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: Men's Tops Size Guide. Audience détectée: men. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.reebok.com/pages/size-guides",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-1",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "XS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 81.3,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 71.1,
+            "max": 77.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 81.3,
+            "max": 87.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-2",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "S",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 77.5,
+            "max": 83.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 87.6,
+            "max": 95.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-3",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "M",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 96.5,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 83.8,
+            "max": 91.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 95.3,
+            "max": 102.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-4",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "L",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 104.1,
+            "max": 113,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 91.4,
+            "max": 101.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 102.9,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-5",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "XL",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 113,
+            "max": 124.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 101.6,
+            "max": 113,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 111.8,
+            "max": 120.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-6",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "XXL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 124.5,
+            "max": 135.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 113,
+            "max": 125.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 120.7,
+            "max": 129.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": "Libellé source: 2XL."
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-7",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "3XL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 135.9,
+            "max": 147.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 125.7,
+            "max": 138.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 129.5,
+            "max": 139.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-8",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "4XL",
+        "sortOrder": 7,
+        "dimensions": {
+          "chestCm": {
+            "min": 147.3,
+            "max": 158.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 138.4,
+            "max": 151.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 139.7,
+            "max": 149.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j-row-9",
+        "guideId": "sa-guide-reebok-tshirts-int-moeos3p8-e9vz4q9j",
+        "label": "5XL",
+        "sortOrder": 8,
+        "dimensions": {
+          "chestCm": {
+            "min": 158.8,
+            "max": 170.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "waistCm": {
+            "min": 151.1,
+            "max": 163.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          },
+          "seatHipsCm": {
+            "min": 149.9,
+            "max": 160,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.reebok.com/pages/size-guides"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-25T18:42:14.588Z",
+    "updatedAt": "2026-04-25T18:42:14.588Z"
+  }
+}

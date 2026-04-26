@@ -1,0 +1,575 @@
+{
+  "schemaVersion": "fit-fetcher.sources.canonical.v1",
+  "purpose": "Import canonique 27 marques tshirts INT, reconstruit depuis le rapport simplifie, les exports int valide et les fichiers de reparation.",
+  "mode": "ingestion_sources",
+  "createdAt": "2026-04-26",
+  "defaultTarget": {
+    "garmentCategory": "tshirts",
+    "sizeSystem": "INT"
+  },
+  "buildInputs": {
+    "report": "C:/Users/cadet/Desktop/t shirt/rapport de Mesures Corporelles simplifié.json",
+    "repairLatest": "C:/Users/cadet/Desktop/fit-fetcher-sources-a-corriger.json",
+    "repairV4": "C:/Users/cadet/Desktop/fit-fetcher-repair-invalid-sources-v4.clean.json",
+    "validatedExportsDir": "C:/Users/cadet/Desktop/t shirt/int valide"
+  },
+  "policy": {
+    "fallbackUrlsShape": "string[] only",
+    "validatedExportsWinOverRepairFiles": true,
+    "blockedOrManualReviewSourcesMustNotBeAutoAccepted": true
+  },
+  "sources": [
+    {
+      "brand": "Nike",
+      "entry_url": "https://www.nike.com/size-fit/mens_tops_alpha",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/nike_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 16,
+      "validatedExportSizes": [
+        "XXS",
+        "XS",
+        "S",
+        "S",
+        "M",
+        "M",
+        "L",
+        "L",
+        "XL",
+        "XL",
+        "XXL",
+        "XXL",
+        "3XL",
+        "3XL",
+        "4XL",
+        "4XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Adidas",
+      "entry_url": "https://www.adidas.com/us/help/size_charts/men-shirts_tops",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/adidas_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 7,
+      "validatedExportSizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Puma",
+      "entry_url": "https://nz.puma.com/nz/en/sizecharts/sizecharts.html",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/puma_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 9,
+      "validatedExportSizes": [
+        "XXS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL",
+        "4XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Reebok",
+      "entry_url": "https://www.reebok.com/pages/size-guides",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/reebok_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 9,
+      "validatedExportSizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL",
+        "4XL",
+        "5XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Under Armour",
+      "entry_url": "https://www.underarmour.com/en-us/t/size-guide/mens-tops/",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/under-armour_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 9,
+      "validatedExportSizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL",
+        "4XL",
+        "5XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "New Balance",
+      "entry_url": "https://www.newbalance.com/customercare-sizeguide-apparel.html",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/new-balance_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 7,
+      "validatedExportSizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Zara",
+      "entry_url": "https://www.zara.com/fr/fr/help-center/MySize",
+      "fallback_urls": [
+        "https://www.zara.com/fr/fr/help-center/MySize",
+        "https://www.zara.com/fr/fr/help/tailles-h11.html",
+        "https://www.zara.com/us/en/help-center/MySize"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "blocked_product_page_measurement_only",
+      "sourceQuality": "help_article_no_global_table",
+      "requiresManualReview": true,
+      "notes": "Zara explains measurements are on product pages; no stable global table confirmed.",
+      "fallbackSizeSystem": "EU",
+      "repairStrategy": "product_page_measurement_guide",
+      "pipelineAction": "do_not_auto_accept"
+    },
+    {
+      "brand": "H&M",
+      "entry_url": "https://th.hm.com/th_en/customer-service/sizeguide/men.html",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/h-m_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 6,
+      "validatedExportSizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Uniqlo",
+      "entry_url": "https://www.uniqlo.com/us/en/sizechart",
+      "fallback_urls": [
+        "https://www.uniqlo.com/us/en/sizechart",
+        "https://www.uniqlo.com/us/en/special-feature/extended-sizes",
+        "https://faq-us.uniqlo.com/articles/en_US/Knowledge/How-can-I-figure-out-my-size"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_product_detail_required",
+      "sourceQuality": "global_page_without_stable_body_table",
+      "requiresManualReview": true,
+      "notes": "Global sizechart often behaves like a hub; detailed garment measurements are usually product-page Size Chart.",
+      "fallbackSizeSystem": "US",
+      "repairStrategy": "product_page_size_chart_or_extended_sizes",
+      "pipelineAction": "manual_review_product_page_strategy"
+    },
+    {
+      "brand": "Mango",
+      "entry_url": "https://shop.mango.com/fr/fr/help/product-info/size-guide",
+      "fallback_urls": [
+        "https://shop.mango.com/us/en/help/product-info/size-guide"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate",
+      "sourceQuality": "product_page_only",
+      "requiresManualReview": true,
+      "notes": "Mango indique que le guide des tailles est disponible dans chaque article. Ne pas chercher un tableau global stable.",
+      "fallbackSizeSystem": "EU",
+      "repairStrategy": "product_page_size_guide",
+      "pipelineAction": "manual_review_product_page_strategy"
+    },
+    {
+      "brand": "Lacoste",
+      "entry_url": "https://www.lacoste.com/us/sizeguide",
+      "fallback_urls": [
+        "https://www.lacoste.com/us/sizeguide",
+        "https://www.lacoste.com/sizeguide",
+        "https://www.lacoste.com/id/en/sizeguide",
+        "https://global.lacoste.com/en/size-guide-gender-men.html?fdid=Lacoste_SizeGuide_Folder"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_verified_official_url",
+      "sourceQuality": "official_multi_guide_with_men_polo_table",
+      "requiresManualReview": true,
+      "notes": "Official page exposes men polo/top table; avoid FR product/jewelry links.",
+      "fallbackSizeSystem": "US",
+      "repairStrategy": "extract_mens_letter_sizing_table",
+      "pipelineAction": "test_with_firecrawl"
+    },
+    {
+      "brand": "Ralph Lauren",
+      "entry_url": "https://www.ralphlauren.com/size-guide/size-guide.html",
+      "fallback_urls": [
+        "https://www.ralphlauren.com/size-guide/size-guide.html",
+        "https://www.ralphlauren.com/men-clothing-t-shirts",
+        "https://www.ralphlauren.com/men-clothing-polo-shirts"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_verified_official_url",
+      "sourceQuality": "official_multi_guide",
+      "requiresManualReview": true,
+      "notes": "Official size guide exists; reject Style Guide/editorial links and category-only pages.",
+      "fallbackSizeSystem": "US",
+      "repairStrategy": "extract_men_clothing_excluding_shirts_suits_bottoms",
+      "pipelineAction": "test_with_firecrawl"
+    },
+    {
+      "brand": "Tommy Hilfiger",
+      "entry_url": "https://usa.tommy.com/en/size-guide-men.html",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/tommy-hilfiger_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 8,
+      "validatedExportSizes": [
+        "XXS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Hugo Boss",
+      "entry_url": "https://www.hugoboss.com/us/size-charts/menswear-clothing/size-chart_BOSS_btptm1.html",
+      "fallback_urls": [
+        "https://www.hugoboss.com/us/size-charts/menswear-clothing/size-chart_BOSS_btptm1.html",
+        "https://www.hugoboss.com/us/size-charts/menswear-clothing/size-chart_HUGO_ptm1.html",
+        "https://www.hugoboss.com/us/size-charts/menswear/size-chart_HUGO_m9.html",
+        "https://www.hugoboss.com/mu/en/customer-service/size-guides/size-chart.html"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_verified_official_url",
+      "sourceQuality": "official_direct_size_chart_to_review",
+      "requiresManualReview": true,
+      "notes": "Replaces /size-guide page-not-found; tables may be EU/numeric rather than INT.",
+      "fallbackSizeSystem": "EU",
+      "repairStrategy": "extract_menswear_clothing_regular_fit",
+      "pipelineAction": "test_with_firecrawl"
+    },
+    {
+      "brand": "Armani",
+      "entry_url": "https://www.armani.com/customercare/topic/size-guide_ccid604300000001040",
+      "fallback_urls": [
+        "https://www.armani.com/customercare/topic/size-guide_ccid604300000001040",
+        "https://www.armani.com/en-us/size-guide",
+        "https://www.armani.com/fr-fr/size-guide",
+        "https://www.armani.com/en-us/help/size-guide/"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_unconfirmed",
+      "sourceQuality": "portal_or_dynamic_size_module",
+      "requiresManualReview": true,
+      "notes": "No stable global men tops table confirmed; do not accept gifts/experience/portal pages.",
+      "fallbackSizeSystem": "IT",
+      "repairStrategy": "verify_if_size_table_exists_after_render",
+      "pipelineAction": "manual_review_only"
+    },
+    {
+      "brand": "Calvin Klein",
+      "entry_url": "https://www.calvinklein.us/en/men-size-guide.html",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/calvin-klein_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 6,
+      "validatedExportSizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Patagonia",
+      "entry_url": "https://www.patagonia.com/guides/size-fit/mens/",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/patagonia_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 8,
+      "validatedExportSizes": [
+        "XXS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "The North Face",
+      "entry_url": "https://www.thenorthface.com/en-us/help/size-charts",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/the-north-face_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 12,
+      "validatedExportSizes": [
+        "XXS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "3XL",
+        "2X",
+        "3X",
+        "4X",
+        "5X"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "Columbia",
+      "entry_url": "https://www.columbia.com/sizefit?pid=1372111&isPage=true",
+      "fallback_urls": [],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "validated_from_export",
+      "sourceQuality": "accepted_export",
+      "requiresManualReview": false,
+      "evidenceFile": "C:/Users/cadet/Desktop/t shirt/int valide/columbia_tshirt_int_shopping-assistant.json",
+      "validatedExportRows": 7,
+      "validatedExportSizes": [
+        "XXS",
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "notes": "URL issue d un export shopping-assistant accepte; source primaire canonique."
+    },
+    {
+      "brand": "ASOS",
+      "entry_url": "https://www.asos.com/discover/size-charts/men/tshirts-polo-shirts/",
+      "fallback_urls": [
+        "https://www.asos.com/discover/size-charts/men/tshirts-polo-shirts/",
+        "https://www.asos.com/us/discover/size-charts/men/tshirts-polo-shirts/",
+        "https://www.asos.com/fr/decouvrez/taille-guide/homme/",
+        "https://www.asos.com/discover/size-charts/men/"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_verified_official_url",
+      "sourceQuality": "official_direct_tshirts_polos_chart",
+      "requiresManualReview": false,
+      "notes": "Direct ASOS men t-shirts and polo shirts chart has chest in inches/cm.",
+      "fallbackSizeSystem": "UK",
+      "repairStrategy": "extract_mens_tshirts_polo_chest_table",
+      "pipelineAction": "test_deterministic_first"
+    },
+    {
+      "brand": "Zalando",
+      "entry_url": "https://www.zalando.fr/faq/Sizing",
+      "fallback_urls": [
+        "https://www.zalando.fr/faq/Sizing",
+        "https://www.zalando.fr/your-sizes/",
+        "https://www.zalando.fr/t-shirts-polos-homme/"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "blocked_no_global_size_table_confirmed",
+      "sourceQuality": "faq_or_marketplace_category_without_brand_table",
+      "requiresManualReview": true,
+      "notes": "Marketplace FAQ/category pages are not a stable global measurement source.",
+      "fallbackSizeSystem": "EU",
+      "repairStrategy": "verify_if_structured_size_table_exists_after_render",
+      "pipelineAction": "do_not_auto_accept"
+    },
+    {
+      "brand": "COS",
+      "entry_url": "https://www.cos.com/en-us/customer-service/size-guide",
+      "fallback_urls": [
+        "https://www.cos.com/en-us/customer-service/size-guide",
+        "https://www.cos.com/en/customer-service/size-guide.html",
+        "https://www.cos.com/fr-fr/customer-service/size-guide"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_verified_official_url",
+      "sourceQuality": "official_body_measurement_table",
+      "requiresManualReview": true,
+      "notes": "Official Body Measurements table can satisfy tshirts only if no bottom/footwear evidence is fused.",
+      "fallbackSizeSystem": "US",
+      "repairStrategy": "prefer_table_with_chest_waist_arm_length",
+      "pipelineAction": "test_deterministic_first"
+    },
+    {
+      "brand": "Gap",
+      "entry_url": "https://www.gap.com/customer-service/finding-your-size?cid=81268",
+      "fallback_urls": [
+        "https://www.gap.com/customer-service/finding-your-size?cid=81268",
+        "https://www.gap.com/customer-service/size-charts?cid=2103"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_verified_official_url",
+      "sourceQuality": "official_hub_with_mens_tops_link",
+      "requiresManualReview": true,
+      "notes": "Official hub lists Men’s Tops; follow only concrete size-guide links.",
+      "fallbackSizeSystem": "US",
+      "repairStrategy": "select_division_men_category_tops_outerwear",
+      "pipelineAction": "test_hub_follow_link"
+    },
+    {
+      "brand": "Banana Republic",
+      "entry_url": "https://bananarepublic.gap.com/customerService/info.do?cid=80743&cs=size_charts",
+      "fallback_urls": [
+        "https://bananarepublic.gap.com/browse/info.do?cid=35404"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_alias_fixed",
+      "sourceQuality": "same_brand_alias_official",
+      "requiresManualReview": true,
+      "notes": "Flux officiel heberge sur bananarepublic.gap.com; depend de l alias same-brand Banana Republic.",
+      "fallbackSizeSystem": "US",
+      "repairStrategy": "select_division_men_category_tops_sweaters",
+      "pipelineAction": "test_same_brand_alias_then_extract"
+    },
+    {
+      "brand": "Sandro",
+      "entry_url": "https://fr.sandro-paris.com/fr/guide-des-tailles/size-guide.html",
+      "fallback_urls": [
+        "https://fr.sandro-paris.com/fr/guide-des-tailles/size-guide.html",
+        "https://www.sandro-paris.com/size-guide"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_verified_official_url",
+      "sourceQuality": "official_multi_guide_with_mens_top_family",
+      "requiresManualReview": true,
+      "notes": "Official multi-guide; isolate HOMME top-family without fusing bottoms/shoes.",
+      "fallbackSizeSystem": "FR",
+      "repairStrategy": "extract_homme_pret_a_porter_or_product_size_modal",
+      "pipelineAction": "test_deterministic_first"
+    },
+    {
+      "brand": "Ami Paris",
+      "entry_url": "https://www.amiparis.com/en-us/pages/size-guide",
+      "fallback_urls": [
+        "https://www.amiparis.com/en-us/pages/size-guide",
+        "https://www.amiparis.com/en-us/size-guide",
+        "https://www.amiparis.com/us/pages/size-guide"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_unconfirmed_shopify",
+      "sourceQuality": "shopify_size_page_or_navigation_anchors",
+      "requiresManualReview": true,
+      "notes": "Avoid Shopify anchors such as #header-desktop and #shopify-section-footer.",
+      "fallbackSizeSystem": "FR",
+      "repairStrategy": "product_page_size_guide",
+      "pipelineAction": "manual_review_only"
+    },
+    {
+      "brand": "Decathlon",
+      "entry_url": "https://www.decathlon.fr/size-guide",
+      "fallback_urls": [
+        "https://www.decathlon.fr/size-guide",
+        "https://www.decathlon.fr/homme/t-shirt",
+        "https://www.decathlon.fr/p/tee-shirt-manche-courte-homme/_/R-p-360199"
+      ],
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT",
+      "sourceStatus": "repair_candidate_product_page_fallback",
+      "sourceQuality": "global_guide_to_verify_or_product_page_only",
+      "requiresManualReview": true,
+      "notes": "Replaces /landing/size-guide 404; never follow #content/#footer anchors.",
+      "fallbackSizeSystem": "EU",
+      "repairStrategy": "product_page_or_category_size_filter",
+      "pipelineAction": "test_with_firecrawl_then_product_page_strategy"
+    }
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "brand": {
+    "id": "brand-under-armour",
+    "name": "Under Armour",
+    "country": null,
+    "website": "https://www.underarmour.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:42:15.350Z",
+    "updatedAt": "2026-04-25T18:42:15.350Z"
+  },
+  "guide": {
+    "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+    "brandId": "brand-under-armour",
+    "name": "Under Armour – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: Size Chart. Audience détectée: unknown. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.underarmour.com/en-us/t/size-guide/mens-tops/",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-1",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "XS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 78.7,
+            "max": 86.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 71.1,
+            "max": 73.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-2",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "S",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 86.4,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 73.7,
+            "max": 78.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": "Libellé source: SM."
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-3",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "M",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 94,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 78.7,
+            "max": 86.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": "Libellé source: MD."
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-4",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "L",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 104.1,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 86.4,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": "Libellé source: LG."
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-5",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "XL",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 111.8,
+            "max": 121.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 94,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-6",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "XXL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 121.9,
+            "max": 132.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 104.1,
+            "max": 114.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-7",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "3XL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 132.1,
+            "max": 142.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 114.3,
+            "max": 127,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-8",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "4XL",
+        "sortOrder": 7,
+        "dimensions": {
+          "chestCm": {
+            "min": 142.2,
+            "max": 152.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 127,
+            "max": 137.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq-row-9",
+        "guideId": "sa-guide-under-armour-tshirts-int-moeos4ae-vhi38pjq",
+        "label": "5XL",
+        "sortOrder": 8,
+        "dimensions": {
+          "chestCm": {
+            "min": 152.4,
+            "max": 162.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          },
+          "waistCm": {
+            "min": 137.2,
+            "max": 149.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.underarmour.com/en-us/t/size-guide/mens-tops/"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-25T18:42:15.350Z",
+    "updatedAt": "2026-04-25T18:42:15.350Z"
+  }
+}

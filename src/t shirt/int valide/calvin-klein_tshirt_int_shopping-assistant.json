@@ -1,0 +1,170 @@
+{
+  "brand": {
+    "id": "brand-calvin-klein",
+    "name": "Calvin Klein",
+    "country": null,
+    "website": "https://www.calvinklein.us",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-26T09:12:03.256Z",
+    "updatedAt": "2026-04-26T09:12:03.256Z"
+  },
+  "guide": {
+    "id": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le",
+    "brandId": "brand-calvin-klein",
+    "name": "Calvin Klein – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: MEN'S SIZE CHART AND FIT GUIDE. Audience détectée: men. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.calvinklein.us/en/men-size-guide.html",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le-row-1",
+        "guideId": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le",
+        "label": "XS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 91.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          },
+          "waistCm": {
+            "min": 68.6,
+            "max": 71.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le-row-2",
+        "guideId": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le",
+        "label": "S",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 94,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          },
+          "waistCm": {
+            "min": 73.7,
+            "max": 76.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le-row-3",
+        "guideId": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le",
+        "label": "M",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 99.1,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          },
+          "waistCm": {
+            "min": 78.7,
+            "max": 83.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le-row-4",
+        "guideId": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le",
+        "label": "L",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 106.7,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          },
+          "waistCm": {
+            "min": 86.4,
+            "max": 91.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le-row-5",
+        "guideId": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le",
+        "label": "XL",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 114.3,
+            "max": 119.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          },
+          "waistCm": {
+            "min": 94,
+            "max": 99.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le-row-6",
+        "guideId": "sa-guide-calvin-klein-tshirts-int-mofjuoqg-axpv99le",
+        "label": "XXL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 121.9,
+            "max": 127,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          },
+          "waistCm": {
+            "min": 101.6,
+            "max": 106.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.calvinklein.us/en/men-size-guide.html"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-26T09:12:03.256Z",
+    "updatedAt": "2026-04-26T09:12:03.256Z"
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "brand": {
+    "id": "brand-tommy-hilfiger",
+    "name": "Tommy Hilfiger",
+    "country": null,
+    "website": "https://www.tommy.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:45:17.584Z",
+    "updatedAt": "2026-04-25T18:45:17.584Z"
+  },
+  "guide": {
+    "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+    "brandId": "brand-tommy-hilfiger",
+    "name": "Tommy Hilfiger – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: Men's Size Guides. Audience détectée: men. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-1",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "XXS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 82.6,
+            "max": 82.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 67.3,
+            "max": 67.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-2",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "XS",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 85.1,
+            "max": 85.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 69.9,
+            "max": 69.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-3",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "S",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 87.6,
+            "max": 87.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 72.4,
+            "max": 72.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-4",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "M",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 90.2,
+            "max": 90.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 74.9,
+            "max": 74.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-5",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "L",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 92.7,
+            "max": 92.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 77.5,
+            "max": 77.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-6",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "XL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 95.3,
+            "max": 95.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 80,
+            "max": 80,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-7",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "XXL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 97.8,
+            "max": 97.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 82.6,
+            "max": 82.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl-row-8",
+        "guideId": "sa-guide-tommy-hilfiger-tshirts-int-moeow0wg-kqiotdyl",
+        "label": "3XL",
+        "sortOrder": 7,
+        "dimensions": {
+          "chestCm": {
+            "min": 100.3,
+            "max": 100.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          },
+          "waistCm": {
+            "min": 85.1,
+            "max": 85.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://usa.tommy.com/en/size-guide-men.html"
+          }
+        },
+        "notes": "Libellé source: XXXL."
+      }
+    ],
+    "createdAt": "2026-04-25T18:45:17.584Z",
+    "updatedAt": "2026-04-25T18:45:17.584Z"
+  }
+}

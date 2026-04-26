@@ -1,0 +1,242 @@
+{
+  "brand": {
+    "id": "brand-adidas",
+    "name": "Adidas",
+    "country": null,
+    "website": "https://www.adidas.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:42:11.688Z",
+    "updatedAt": "2026-04-25T18:42:11.688Z"
+  },
+  "guide": {
+    "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+    "brandId": "brand-adidas",
+    "name": "Adidas – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: Size Guide. Audience détectée: unknown. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.adidas.com/us/help/size_charts/men-shirts_tops",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb-row-1",
+        "guideId": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+        "label": "XS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 82.6,
+            "max": 86.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "waistCm": {
+            "min": 69.9,
+            "max": 73.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "seatHipsCm": {
+            "min": 81.3,
+            "max": 85.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb-row-2",
+        "guideId": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+        "label": "S",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 87.6,
+            "max": 91.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "waistCm": {
+            "min": 74.9,
+            "max": 80,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "seatHipsCm": {
+            "min": 86.4,
+            "max": 91.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb-row-3",
+        "guideId": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+        "label": "M",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 92.7,
+            "max": 99.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "waistCm": {
+            "min": 81.3,
+            "max": 87.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "seatHipsCm": {
+            "min": 92.7,
+            "max": 99.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb-row-4",
+        "guideId": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+        "label": "L",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 100.3,
+            "max": 108,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "waistCm": {
+            "min": 88.9,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "seatHipsCm": {
+            "min": 100.3,
+            "max": 106.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb-row-5",
+        "guideId": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+        "label": "XL",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 109.2,
+            "max": 118.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "waistCm": {
+            "min": 97.8,
+            "max": 106.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "seatHipsCm": {
+            "min": 108,
+            "max": 115.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb-row-6",
+        "guideId": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+        "label": "XXL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 119.4,
+            "max": 129.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "waistCm": {
+            "min": 108,
+            "max": 119.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "seatHipsCm": {
+            "min": 116.8,
+            "max": 124.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          }
+        },
+        "notes": "Libellé source: 2XL."
+      },
+      {
+        "id": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb-row-7",
+        "guideId": "sa-guide-adidas-tshirts-int-moeos1go-poqd7rmb",
+        "label": "3XL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 130.8,
+            "max": 142.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "waistCm": {
+            "min": 120.7,
+            "max": 132.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          },
+          "seatHipsCm": {
+            "min": 125.7,
+            "max": 134.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.adidas.com/us/help/size_charts/men-shirts_tops"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-25T18:42:11.688Z",
+    "updatedAt": "2026-04-25T18:42:11.688Z"
+  }
+}

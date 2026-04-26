@@ -1,0 +1,216 @@
+{
+  "brand": {
+    "id": "brand-patagonia",
+    "name": "Patagonia",
+    "country": null,
+    "website": "https://www.patagonia.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-26T09:12:05.286Z",
+    "updatedAt": "2026-04-26T09:12:05.286Z"
+  },
+  "guide": {
+    "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+    "brandId": "brand-patagonia",
+    "name": "Patagonia – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: HTML table. Audience détectée: unknown. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.patagonia.com/guides/size-fit/mens/",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-1",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "XXS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 83.8,
+            "max": 83.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 81.3,
+            "max": 81.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-2",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "XS",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 86.4,
+            "max": 86.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-3",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "S",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 94,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 91.4,
+            "max": 91.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-4",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "M",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 101.6,
+            "max": 101.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 99.1,
+            "max": 99.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-5",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "L",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 111.8,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 109.2,
+            "max": 109.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-6",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "XL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 119.4,
+            "max": 119.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 116.8,
+            "max": 116.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-7",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "XXL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 127,
+            "max": 127,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 124.5,
+            "max": 124.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr-row-8",
+        "guideId": "sa-guide-patagonia-tshirts-int-mofjuqau-fuvq6ppr",
+        "label": "3XL",
+        "sortOrder": 7,
+        "dimensions": {
+          "chestCm": {
+            "min": 142.2,
+            "max": 142.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          },
+          "seatHipsCm": {
+            "min": 139.7,
+            "max": 139.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.patagonia.com/guides/size-fit/mens/"
+          }
+        },
+        "notes": "Libellé source: XXXL."
+      }
+    ],
+    "createdAt": "2026-04-26T09:12:05.286Z",
+    "updatedAt": "2026-04-26T09:12:05.286Z"
+  }
+}

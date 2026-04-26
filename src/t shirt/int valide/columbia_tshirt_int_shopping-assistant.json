@@ -1,0 +1,242 @@
+{
+  "brand": {
+    "id": "brand-columbia",
+    "name": "Columbia",
+    "country": null,
+    "website": "https://www.columbia.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-26T09:12:09.049Z",
+    "updatedAt": "2026-04-26T09:12:09.049Z"
+  },
+  "guide": {
+    "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+    "brandId": "brand-columbia",
+    "name": "Columbia – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: HTML table. Audience détectée: unisex. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.columbia.com/sizefit?pid=1372111&isPage=true",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa-row-1",
+        "guideId": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+        "label": "XXS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 85.1,
+            "max": 85.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "waistCm": {
+            "min": 71.1,
+            "max": 71.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "seatHipsCm": {
+            "min": 83.8,
+            "max": 83.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa-row-2",
+        "guideId": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+        "label": "XS",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "waistCm": {
+            "min": 73.7,
+            "max": 73.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "seatHipsCm": {
+            "min": 86.4,
+            "max": 86.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa-row-3",
+        "guideId": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+        "label": "S",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 91.4,
+            "max": 94,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "waistCm": {
+            "min": 76.2,
+            "max": 78.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "seatHipsCm": {
+            "min": 88.9,
+            "max": 91.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa-row-4",
+        "guideId": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+        "label": "M",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 99.1,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "waistCm": {
+            "min": 83.8,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "seatHipsCm": {
+            "min": 96.5,
+            "max": 101.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa-row-5",
+        "guideId": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+        "label": "L",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 108,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "waistCm": {
+            "min": 91.4,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "seatHipsCm": {
+            "min": 105.4,
+            "max": 109.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa-row-6",
+        "guideId": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+        "label": "XL",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 118.1,
+            "max": 121.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "waistCm": {
+            "min": 101.6,
+            "max": 106.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "seatHipsCm": {
+            "min": 113,
+            "max": 119.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa-row-7",
+        "guideId": "sa-guide-columbia-tshirts-int-mofjut7d-owbkggqa",
+        "label": "XXL",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 128.3,
+            "max": 132.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "waistCm": {
+            "min": 111.8,
+            "max": 116.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          },
+          "seatHipsCm": {
+            "min": 125.7,
+            "max": 129.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.columbia.com/sizefit?pid=1372111&isPage=true"
+          }
+        },
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-04-26T09:12:09.049Z",
+    "updatedAt": "2026-04-26T09:12:09.049Z"
+  }
+}

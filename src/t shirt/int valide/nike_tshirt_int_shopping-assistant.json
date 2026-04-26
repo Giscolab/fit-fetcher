@@ -1,0 +1,624 @@
+{
+  "brand": {
+    "id": "brand-nike",
+    "name": "Nike",
+    "country": null,
+    "website": "https://www.nike.com",
+    "isSample": false,
+    "notes": "Import réel généré par Fit Fetcher pour cohabitation avec Size Intelligence Studio.",
+    "createdAt": "2026-04-25T18:42:09.911Z",
+    "updatedAt": "2026-04-25T18:42:09.911Z"
+  },
+  "guide": {
+    "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+    "brandId": "brand-nike",
+    "name": "Nike – tshirts (INT)",
+    "garmentCategory": "tshirt",
+    "sizeSystem": "INT",
+    "fabricStretch": "low",
+    "fitNotes": "Section source: HTML table. Audience détectée: unknown. Statut validation Fit Fetcher: accepted.",
+    "fabricNotes": "Stretch textile non inféré depuis la page; valeur conservatrice.",
+    "sourceType": "json_import",
+    "sourceName": "Fit Fetcher",
+    "sourceUrl": "https://www.nike.com/size-fit/mens_tops_alpha",
+    "isSample": false,
+    "isComplete": true,
+    "uncertainty": 0.05,
+    "rows": [
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-1",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "XXS",
+        "sortOrder": 0,
+        "dimensions": {
+          "chestCm": {
+            "min": 71.4,
+            "max": 80,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 57.2,
+            "max": 64.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 72.4,
+            "max": 80,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 170.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-2",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "XS",
+        "sortOrder": 1,
+        "dimensions": {
+          "chestCm": {
+            "min": 80,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 64.8,
+            "max": 73.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 80,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-3",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "S",
+        "sortOrder": 2,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 95.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 73.7,
+            "max": 81.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 88.9,
+            "max": 95.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-4",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "S",
+        "sortOrder": 3,
+        "dimensions": {
+          "chestCm": {
+            "min": 88.9,
+            "max": 95.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 73.7,
+            "max": 81.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 88.9,
+            "max": 95.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 182.9,
+            "max": 195.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": "Variante: tall. Libellé source: S Tall."
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-5",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "M",
+        "sortOrder": 4,
+        "dimensions": {
+          "chestCm": {
+            "min": 95.3,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 81.3,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 95.3,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-6",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "M",
+        "sortOrder": 5,
+        "dimensions": {
+          "chestCm": {
+            "min": 95.3,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 81.3,
+            "max": 88.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 95.3,
+            "max": 104.1,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 182.9,
+            "max": 195.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": "Variante: tall. Libellé source: M Tall."
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-7",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "L",
+        "sortOrder": 6,
+        "dimensions": {
+          "chestCm": {
+            "min": 104.1,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 88.9,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 104.1,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-8",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "L",
+        "sortOrder": 7,
+        "dimensions": {
+          "chestCm": {
+            "min": 104.1,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 88.9,
+            "max": 96.5,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 104.1,
+            "max": 111.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 182.9,
+            "max": 195.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": "Variante: tall. Libellé source: L Tall."
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-9",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "XL",
+        "sortOrder": 8,
+        "dimensions": {
+          "chestCm": {
+            "min": 111.8,
+            "max": 123.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 96.5,
+            "max": 109.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 111.8,
+            "max": 119.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-10",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "XL",
+        "sortOrder": 9,
+        "dimensions": {
+          "chestCm": {
+            "min": 111.8,
+            "max": 123.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 96.5,
+            "max": 109.2,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 111.8,
+            "max": 119.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 182.9,
+            "max": 195.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": "Variante: tall. Libellé source: XL Tall."
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-11",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "XXL",
+        "sortOrder": 10,
+        "dimensions": {
+          "chestCm": {
+            "min": 123.2,
+            "max": 135.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 109.2,
+            "max": 120.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 119.4,
+            "max": 128.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-12",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "XXL",
+        "sortOrder": 11,
+        "dimensions": {
+          "chestCm": {
+            "min": 123.2,
+            "max": 135.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 109.2,
+            "max": 120.7,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 119.4,
+            "max": 128.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 182.9,
+            "max": 195.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": "Variante: tall. Libellé source: XXL Tall."
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-13",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "3XL",
+        "sortOrder": 12,
+        "dimensions": {
+          "chestCm": {
+            "min": 135.9,
+            "max": 147.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 120.7,
+            "max": 133.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 128.3,
+            "max": 135.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-14",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "3XL",
+        "sortOrder": 13,
+        "dimensions": {
+          "chestCm": {
+            "min": 135.9,
+            "max": 147.3,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 120.7,
+            "max": 133.4,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 128.3,
+            "max": 135.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 182.9,
+            "max": 195.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": "Variante: tall. Libellé source: 3XL Tall."
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-15",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "4XL",
+        "sortOrder": 14,
+        "dimensions": {
+          "chestCm": {
+            "min": 147.3,
+            "max": 160,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 133.4,
+            "max": 144.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 135.9,
+            "max": 148.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 170.2,
+            "max": 182.9,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": ""
+      },
+      {
+        "id": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni-row-16",
+        "guideId": "sa-guide-nike-tshirts-int-moeos03b-w7vkg0ni",
+        "label": "4XL",
+        "sortOrder": 15,
+        "dimensions": {
+          "chestCm": {
+            "min": 147.3,
+            "max": 160,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "waistCm": {
+            "min": 133.4,
+            "max": 144.8,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "seatHipsCm": {
+            "min": 135.9,
+            "max": 148.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          },
+          "heightCm": {
+            "min": 182.9,
+            "max": 195.6,
+            "target": null,
+            "unit": "cm",
+            "sourceNote": "Extraction Fit Fetcher depuis https://www.nike.com/size-fit/mens_tops_alpha"
+          }
+        },
+        "notes": "Variante: tall. Libellé source: 4XL Tall."
+      }
+    ],
+    "createdAt": "2026-04-25T18:42:09.911Z",
+    "updatedAt": "2026-04-25T18:42:09.911Z"
+  }
+}

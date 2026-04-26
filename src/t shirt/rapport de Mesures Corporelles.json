@@ -1,0 +1,1810 @@
+{
+  "sources": [
+    {
+      "brand": "Nike",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.nike.com/size-fit-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Adidas",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.adidas.com/size-chart",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Puma",
+      "name": "Default size guide",
+      "size_guide_url": "https://eu.puma.com/size-chart",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Reebok",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.reebok.com/size-chart",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Under Armour",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.underarmour.com/en-us/size-fit-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "New Balance",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.newbalance.com/size-chart",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Asics",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.asics.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Salomon",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.salomon.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Mizuno",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.mizunousa.com/size-chart",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Brooks",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.brooksrunning.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Zara",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.zara.com/fr/fr/help/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "H&M",
+      "name": "Default size guide",
+      "size_guide_url": "https://www2.hm.com/fr_fr/customer-service/sizeguide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Uniqlo",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.uniqlo.com/us/en/sizechart",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Mango",
+      "name": "Default size guide",
+      "size_guide_url": "https://shop.mango.com/fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Pull&Bear",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.pullandbear.com/fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Bershka",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bershka.com/fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Stradivarius",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.stradivarius.com/fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Massimo Dutti",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.massimodutti.com/fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "C&A",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.c-and-a.com/fr/fr/shop/guide-des-tailles",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Primark",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.primark.com/en/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Levi's",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.levi.com/size-chart",
+      "garmentCategory": "jeans",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Wrangler",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.wrangler.com/size-chart",
+      "garmentCategory": "jeans",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Lee",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.lee.com/size-chart",
+      "garmentCategory": "jeans",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Diesel",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.diesel.com/size-guide",
+      "garmentCategory": "jeans",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "G-Star RAW",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.g-star.com/size-guide",
+      "garmentCategory": "jeans",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Carhartt WIP",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.carhartt-wip.com/size-chart",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Dockers",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.dockers.com/size-chart",
+      "garmentCategory": "trousers",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Pepe Jeans",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.pepejeans.com/size-guide",
+      "garmentCategory": "jeans",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Replay",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.replayjeans.com/size-guide",
+      "garmentCategory": "jeans",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Superdry",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.superdry.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Lacoste",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.lacoste.com/fr/size-guide",
+      "garmentCategory": "polo",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Ralph Lauren",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ralphlauren.com/size-guide",
+      "garmentCategory": "polo",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Tommy Hilfiger",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.tommy.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Calvin Klein",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.calvinklein.com/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Hugo Boss",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.hugoboss.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Armani",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.armani.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Guess",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.guess.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Benetton",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.benetton.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Celio",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.celio.com/guide-des-tailles",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Jules",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.jules.com/guide-des-tailles",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Patagonia",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.patagonia.com/size-chart",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "The North Face",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.thenorthface.com/size-charts",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Columbia",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.columbia.com/size-chart",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Arc'teryx",
+      "name": "Default size guide",
+      "size_guide_url": "https://arcteryx.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Mammut",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.mammut.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Salewa",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.salewa.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Millet",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.millet.fr/guide-des-tailles",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Quechua",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.decathlon.fr/landing/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Fjällräven",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.fjallraven.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Helly Hansen",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.hellyhansen.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "ASOS",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.asos.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Zalando",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.zalando.fr/guide-des-tailles",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Amazon Fashion",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.amazon.com/size-charts",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "La Redoute",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.laredoute.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Boohoo",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.boohoo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Shein",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.shein.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Temu",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.temu.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Vinted",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.vinted.fr/help/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Farfetch",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.farfetch.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "SSENSE",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ssense.com/en-us/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Etam",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.etam.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Undiz",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.undiz.com/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Victoria's Secret",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.victoriassecret.com/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Intimissimi",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.intimissimi.com/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Calzedonia",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.calzedonia.com/size-guide",
+      "garmentCategory": "socks",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Aubade",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.aubade.com/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Chantelle",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.chantelle.com/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Darjeeling",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.darjeeling.fr/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Maison Lejaby",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.maisonlejaby.com/size-guide",
+      "garmentCategory": "boxers_or_underwear",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Wolford",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.wolfordshop.com/size-guide",
+      "garmentCategory": "socks",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Moncler",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.moncler.com/size-guide",
+      "garmentCategory": "coats",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Canada Goose",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.canadagoose.com/size-guide",
+      "garmentCategory": "coats",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Stone Island",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.stoneisland.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Balenciaga",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.balenciaga.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Gucci",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.gucci.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Prada",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.prada.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Saint Laurent",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ysl.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Dior",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.dior.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Chanel",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.chanel.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Givenchy",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.givenchy.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Burberry",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.burberry.com/size-guide",
+      "garmentCategory": "coats",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Bottega Veneta",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bottegaveneta.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Hermès",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.hermes.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Coach",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.coach.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Michael Kors",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.michaelkors.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Kate Spade",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.katespade.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Tory Burch",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.toryburch.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "AllSaints",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.allsaints.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "COS",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.cosstores.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Arket",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.arket.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Reiss",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.reiss.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Ted Baker",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.tedbaker.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Massimo",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.massimo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "River Island",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.riverisland.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Next",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.next.co.uk/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "John Lewis",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.johnlewis.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Marks & Spencer",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.marksandspencer.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Nordstrom",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.nordstrom.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Bloomingdale's",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bloomingdales.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Saks Fifth Avenue",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.saksfifthavenue.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Selfridges",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.selfridges.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Harrods",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.harrods.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Net-a-Porter",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.net-a-porter.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "MatchesFashion",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.matchesfashion.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Mr Porter",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.mrporter.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Uniqlo U",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.uniqlo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "COS Men",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.cosstores.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Hollister",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.hollisterco.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Abercrombie & Fitch",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.abercrombie.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "American Eagle",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ae.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Gap",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.gap.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Old Navy",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.oldnavy.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Banana Republic",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bananarepublic.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Express",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.express.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Club Monaco",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.clubmonaco.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Sandro",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.sandro-paris.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Maje",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.maje.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "The Kooples",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.thekooples.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "IKKS",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ikks.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Petit Bateau",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.petit-bateau.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Bonpoint",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bonpoint.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Jacadi",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.jacadi.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Okaïdi",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.okaidi.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Vertbaudet",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.vertbaudet.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Chloé",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.chloe.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Isabel Marant",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.isabelmarant.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Sergio Tacchini",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.sergiotacchini.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Kappa",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.kappa.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Fila",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.fila.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "K-Swiss",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.kswiss.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Roxy",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.roxy.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Billabong",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.billabong.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Quiksilver",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.quiksilver.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Rip Curl",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ripcurl.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "O'Neill",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.oneill.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Ralph Lauren Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ralphlauren.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Gap Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.gap.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Carter's",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.carters.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "OshKosh B'gosh",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.oshkosh.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Gymboree",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.gymboree.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Next Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.next.co.uk/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "H&M Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www2.hm.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Zara Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.zara.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Petit Bateau Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.petit-bateau.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Monoprix",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.monoprix.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Galeries Lafayette",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.galerieslafayette.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Printemps",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.printemps.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Conforama",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.conforama.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Ikea (textiles)",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ikea.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Decathlon",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.decathlon.fr/landing/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Intersport",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.intersport.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Sports Direct",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.sportsdirect.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "JD Sports",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.jdsports.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Foot Locker",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.footlocker.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Office Shoes",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.office.co.uk/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Sarenza",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.sarenza.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Spartoo",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.spartoo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Shoes.com",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.shoes.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Netshoes",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.netshoes.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Decathlon Pro",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.decathlonpro.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Patagonia Provisions",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.patagonia.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Outdoor Research",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.outdoorresearch.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Black Diamond",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.blackdiamondequipment.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "REI Co-op",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.rei.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Backcountry",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.backcountry.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Eddie Bauer",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.eddiebauer.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "L.L.Bean",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.llbean.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Orvis",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.orvis.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Barbour",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.barbour.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Belstaff",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.belstaff.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Ted Baker Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.tedbaker.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Paul Smith",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.paulsmith.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Vivienne Westwood",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.viviennewestwood.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Alexander McQueen",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.alexandermcqueen.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Stella McCartney",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.stellamccartney.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Off-White",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.off---white.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Supreme",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.supremenewyork.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Palace",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.palaceskateboards.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Kith",
+      "name": "Default size guide",
+      "size_guide_url": "https://kith.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "A.P.C.",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.apc.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Comme des Garçons",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.comme-des-garcons.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Margiela",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.maisonmargiela.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Y-3",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.y-3.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Adidas Originals",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.adidas.com/us/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Nike SB",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.nike.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Vilebrequin",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.vilebrequin.com/size-guide",
+      "garmentCategory": "shorts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Orlebar Brown",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.orlebarbrown.com/size-guide",
+      "garmentCategory": "shorts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Speedo",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.speedo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Arena",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.arenasport.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Mammut Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.mammut.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Jack Wolfskin",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.jack-wolfskin.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Regatta",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.regatta.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Trespass",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.trespass.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Mountain Hardwear",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.mountainhardwear.com/size-guide",
+      "garmentCategory": "jackets",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Kuhl",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.kuhl.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Prana",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.prana.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Patagonia Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.patagonia.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "The North Face Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.thenorthface.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Columbia Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.columbia.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Decathlon Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.decathlon.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "BabyGap",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.gap.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Petit Bateau Baby",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.petit-bateau.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Chicco",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.chicco.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Maxi-Cosi (textiles)",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.maxi-cosi.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Stokke (textiles)",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.stokke.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Bugaboo (textiles)",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bugaboo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "BOSS Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.hugoboss.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Dolce & Gabbana",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.dolcegabbana.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Versace",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.versace.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Moschino",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.moschino.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Roberto Cavalli",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.robertocavalli.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Sandro Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.sandro-paris.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Maje Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.maje.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Bonpoint Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bonpoint.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Gucci Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.gucci.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Dolce & Gabbana Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.dolcegabbana.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Armani Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.armani.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Givenchy Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.givenchy.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Moncler Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.moncler.com/size-guide",
+      "garmentCategory": "coats",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Stella McCartney Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.stellamccartney.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Kenzo Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.kenzo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "BOSS",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.hugoboss.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Paul & Shark",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.paulandshark.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Loro Piana",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.loropiana.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Brunello Cucinelli",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.brunellocucinelli.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Ermenegildo Zegna",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.zegna.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Corneliani",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.corneliani.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Canali",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.canali.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Kiton",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.kiton.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Isaia",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.isaia.it/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Brioni",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.brioni.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Tom Ford",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.tomford.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Bally",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.bally.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Salvatore Ferragamo",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.ferragamo.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Tod's",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.tods.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Santoni",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.santoni.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Lanvin",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.lanvin.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Celine",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.celine.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Loewe",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.loewe.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Valentino",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.valentino.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Alexander Wang",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.alexanderwang.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Proenza Schouler",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.proenzaschouler.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "3.1 Phillip Lim",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.31philliplim.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Theory",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.theory.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Vince",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.vince.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "John Varvatos",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.johnvarvatos.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Billy Reid",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.billyreid.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Todd Snyder",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.toddsnyder.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Engineered Garments",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.engineeredgarments.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "A.P.C. Kids",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.apc.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Sunspel",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.sunspel.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Oliver Spencer",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.oliverspencer.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Paul Stuart",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.paulstuart.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Rag & Bone",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.rag-bone.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Ami Paris",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.amiparis.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Officine Générale",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.officinegenerale.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Maison Kitsuné",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.kitsune.fr/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    },
+    {
+      "brand": "Smythson (textiles)",
+      "name": "Default size guide",
+      "size_guide_url": "https://www.smythson.com/size-guide",
+      "garmentCategory": "tshirts",
+      "sizeSystem": "INT"
+    }
+  ]
+}
