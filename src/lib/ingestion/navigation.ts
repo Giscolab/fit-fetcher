@@ -1246,7 +1246,7 @@ export function classifyDocument(args: {
     };
   }
 
-  if (rawLinkCount >= 6 && structuredBlockCount === 0) {
+  if (rawLinkCount >= 6 && structuredBlockCount === 0 && tableLikeSignals === 0) {
     reasoning.push("Many internal guide links were found, so this document is a guide hub.");
     return {
       documentKind: "guide-hub-page",

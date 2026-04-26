@@ -172,6 +172,60 @@ test("Nike table keeps inch units even when nearby fit tips mention centimeters"
   assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.chestCm?.min, 80);
 });
 
+test("Nike Firecrawl markdown table without separator extracts the rendered tops guide", async () => {
+  const result = await runFixture({
+    brand: "Nike",
+    fixture: {
+      url: "https://www.nike.com/size-fit/mens_tops_alpha",
+      html: "",
+      markdown: `
+Nike
+[Find a Store](https://www.nike.com/retail)
+[Help](https://www.nike.com/help)
+[Shoes](https://www.nike.com/w/mens-shoes-nik1zy7ok)
+[Tops](https://www.nike.com/w/mens-tops-t-shirts-9om13znik1)
+
+# Men's Tops
+The measurements on the size chart are body measurements.
+
+Size Chart
+
+incminToggle between inches and centimeters
+
+| Size | XXS | XS | S | S Tall | M | M Tall | L | L Tall | XL | XL Tall | XXL | XXL Tall | 3XL | 3XL Tall | 4XL | 4XL Tall |
+| Chest (in) | 28.1 - 31.5 | 31.5 - 35 | 35 - 37.5 | 35 - 37.5 | 37.5 - 41 | 37.5 - 41 | 41 - 44 | 41 - 44 | 44 - 48.5 | 44 - 48.5 | 48.5 - 53.5 | 48.5 - 53.5 | 53.5 - 58 | 53.5 - 58 | 58 - 63 | 58 - 63 |
+| Waist (in) | 22.5 - 25.5 | 25.5 - 29 | 29 - 32 | 29 - 32 | 32 - 35 | 32 - 35 | 35 - 38 | 35 - 38 | 38 - 43 | 38 - 43 | 43 - 47.5 | 43 - 47.5 | 47.5 - 52.5 | 47.5 - 52.5 | 52.5 - 57 | 52.5 - 57 |
+| Hip (in) | 28.5 - 31.5 | 31.5 - 35 | 35 - 37.5 | 35 - 37.5 | 37.5 - 41 | 37.5 - 41 | 41 - 44 | 41 - 44 | 44 - 47 | 44 - 47 | 47 - 50.5 | 47 - 50.5 | 50.5 - 53.5 | 50.5 - 53.5 | 53.5 - 58.5 | 53.5 - 58.5 |
+      `,
+    },
+  });
+
+  assert.ok(result.guide);
+  assert.equal(result.report.followedUrl, undefined);
+  assert.equal(result.guide.guide.matrixOrientation, "size-columns");
+  assert.equal(result.guide.guide.originalUnitSystem, "in");
+  assert.deepEqual(result.guide.guide.originalSizeLabels, [
+    "XXS",
+    "XS",
+    "S",
+    "S Tall",
+    "M",
+    "M Tall",
+    "L",
+    "L Tall",
+    "XL",
+    "XL Tall",
+    "XXL",
+    "XXL Tall",
+    "3XL",
+    "3XL Tall",
+    "4XL",
+    "4XL Tall",
+  ]);
+  assert.equal(result.guide.shoppingAssistantGuide.guide.rows.length, 16);
+  assert.equal(result.guide.shoppingAssistantGuide.guide.rows[0]?.dimensions.chestCm?.min, 71.4);
+});
+
 test("Adidas fractional inch ranges are converted without losing the upper bound", () => {
   assert.deepEqual(parseRangeCm('32 1/2–34"', "in"), [82.6, 86.4]);
   assert.deepEqual(parseRangeCm('43–46 1/2"', "in"), [109.2, 118.1]);

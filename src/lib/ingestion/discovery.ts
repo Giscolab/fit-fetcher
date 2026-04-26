@@ -449,6 +449,20 @@ function isMarkdownSeparator(line: string): boolean {
   return /^[:|\-\s]+$/.test(line.trim());
 }
 
+function isPipedMarkdownTableCandidate(matrix: string[][]): boolean {
+  const normalized = normalizeMatrix(matrix);
+  if (normalized.length < 2) return false;
+  const width = normalized[0]?.length ?? 0;
+  if (width < 3) return false;
+
+  const meta = inferMatrixOrientation(normalized);
+  const fieldCount = normalized
+    .flat()
+    .filter((cell) => Boolean(fieldFromHeader(cell))).length;
+
+  return fieldCount > 0 && meta.rawSizeAxisLabels.length >= 2;
+}
+
 function discoverMarkdownTables(args: {
   markdown: string;
   sourceUrl: string;
@@ -473,10 +487,10 @@ function discoverMarkdownTables(args: {
 
     if (!line.includes("|")) continue;
     const separator = lines[i + 1]?.trim() ?? "";
-    if (!isMarkdownSeparator(separator)) continue;
+    const hasSeparator = isMarkdownSeparator(separator);
 
     const matrix: string[][] = [parseMarkdownRow(line)];
-    let j = i + 2;
+    let j = hasSeparator ? i + 2 : i + 1;
     while (j < lines.length && lines[j].includes("|")) {
       const row = parseMarkdownRow(lines[j]);
       if (!row.some(Boolean)) break;
@@ -485,6 +499,7 @@ function discoverMarkdownTables(args: {
     }
 
     if (matrix.length < 2) continue;
+    if (!hasSeparator && !isPipedMarkdownTableCandidate(matrix)) continue;
 
     const sectionTitle = headingPath[headingPath.length - 1] ?? "Markdown table";
     const nearbyText = cleanText((lines[i - 1] ?? "") + " " + (lines[j] ?? ""));
