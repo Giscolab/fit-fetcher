@@ -52,6 +52,11 @@ export function normalizeBrandSourceInput(raw: unknown): BrandSource | null {
     brand,
     name: textValue(record.name),
     size_guide_url: sizeGuideUrl,
+    audience:
+      textValue(record.audience) ??
+      textValue(record.gender) ??
+      textValue(target.audience) ??
+      textValue(target.gender),
     garmentCategory:
       normalizeImportedCategory(record.garmentCategory) ??
       normalizeImportedCategory(record.category) ??

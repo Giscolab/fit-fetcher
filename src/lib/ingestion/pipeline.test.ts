@@ -625,6 +625,40 @@ test("Top-compatible body measurement tables can satisfy tshirts without bottom 
   assert.equal(result.report.validationStatus, "accepted");
 });
 
+test("Pipeline rejects women audience tables for the implicit men's target", async () => {
+  const result = await runFixture({
+    brand: "Decathlon",
+    fixture: {
+      url: "https://www.decathlon.fr/landing/size-guide",
+      html: `
+        <h1>Hauts Femme / Women's Tops</h1>
+        <table>
+          <tr><th>Size</th><th>Chest (cm)</th><th>Waist (cm)</th></tr>
+          <tr><td>XS</td><td>82-86</td><td>66-70</td></tr>
+          <tr><td>S</td><td>87-91</td><td>71-75</td></tr>
+          <tr><td>M</td><td>92-96</td><td>76-80</td></tr>
+        </table>
+      `,
+      markdown: `
+## Hauts Femme / Women's Tops
+| Size | Chest (cm) | Waist (cm) |
+| --- | --- | --- |
+| XS | 82-86 | 66-70 |
+| S | 87-91 | 71-75 |
+| M | 92-96 | 76-80 |
+      `,
+    },
+  });
+
+  assert.equal(result.guide, undefined);
+  assert.equal(result.report.manualReviewRecommended, true);
+  assert.ok(
+    result.report.validationErrors.some(
+      (issue) => issue.code === "repair_candidate_wrong_audience",
+    ),
+  );
+});
+
 test("Pipeline refetches followed brand fallback pages with Firecrawl rendering", async () => {
   const fallbackUrl = "https://www.nike.com/size-fit/mens-tops-alpha";
   const fetchModes: string[] = [];

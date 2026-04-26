@@ -133,6 +133,7 @@ export interface BrandSource {
   brand: string;
   name?: string;
   size_guide_url: string;
+  audience?: string;
   garmentCategory?: string;
   sizeSystem?: string;
   fallbackSizeSystem?: string;

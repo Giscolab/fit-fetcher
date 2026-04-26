@@ -10,6 +10,7 @@ import {
 import { selectCandidate } from "@/lib/ingestion/selection";
 import {
   containsAny,
+  mapRequestedAudience,
   mapRequestedGarmentCategory,
   mapRequestedSizeSystem,
 } from "@/lib/ingestion/taxonomy";
@@ -17,6 +18,7 @@ import { validateExtraction } from "@/lib/ingestion/validation";
 import { buildGeneratedGuide } from "@/lib/normalizers/guideBuilder";
 import type {
   AiFallbackAttempt,
+  Audience,
   BrandSource,
   CandidateExtraction,
   CandidateSection,
@@ -47,6 +49,14 @@ function deriveInitialIssues(source: BrandSource): ValidationIssue[] {
     issues.push({
       code: "invalid-requested-size-system",
       message: `Requested size system "${source.sizeSystem}" is unsupported or ambiguous.`,
+      severity: "error",
+    });
+  }
+
+  if (source.audience && !mapRequestedAudience(source.audience)) {
+    issues.push({
+      code: "invalid-requested-audience",
+      message: `Requested audience "${source.audience}" is unsupported or ambiguous.`,
       severity: "error",
     });
   }
@@ -336,6 +346,7 @@ function shouldAttemptAiFallback(validation: ExtractionValidation): boolean {
     "bottom-has-chest",
     "shoe-incompatible-fields",
     "wrong-source-family",
+    "repair_candidate_wrong_audience",
   ]);
   return !validation.validationErrors.some((issue) => semanticBlockers.has(issue.code));
 }
@@ -481,6 +492,7 @@ async function runAiFallback(args: {
   candidate: CandidateSection;
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
+  requestedAudience: Audience | null;
   llmExtractCandidate: LlmCandidateExtractor;
 }): Promise<{
   extraction?: CandidateExtraction;
@@ -509,6 +521,7 @@ async function runAiFallback(args: {
     const validation = validateExtraction({
       requestedCategory: args.requestedCategory,
       requestedSizeSystem: args.requestedSizeSystem,
+      requestedAudience: args.requestedAudience,
       candidate: args.candidate,
       extraction,
     });
@@ -559,6 +572,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
 }> {
   const requestedCategory = mapRequestedGarmentCategory(args.source.garmentCategory);
   const requestedSizeSystem = mapRequestedSizeSystem(args.source.sizeSystem);
+  const requestedAudience = mapRequestedAudience(args.source.audience) ?? "men";
   const initialIssues = deriveInitialIssues(args.source);
   const initialWarnings: ValidationIssue[] = [];
 
@@ -941,6 +955,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
   const validation = validateExtraction({
     requestedCategory,
     requestedSizeSystem,
+    requestedAudience,
     candidate: selectedCandidate,
     extraction,
   });
@@ -977,6 +992,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
       candidate: selectedCandidate,
       requestedCategory,
       requestedSizeSystem,
+      requestedAudience,
       llmExtractCandidate: args.llmExtractCandidate ?? extractCandidateGuideWithLLM,
     });
     const candidateExtractions = aiFallback.extraction

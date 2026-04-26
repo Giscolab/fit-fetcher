@@ -6,6 +6,7 @@ import {
   resolveRequestedCategoryMatch,
 } from "@/lib/ingestion/taxonomy";
 import type {
+  Audience,
   CandidateExtraction,
   CandidateSection,
   GarmentCategory,
@@ -179,9 +180,21 @@ function resolveSizeSystem(args: {
   return null;
 }
 
+function audienceMatches(
+  requestedAudience: Audience | null,
+  sourceAudience: Audience,
+): boolean {
+  if (!requestedAudience || sourceAudience === "unknown" || sourceAudience === "unisex") {
+    return true;
+  }
+  if (requestedAudience === "unisex") return true;
+  return sourceAudience === requestedAudience;
+}
+
 export function validateExtraction(args: {
   requestedCategory: GarmentCategory | null;
   requestedSizeSystem: SizeSystem | null;
+  requestedAudience?: Audience | null;
   candidate: CandidateSection;
   extraction: CandidateExtraction;
 }): {
@@ -206,6 +219,17 @@ export function validateExtraction(args: {
     candidate: args.candidate,
     issues: validationErrors,
   });
+
+  if (!audienceMatches(args.requestedAudience ?? null, args.candidate.audience)) {
+    validationErrors.push(
+      buildIssue(
+        candidateId,
+        "error",
+        "repair_candidate_wrong_audience",
+        `NO_VALID_SIZE_GUIDE: selected section targets ${args.candidate.audience}, not requested ${args.requestedAudience} audience.`,
+      ),
+    );
+  }
 
   if (args.candidate.documentKind === "guide-hub-page") {
     validationErrors.push(

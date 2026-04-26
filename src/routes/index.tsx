@@ -58,9 +58,10 @@ function summarizeRun(result: ScrapeResponse) {
 
 function deriveStatus(result: ScrapeResponse): BrandResult["status"] {
   if (result.guide) return "done";
-  if (result.pipeline.manualReviewRecommended && result.pipeline.discoveredCandidates.length > 0) {
-    return "review";
+  if (result.pipeline.validationErrors.some((issue) => issue.code === "server-error")) {
+    return "error";
   }
+  if (result.pipeline.manualReviewRecommended) return "review";
   return "error";
 }
 

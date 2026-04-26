@@ -3,6 +3,7 @@
 ## Entrées
 
 - Le fichier source contient `brand` et `size_guide_url` ou `entry_url`.
+- L'audience cible (`audience`, ex. `men`) est explicite quand une marque expose des guides homme/femme sur le même hub.
 - La catégorie demandée est explicite quand la page contient plusieurs familles de produits.
 - Le système de taille demandé est explicite quand les tailles numériques peuvent être ambiguës.
 

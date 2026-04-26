@@ -1,4 +1,5 @@
 import type {
+  Audience,
   CategoryMappingMode,
   DetectedGarmentCategory,
   DetectedSizeSystem,
@@ -230,6 +231,24 @@ export function detectAudience(text: string) {
     return "men";
   }
   return "unknown";
+}
+
+export function mapRequestedAudience(raw?: string): Audience | null {
+  const text = normalizeToken(raw ?? "");
+  if (!text) return null;
+  if (containsAny(text, ["men", "man", "male", "homme", "hommes", "mens"])) {
+    return "men";
+  }
+  if (containsAny(text, ["women", "woman", "female", "femme", "femmes", "ladies", "womens"])) {
+    return "women";
+  }
+  if (containsAny(text, ["kid", "kids", "child", "children", "junior", "boys", "girls"])) {
+    return "kids";
+  }
+  if (containsAny(text, ["unisex", "gender neutral", "gender-neutral", "mixed"])) {
+    return "unisex";
+  }
+  return null;
 }
 
 export function detectFitVariant(text: string): FitVariant {
