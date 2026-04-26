@@ -31,9 +31,10 @@ function registrableDomain(hostname: string): string {
   return parts.slice(-2).join(".");
 }
 
-function brandDomainKey(hostname: string): string {
+function canonicalBrandHost(hostname: string): string {
   const host = hostname.toLowerCase().replace(/^www\./, "");
   const aliasMap: Array<[RegExp, string]> = [
+    [/^(?:bananarepublic\.com|bananarepublic\.gap\.com)$/, "banana-republic"],
     [/calvinklein\.(?:com|us)$/, "calvinklein"],
     [/(?:usa\.)?tommy\.com$/, "tommyhilfiger"],
     [/tommyhilfiger\./, "tommyhilfiger"],
@@ -53,9 +54,21 @@ function isSameBrandUrl(currentUrl: string, candidateUrl: string): boolean {
   try {
     const current = new URL(currentUrl);
     const candidate = new URL(candidateUrl);
-    return brandDomainKey(current.hostname) === brandDomainKey(candidate.hostname);
+    return canonicalBrandHost(current.hostname) === canonicalBrandHost(candidate.hostname);
   } catch {
     return false;
+  }
+}
+
+function isSameDocumentUrl(currentUrl: string, candidateUrl: string): boolean {
+  try {
+    const current = new URL(currentUrl);
+    const candidate = new URL(candidateUrl);
+    current.hash = "";
+    candidate.hash = "";
+    return current.toString() === candidate.toString();
+  } catch {
+    return currentUrl.split("#")[0] === candidateUrl.split("#")[0];
   }
 }
 
@@ -75,12 +88,45 @@ function resolveLink(baseUrl: string, href?: string): string | null {
 function isUnsupportedFetchTarget(url: string): boolean {
   try {
     const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
     const pathname = parsed.pathname.toLowerCase();
-    return /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/.test(
-      pathname,
+    const target = `${host}${pathname}`;
+    return (
+      /(?:^|\.)images?\.|(?:^|\.)media\.|(?:^|\.)static\.|(?:^|\.)assets\./.test(host) ||
+      /scene7|\/is\/image|image\/hugobosscsprod|mediadecathlon/.test(target) ||
+      /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/.test(
+        pathname,
+      )
     );
   } catch {
-    return /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/i.test(
+    return (
+      /(?:^|\.)images?\.|(?:^|\.)media\.|(?:^|\.)static\.|(?:^|\.)assets\.|scene7|\/is\/image|image\/hugobosscsprod|mediadecathlon/i.test(
+        url,
+      ) ||
+      /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/i.test(
+        url,
+      )
+    );
+  }
+}
+
+function hasConcreteGuidePathSignal(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname.toLowerCase();
+    const search = parsed.search.toLowerCase();
+
+    return (
+      /\/size-chart\/mens?-tops\/?$/.test(path) ||
+      /\/size-guide\/mens?-tops\/?$/.test(path) ||
+      /\/t\/size-guide\/mens?-tops\/?$/.test(path) ||
+      /\/size-guide\/apparel\/?$/.test(path) ||
+      (/\/customerservice\/info\.do$/.test(path) &&
+        /(?:^|[?&])cs=size_charts(?:&|$)/.test(search)) ||
+      /\/browse\/sizechart\.do$/.test(path)
+    );
+  } catch {
+    return /(?:\/size-chart\/mens?-tops\/?$|\/size-guide\/mens?-tops\/?$|\/t\/size-guide\/mens?-tops\/?$|\/size-guide\/apparel\/?$|\/browse\/sizechart\.do(?:$|[?#]))/i.test(
       url,
     );
   }
@@ -168,11 +214,16 @@ const UTILITY_KEYWORDS = [
   "acceder au contenu principal", "accéder au contenu principal",
   "main content", "create account", "sign in", "log in", "login",
   "cart", "bag", "wishlist", "menu", "search",
+  "rechercher", "voir le contenu", "acceder au haut de la page",
+  "accéder au haut de la page", "link to main navigation", "link to search",
+  "link to footer", "skip to search",
   "send us feedback", "site feedback", "your opinion counts",
   "contact us", "customer service", "help", "support",
   "accessibility", "privacy", "terms", "newsletter",
   "cookie", "cookie settings", "change country", "store locator",
-  "find a store", "sitemap", "promotions", "student promotion",
+  "find a store", "storefinder", "select a store", "youre shopping",
+  "you're shopping", "order status", "faq", "imprint",
+  "sitemap", "promotions", "student promotion",
   "digital greeting card", "authenticity", "payment methods",
   "saved items", "styling book", "style guide", "gift guide",
   "denim fit guide",
@@ -181,6 +232,9 @@ const UTILITY_KEYWORDS = [
   "sale", "deals", "uniqlo u",
   "shop by gender", "gender",
   "explore", "my account", "account",
+  "premium", "spring summer", "limited time offers", "best sellers",
+  "coming soon", "gift selection", "outdoor guide", "fabric guide",
+  "work office wear", "work and office wear", "top picks", "new in",
 ];
 
 // ── Fonctions de scoring multilingues ──────────────────────────────────
@@ -231,6 +285,7 @@ function isProductPageLink(url: string, text: string): boolean {
   })();
   const hasGuideSignal =
     /\b(size|chart|guide|alpha|measurement|measurements|taille|tailles|officiel)\b/i.test(raw) ||
+    hasConcreteGuidePathSignal(url) ||
     /size[-_/]?(fit|chart|guide)/i.test(url) ||
     /mens?[-_]?tops?[-_]?alpha|mens?_tops?_alpha|tops?[-_]?alpha|apparel[-_/]size/i.test(path);
   const hasPrice = /[$]\s?\d/.test(text) || /\b(?:usd|gbp|cad|aud)\s?\d/i.test(text);
@@ -260,13 +315,15 @@ function isProductPageLink(url: string, text: string): boolean {
 
 function isUtilityNavigationLink(label: string, url: string): boolean {
   const normalizedLabel = normalizeToken(label);
-  const path = (() => {
+  const parsed = (() => {
     try {
-      return new URL(url).pathname.toLowerCase();
+      return new URL(url);
     } catch {
-      return url.toLowerCase();
+      return null;
     }
   })();
+  const path = parsed?.pathname.toLowerCase() ?? url.toLowerCase();
+  const hash = parsed?.hash.toLowerCase() ?? "";
 
   // Ne jamais rejeter un lien qui a un signal de guide de taille
   if (containsAny(normalizedLabel, SIZE_KEYWORDS)) return false;
@@ -275,6 +332,13 @@ function isUtilityNavigationLink(label: string, url: string): boolean {
 
   // Ancres et liens de navigation interne
   if (/^\/?(?:#|main|content|skip)/.test(path)) return true;
+  if (
+    /^(#(?:content|footer|main|maincontent|footercontent|header-desktop|header__search--desktop|shopify-section-footer|search-input-header-modal|topnavwrapper|sitewide-footer))$/i.test(
+      hash,
+    )
+  ) {
+    return true;
+  }
 
   // Mots-clés utilitaires multilingues
   if (containsAny(normalizedLabel, UTILITY_KEYWORDS)) return true;
@@ -311,7 +375,11 @@ function isBadMarketingOrUtilityTarget(url: string, label: string): boolean {
   if (containsAny(normalizedLabel, UTILITY_KEYWORDS) && !labelHasConcreteSizeSignal) return true;
   if (hasConcreteSizeGuideLinkSignal(url, label)) return false;
   if (containsAny(normalized, UTILITY_KEYWORDS)) return true;
-  if (/cookie|change[-_ ]?country/.test(hash)) return true;
+  if (
+    /cookie|change[-_ ]?country|^#(?:content|footer|main|maincontent|footercontent|header-desktop|header__search--desktop|shopify-section-footer|search-input-header-modal|topnavwrapper|sitewide-footer)$/i.test(
+      hash,
+    )
+  ) return true;
   if (/(?:^|[?&])(?:color|size|sku|pid|productid)=/i.test(search)) return true;
 
   return /\/(?:stores?|store-locator|retail|promotions?|gift|gifts|stylingbook|stories|journal|rlmag|wishlist|saved-items|payment-methods|sitemap|privacy|terms|authenticity|student-promotions|digital-card|help|faq)(?:\/|$)/i.test(
@@ -330,6 +398,7 @@ function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
     }
   })();
   const guideSignal =
+    hasConcreteGuidePathSignal(url) ||
     containsAny(normalized, [
       "size chart",
       "size charts",
@@ -563,6 +632,10 @@ function createLinkCandidate(args: {
     score -= 3;
     rejectionReasons.push("Link resolves to the same URL that was already fetched.");
   }
+  if (isSameDocumentUrl(args.currentUrl, args.url)) {
+    score -= 20;
+    rejectionReasons.push("Link resolves to the same document anchor that was already fetched.");
+  }
 
   if (isGuideLikeLink(context)) {
     score += 2;
@@ -684,6 +757,7 @@ function discoverHtmlLinks(args: {
         cleanText($(node).attr("title") ?? "");
     }
     if (!label) return;
+    if (label.trim().startsWith("![")) return;
     const headingPath = collectHeadingPath($, node);
     const nearbyText = collectNearbyText($, node);
     const context = `${label} ${headingPath.join(" ")} ${nearbyText} ${url}`;
@@ -733,6 +807,7 @@ function discoverMarkdownLinks(args: {
       if (!url) continue;
       if (isUnsupportedFetchTarget(url)) continue;
       const label = cleanText(match[1]);
+      if (label.trim().startsWith("![")) continue;
       const nearbyText = cleanText(
         [lines[index - 1] ?? "", line, lines[index + 1] ?? ""].join(" "),
       );
@@ -937,9 +1012,13 @@ export function selectHubFollowLinks(args: {
     ].join(" ");
     const primaryContext = [candidate.label, candidate.url].join(" ");
     const isInternal = candidate.reasons.includes("Link stays on the same brand domain.");
-    const isNewUrl = !candidate.rejectionReasons.includes(
-      "Link resolves to the same URL that was already fetched.",
-    );
+    const isNewUrl =
+      !candidate.rejectionReasons.includes(
+        "Link resolves to the same URL that was already fetched.",
+      ) &&
+      !candidate.rejectionReasons.includes(
+        "Link resolves to the same document anchor that was already fetched.",
+      );
     const isProductPage = isProductPageLink(candidate.url, candidate.label);
     const isUtilityNavigation = isUtilityNavigationLink(candidate.label, candidate.url);
     const isBadMarketingTarget = isBadMarketingOrUtilityTarget(candidate.url, candidate.label);
@@ -960,7 +1039,7 @@ export function selectHubFollowLinks(args: {
     const hardRejectReasons = [
       ...familyRejections,
       ...(!isInternal ? ["Rejected because one-hop links must stay on the same domain."] : []),
-      ...(!isNewUrl ? ["Rejected because one-hop links must not point to the current page."] : []),
+      ...(!isNewUrl ? ["Rejected because one-hop links must not point to the current page or same-page anchors."] : []),
       ...(isProductPage ? ["Rejected because the link looks like a product page."] : []),
       ...(isUtilityNavigation || isBadMarketingTarget
         ? ["Rejected because the link looks like utility navigation."]
@@ -1000,7 +1079,7 @@ export function selectHubFollowLinks(args: {
     return {
       ...candidate,
       score: baseScore + brandBonus,
-      reasons: oneHop.reasons,
+      reasons: Array.from(new Set([...candidate.reasons, ...oneHop.reasons])),
       rejectionReasons: disqualifications,
     };
   });
@@ -1009,14 +1088,27 @@ export function selectHubFollowLinks(args: {
     .filter((candidate) => candidate.score >= 3)
     .sort((a, b) => b.score - a.score);
 
-  const concreteEligible = sortedEligible.filter(
+  const userProvidedFallback = sortedEligible.filter(
     (candidate) =>
-      candidate.resolver === "brand-fallback" ||
+      candidate.resolver === "brand-fallback" &&
+      candidate.label.toLowerCase().startsWith("fallback guide fourni"),
+  );
+  const concreteGeneric = sortedEligible.filter(
+    (candidate) =>
+      candidate.resolver === "generic" &&
       hasConcreteSizeGuideLinkSignal(candidate.url, [candidate.label, candidate.url].join(" ")),
   );
-  // Les liens exploratoires de catégories produits ont généré trop de faux positifs.
-  // On choisit uniquement parmi les liens à intention guide concrète et les brand fallbacks.
-  const eligiblePool = concreteEligible;
+  const officialFallback = sortedEligible.filter(
+    (candidate) => candidate.resolver === "brand-fallback",
+  );
+  // Priorité contrôlée: fallback fourni > lien guide concret trouvé > fallback officiel.
+  // Les liens exploratoires de catégories produits restent en diagnostic, jamais suivis.
+  const eligiblePool =
+    userProvidedFallback.length > 0
+      ? userProvidedFallback
+      : concreteGeneric.length > 0
+        ? concreteGeneric
+        : officialFallback;
 
   const eligible = eligiblePool.slice(0, 1);
   const topRescored = [...rescored].sort((a, b) => b.score - a.score)[0];
@@ -1107,6 +1199,22 @@ function countDistinctCategorySignals(text: string): number {
   return count;
 }
 
+function looksLikeDeadDocument(text: string): boolean {
+  const normalized = normalizeToken(text);
+  return containsAny(normalized, [
+    "page not found",
+    "page non trouvee",
+    "page non trouve",
+    "http error 404",
+    "this page can t be found",
+    "no webpage was found",
+    "we can t locate that page",
+    "can t locate that page",
+    "vous cherchez votre chemin",
+    "our apologies there has been an error",
+  ]);
+}
+
 export function classifyDocument(args: {
   html: string;
   markdown: string;
@@ -1124,6 +1232,19 @@ export function classifyDocument(args: {
   const lowerUrl = args.sourceUrl.toLowerCase();
   const text = cleanText(args.markdown || cheerio.load(args.html)("body").text()).slice(0, 20000);
   const categorySignalCount = countDistinctCategorySignals(text);
+
+  if (
+    structuredBlockCount === 0 &&
+    tableLikeSignals === 0 &&
+    looksLikeDeadDocument(`${text} ${args.html.slice(0, 4000)}`)
+  ) {
+    reasoning.push("Fetched document appears to be a 404/page-not-found document.");
+    return {
+      documentKind: "irrelevant",
+      sourceType: "category-specific-page",
+      reasoning,
+    };
+  }
 
   if (rawLinkCount >= 6 && structuredBlockCount === 0) {
     reasoning.push("Many internal guide links were found, so this document is a guide hub.");

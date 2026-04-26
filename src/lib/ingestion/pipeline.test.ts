@@ -315,6 +315,144 @@ test("Navigation treats same-brand regional domains as internal", () => {
   );
 });
 
+test("Navigation treats Banana Republic gap-hosted guides as same brand", () => {
+  const sourceUrl = "https://www.bananarepublic.com/size-guide";
+  const links = discoverLinkCandidates({
+    html: `
+      <a href="https://bananarepublic.gap.com/customerService/info.do?cid=80743&cs=size_charts">Men's Size Guide</a>
+    `,
+    markdown: "",
+    sourceUrl,
+    requestedCategory: mapRequestedGarmentCategory("tshirts"),
+    requestedSizeSystem: mapRequestedSizeSystem("INT"),
+  });
+  const navigation = selectHubFollowLinks({ linkCandidates: links });
+
+  assert.deepEqual(
+    navigation.selected.map((link) => link.url),
+    ["https://bananarepublic.gap.com/customerService/info.do?cid=80743&cs=size_charts"],
+  );
+  assert.ok(
+    navigation.selected[0]?.reasons.some((reason) =>
+      reason.includes("same brand domain"),
+    ),
+  );
+});
+
+test("Navigation rejects same-page anchors, utility links, and image CDN links", () => {
+  const requestedCategory = mapRequestedGarmentCategory("tshirts");
+  const decathlonUrl = "https://www.decathlon.fr/landing/size-guide";
+  const decathlonLinks = discoverLinkCandidates({
+    html: `
+      <a href="https://www.decathlon.fr/landing/size-guide#content">Voir le contenu</a>
+      <a href="https://www.decathlon.fr/landing/size-guide#footer">Accéder au haut de la page</a>
+      <a href="https://www.decathlon.fr/landing/size-guide#search-input-header-modal">Rechercher</a>
+      <a href="/landing/size-guide/men-tops">Men's Tops Size Guide</a>
+    `,
+    markdown: "",
+    sourceUrl: decathlonUrl,
+    requestedCategory,
+    requestedSizeSystem: mapRequestedSizeSystem("INT"),
+  });
+  const decathlonNav = selectHubFollowLinks({
+    linkCandidates: decathlonLinks,
+    requestedCategory,
+  });
+  const decathlonByLabel = new Map(
+    decathlonNav.linkCandidates.map((link) => [link.label, link]),
+  );
+
+  for (const label of ["Voir le contenu", "Accéder au haut de la page", "Rechercher"]) {
+    const candidate = decathlonByLabel.get(label);
+    assert.ok(candidate, `Missing candidate ${label}`);
+    assert.equal(candidate.score, -99);
+    assert.equal(candidate.selected, false);
+  }
+
+  const amiUrl = "https://www.amiparis.com/en-us/size-guide";
+  const amiLinks = discoverLinkCandidates({
+    html: `
+      <a href="https://www.amiparis.com/en-us/size-guide#header-desktop">Link to main navigation</a>
+      <a href="https://www.amiparis.com/en-us/size-guide#header__search--desktop">Link to search</a>
+      <a href="https://www.amiparis.com/en-us/size-guide#shopify-section-footer">Link to footer</a>
+      <a href="/en-us/size-guide/mens-tops">Men's Tops Size Guide</a>
+    `,
+    markdown: "",
+    sourceUrl: amiUrl,
+    requestedCategory,
+    requestedSizeSystem: mapRequestedSizeSystem("INT"),
+  });
+  const amiNav = selectHubFollowLinks({ linkCandidates: amiLinks, requestedCategory });
+  assert.ok(
+    amiNav.linkCandidates
+      .filter((link) => link.url.includes("#"))
+      .every((link) => link.score === -99 && link.selected === false),
+  );
+
+  const hugoLinks = discoverLinkCandidates({
+    html: `
+      <a href="https://images.hugoboss.com/is/image/hugobosscsprod/example.jpg">![HB image]</a>
+      <a href="https://www.hugoboss.com/size-chart/men-tops">Men's Tops Size Guide</a>
+    `,
+    markdown: `
+![HB image](https://images.hugoboss.com/is/image/hugobosscsprod/example.jpg)
+[Men's Tops Size Guide](https://www.hugoboss.com/size-chart/men-tops)
+    `,
+    sourceUrl: "https://www.hugoboss.com/size-guide",
+    requestedCategory,
+    requestedSizeSystem: mapRequestedSizeSystem("INT"),
+  });
+  assert.equal(
+    hugoLinks.some((link) => link.url.includes("images.hugoboss.com")),
+    false,
+  );
+});
+
+test("Dead guide pages fail without following same-page anchors", async () => {
+  let fetchCalls = 0;
+  const result = await runFixture({
+    brand: "Decathlon",
+    fixture: {
+      url: "https://www.decathlon.fr/landing/size-guide",
+      html: `
+        <html>
+          <body>
+            <h1>Vous cherchez votre chemin ?</h1>
+            <p>On vous aide à le retrouver sur notre site.</p>
+            <a href="https://www.decathlon.fr/landing/size-guide#content">Voir le contenu</a>
+            <a href="https://www.decathlon.fr/landing/size-guide#footer">Accéder au haut de la page</a>
+          </body>
+        </html>
+      `,
+      markdown: `
+# Vous cherchez votre chemin ?
+On vous aide à le retrouver sur notre site.
+[Voir le contenu](https://www.decathlon.fr/landing/size-guide#content)
+[Accéder au haut de la page](https://www.decathlon.fr/landing/size-guide#footer)
+      `,
+    },
+    fetchDocument: async () => {
+      fetchCalls += 1;
+      throw new Error("Dead page should not follow links");
+    },
+  });
+
+  assert.equal(result.guide, undefined);
+  assert.equal(fetchCalls, 0);
+  assert.equal(result.report.followedUrl, undefined);
+  assert.equal(result.report.linkCandidates.length, 0);
+  assert.ok(
+    result.report.validationErrors.some(
+      (issue) => issue.code === "page-not-found-document",
+    ),
+  );
+  assert.ok(
+    result.report.documentReasoning.some((reason) =>
+      reason.includes("404/page-not-found"),
+    ),
+  );
+});
+
 test("Brand fallback uses the known New Balance apparel guide when the hub is empty", async () => {
   const sourceUrl = "https://www.newbalance.com/size-chart";
   const fallbackUrl = "https://www.newbalance.com/customercare-sizeguide-apparel.html";
@@ -346,7 +484,7 @@ test("Brand fallback uses the known New Balance apparel guide when the hub is em
   });
 
   assert.ok(result.guide);
-  assert.deepEqual(fetchedUrls, [sourceUrl, fallbackUrl]);
+  assert.deepEqual(fetchedUrls, [fallbackUrl]);
   assert.equal(result.report.followedUrl, fallbackUrl);
   assert.equal(result.guide.guide.sourceTraceChain[1]?.kind, "brand-fallback");
 });

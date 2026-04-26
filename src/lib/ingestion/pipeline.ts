@@ -9,6 +9,7 @@ import {
 } from "@/lib/ingestion/navigation";
 import { selectCandidate } from "@/lib/ingestion/selection";
 import {
+  containsAny,
   mapRequestedGarmentCategory,
   mapRequestedSizeSystem,
 } from "@/lib/ingestion/taxonomy";
@@ -68,6 +69,31 @@ function requestedTraceStep(source: BrandSource, fetchedUrl: string): SourceTrac
     confidence: 1,
     reasons: ["Initial requested size-guide URL."],
   };
+}
+
+function hasTableLikeContent(html: string, markdown: string): boolean {
+  return (
+    /<table\b/i.test(html) ||
+    /role=["']table["']/i.test(html) ||
+    /^\|.+\|$/m.test(markdown) ||
+    /\b(?:chest|waist|hips|inseam|foot length)\b/i.test(markdown)
+  );
+}
+
+function looksLikeDeadGuideDocument(html: string, markdown: string): boolean {
+  const text = `${markdown} ${html.slice(0, 8000)}`;
+  return containsAny(text, [
+    "page not found",
+    "page non trouvee",
+    "page non trouve",
+    "http error 404",
+    "this page can t be found",
+    "no webpage was found",
+    "we can t locate that page",
+    "can t locate that page",
+    "vous cherchez votre chemin",
+    "our apologies there has been an error",
+  ]);
 }
 
 export interface FetchDocumentOptions {
@@ -372,6 +398,22 @@ function isRequestedDirectGuideUrl(args: ProcessResolvedDocumentArgs): boolean {
   );
 }
 
+function isConcreteRequestedDirectGuideUrl(
+  args: ProcessResolvedDocumentArgs,
+  requestedCategory: GarmentCategory | null,
+): boolean {
+  if (!isRequestedDirectGuideUrl(args)) return false;
+  const normalized = args.currentUrl.toLowerCase();
+
+  if (requestedCategory === "tshirts") {
+    return /(?:mens?[-_/]?tops?|mens?_tops?_alpha|men[-_/]?shirts?[-_]?tops|shirts?_tops|tops[-_]?alpha)/.test(
+      normalized,
+    );
+  }
+
+  return true;
+}
+
 function canRetryWithRenderedDocument(args: ProcessResolvedDocumentArgs): boolean {
   if (!args.fetchDocument || args.renderedRetryAttempted) return false;
 
@@ -519,6 +561,47 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
   const requestedSizeSystem = mapRequestedSizeSystem(args.source.sizeSystem);
   const initialIssues = deriveInitialIssues(args.source);
   const initialWarnings: ValidationIssue[] = [];
+
+  if (
+    looksLikeDeadGuideDocument(args.html, args.markdown) &&
+    !hasTableLikeContent(args.html, args.markdown)
+  ) {
+    const issue: ValidationIssue = {
+      code: "page-not-found-document",
+      message:
+        "NO_VALID_SIZE_GUIDE: fetched document appears to be a 404/page-not-found document.",
+      severity: "error",
+    };
+    const reasoning = [
+      ...(args.priorReasoning ?? []),
+      "Fetched document appears to be a 404/page-not-found document.",
+    ];
+
+    return {
+      report: {
+        fetchedUrl: args.originalFetchedUrl,
+        resolvedSourceUrl: args.currentUrl,
+        requestedCategory,
+        requestedSizeSystem,
+        sourceType: "category-specific-page",
+        documentKind: "irrelevant",
+        documentReasoning: reasoning,
+        sourceTraceChain: args.sourceTraceChain,
+        followedUrl: args.followedUrl,
+        linkCandidates: [],
+        navigationConfidence: args.navigationConfidence ?? 0,
+        discoveredCandidates: [],
+        rejectedCandidateIds: [],
+        selectionReasoning: reasoning,
+        candidateExtractions: [],
+        validationStatus: "rejected",
+        validationErrors: [...initialIssues, issue],
+        warnings: initialWarnings,
+        manualReviewRecommended: true,
+      },
+    };
+  }
+
   const linkCandidates = discoverLinkCandidates({
     html: args.html,
     markdown: args.markdown,
@@ -570,7 +653,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
       canRetryWithRenderedDocument(args) &&
       (args.remainingFollowHops <= 0 ||
         !navigation.selected.length ||
-        isRequestedDirectGuideUrl(args))
+        isConcreteRequestedDirectGuideUrl(args, requestedCategory))
     ) {
       return retryWithRenderedDocument(
         args,
@@ -739,10 +822,15 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
   }
 
   if (classification.documentKind === "irrelevant") {
+    const pageNotFound = report.documentReasoning.some((reason) =>
+      reason.toLowerCase().includes("404/page-not-found"),
+    );
     return {
       report: appendError(report, {
-        code: "irrelevant-document",
-        message: "NO_VALID_SIZE_GUIDE: fetched document is not a usable size guide.",
+        code: pageNotFound ? "page-not-found-document" : "irrelevant-document",
+        message: pageNotFound
+          ? "NO_VALID_SIZE_GUIDE: fetched document appears to be a 404/page-not-found document."
+          : "NO_VALID_SIZE_GUIDE: fetched document is not a usable size guide.",
         severity: "error",
       }),
     };
