@@ -25,9 +25,7 @@ function normalizeMatrix(matrix: string[][]): string[][] {
   return matrix.map((row) => normalizeRow(row, width));
 }
 
-function strategyForCandidate(
-  candidate: CandidateSection,
-): CandidateExtraction["strategy"] {
+function strategyForCandidate(candidate: CandidateSection): CandidateExtraction["strategy"] {
   switch (candidate.kind) {
     case "html-table":
       return "table";
@@ -94,7 +92,9 @@ function buildRowsFromSizeRows(candidate: CandidateSection): {
       const field = fieldMap[i];
       const cell = rawRow[i]?.trim() ?? "";
       if (!field || !cell) continue;
-      if (applyMeasurement(nextRow, field, cell, headerRow[i] ?? "", candidate.originalUnitSystem)) {
+      if (
+        applyMeasurement(nextRow, field, cell, headerRow[i] ?? "", candidate.originalUnitSystem)
+      ) {
         extractedFields.add(field);
         hasMeasure = true;
       }
@@ -145,9 +145,7 @@ function buildRowsFromSizeColumns(candidate: CandidateSection): {
   }
 
   return {
-    rows: Array.from(rows.values()).filter(
-      (row) => Object.keys(row.rawMeasurements).length > 0,
-    ),
+    rows: Array.from(rows.values()).filter((row) => Object.keys(row.rawMeasurements).length > 0),
     extractedFieldKeys: Array.from(extractedFields),
   };
 }

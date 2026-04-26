@@ -1,10 +1,7 @@
 import { parseRangeCm } from "@/lib/normalizers/units";
 import type { MeasurementField, MeasurementUnit, SizeRow } from "@/lib/types";
 
-export const FIELD_TO_ROW_KEYS: Record<
-  MeasurementField,
-  [keyof SizeRow, keyof SizeRow]
-> = {
+export const FIELD_TO_ROW_KEYS: Record<MeasurementField, [keyof SizeRow, keyof SizeRow]> = {
   chest: ["chestCmMin", "chestCmMax"],
   waist: ["waistCmMin", "waistCmMax"],
   hips: ["hipsCmMin", "hipsCmMax"],
@@ -24,7 +21,11 @@ const FIELD_PATTERNS: Array<{ field: MeasurementField; pattern: RegExp }> = [
   { field: "hips", pattern: /(hip|hips|hanche|hanches|tour de hanche)/i },
   { field: "inseam", pattern: /(inseam|inside leg|entrejambe)/i },
   { field: "outseam", pattern: /(outseam|outside leg)/i },
-  { field: "height", pattern: /(height|stature|hauteur|taille corporelle|torso|body length|front length|back length|garment length)/i },
+  {
+    field: "height",
+    pattern:
+      /(height|stature|hauteur|taille corporelle|torso|body length|front length|back length|garment length)/i,
+  },
   { field: "sleeve", pattern: /(sleeve|manche)/i },
   { field: "neck", pattern: /(neck|collar|encolure|cou)/i },
   { field: "shoulder", pattern: /(shoulder|epaule|epaules|épaule|épaules)/i },
@@ -57,11 +58,7 @@ export function detectMeasurementUnit(text: string): MeasurementUnit {
   return "unknown";
 }
 
-function resolveCellUnit(
-  raw: string,
-  header: string,
-  fallback: MeasurementUnit,
-): "cm" | "in" {
+function resolveCellUnit(raw: string, header: string, fallback: MeasurementUnit): "cm" | "in" {
   const detected = detectMeasurementUnit(`${header} ${raw}`);
   if (detected === "cm" || detected === "in") return detected;
   if (fallback === "in") return "in";

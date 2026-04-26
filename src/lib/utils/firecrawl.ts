@@ -146,7 +146,9 @@ export async function scrapeWithFirecrawl(url: string, attempt = 1): Promise<Scr
   };
 
   if (json.success === false) {
-    console.error(`[scrape] upstream returned success=false for ${url}: ${json.error ?? "unknown"}`);
+    console.error(
+      `[scrape] upstream returned success=false for ${url}: ${json.error ?? "unknown"}`,
+    );
     throw new Error("Le scraping a échoué. Réessayez plus tard.");
   }
 

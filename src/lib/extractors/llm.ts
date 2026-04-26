@@ -97,12 +97,7 @@ const CANDIDATE_SCHEMA = {
           foot_width_cm_min: { type: "number" },
           foot_width_cm_max: { type: "number" },
         },
-        required: [
-          "original_label",
-          "canonical_label",
-          "fit_variant",
-          "evidence_row_label",
-        ],
+        required: ["original_label", "canonical_label", "fit_variant", "evidence_row_label"],
       },
     },
   },

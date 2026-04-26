@@ -298,7 +298,9 @@ function ExtractionCard({ extraction }: { extraction: CandidateExtraction }) {
 export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
   const guide = result?.guide;
   const pipeline = result?.pipeline;
-  const requestedCategory = result ? mapRequestedGarmentCategory(result.source.garmentCategory) : null;
+  const requestedCategory = result
+    ? mapRequestedGarmentCategory(result.source.garmentCategory)
+    : null;
   const requestedSizeSystem = result ? mapRequestedSizeSystem(result.source.sizeSystem) : null;
 
   if (!result) {
@@ -393,7 +395,10 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                 destructive
               />
               <IssueList title="Avertissements" issues={guide.guide.warnings} />
-              <IssueList title="Cohabitation logiciel principal" issues={guide.shoppingAssistantWarnings} />
+              <IssueList
+                title="Cohabitation logiciel principal"
+                issues={guide.shoppingAssistantWarnings}
+              />
               <TraceChain steps={guide.guide.sourceTraceChain} />
 
               <div className="overflow-auto rounded border border-border">
@@ -435,7 +440,10 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                   <ExternalLink className="size-4" />
                   {guide.guide.sourceUrl}
                 </a>
-                <Button onClick={downloadOne} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button
+                  onClick={downloadOne}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
                   <Download />
                   Télécharger ce guide
                 </Button>
@@ -467,9 +475,9 @@ export function GuidePreviewDialog({ open, onOpenChange, result }: Props) {
                     <div className="text-muted-foreground">Section sélectionnée</div>
                     <div className="font-medium">
                       {pipeline.selectedCandidateId
-                        ? pipeline.discoveredCandidates.find(
+                        ? (pipeline.discoveredCandidates.find(
                             (candidate) => candidate.id === pipeline.selectedCandidateId,
-                          )?.sectionTitle ?? pipeline.selectedCandidateId
+                          )?.sectionTitle ?? pipeline.selectedCandidateId)
                         : "Aucune"}
                     </div>
                   </div>

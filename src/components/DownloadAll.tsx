@@ -3,10 +3,7 @@ import JSZip from "jszip";
 import { Download, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BrandResult } from "@/lib/types";
-import {
-  guideFilename,
-  shoppingAssistantGuideFilename,
-} from "@/lib/normalizers/guideBuilder";
+import { guideFilename, shoppingAssistantGuideFilename } from "@/lib/normalizers/guideBuilder";
 
 interface Props {
   results: BrandResult[];

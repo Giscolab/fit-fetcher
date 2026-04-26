@@ -2,7 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { fixtures } from "@/lib/ingestion/__fixtures__/brandSnapshots";
 import { discoverCandidateSections } from "@/lib/ingestion/discovery";
-import { classifyDocument, discoverLinkCandidates, selectHubFollowLinks } from "@/lib/ingestion/navigation";
+import {
+  classifyDocument,
+  discoverLinkCandidates,
+  selectHubFollowLinks,
+} from "@/lib/ingestion/navigation";
 import { runIngestionPipeline } from "@/lib/ingestion/pipeline";
 import { selectCandidate } from "@/lib/ingestion/selection";
 import { mapRequestedGarmentCategory, mapRequestedSizeSystem } from "@/lib/ingestion/taxonomy";
@@ -46,13 +50,15 @@ async function runFixture(args: {
     fetchedUrl: args.fixture.url,
     html: args.fixture.html,
     markdown: args.fixture.markdown,
-    fetchDocument: args.fetchDocument ?? (args.followed
-      ? async (url: string) => {
-          const doc = args.followed?.[url];
-          assert.ok(doc, `Missing followed fixture for ${url}`);
-          return doc;
-        }
-      : undefined),
+    fetchDocument:
+      args.fetchDocument ??
+      (args.followed
+        ? async (url: string) => {
+            const doc = args.followed?.[url];
+            assert.ok(doc, `Missing followed fixture for ${url}`);
+            return doc;
+          }
+        : undefined),
     llmExtractCandidate: args.llmExtractCandidate,
   });
 }
@@ -242,25 +248,16 @@ test("Nike hub filters product links before one-hop ranking", async () => {
   assert.equal(result.report.followedUrl, "https://www.nike.com/size-fit/mens-tops-alpha");
   assert.deepEqual(
     result.guide.guide.sourceTraceChain.map((step) => step.url),
-    [
-      "https://www.nike.com/size-fit-guide",
-      "https://www.nike.com/size-fit/mens-tops-alpha",
-    ],
+    ["https://www.nike.com/size-fit-guide", "https://www.nike.com/size-fit/mens-tops-alpha"],
   );
   const productLink = result.report.linkCandidates.find((link) =>
     link.label.includes("Dri-FIT Legend"),
   );
   assert.equal(productLink?.selected, false);
-  assert.ok(
-    productLink?.rejectionReasons.some((reason) => reason.includes("product page")),
-  );
-  const feedbackLink = result.report.linkCandidates.find((link) =>
-    link.label.includes("Feedback"),
-  );
+  assert.ok(productLink?.rejectionReasons.some((reason) => reason.includes("product page")));
+  const feedbackLink = result.report.linkCandidates.find((link) => link.label.includes("Feedback"));
   assert.equal(feedbackLink?.selected, false);
-  assert.ok(
-    feedbackLink?.rejectionReasons.some((reason) => reason.includes("utility navigation")),
-  );
+  assert.ok(feedbackLink?.rejectionReasons.some((reason) => reason.includes("utility navigation")));
 });
 
 test("Navigation ignores image assets before Firecrawl rendering", () => {
@@ -314,7 +311,9 @@ test("Navigation does not follow marketing utility links as size guides", () => 
   );
   assert.ok(
     navigation.linkCandidates
-      .filter((link) => ["Cookie settings", "The Gift Guide", "Style Guide: Men"].includes(link.label))
+      .filter((link) =>
+        ["Cookie settings", "The Gift Guide", "Style Guide: Men"].includes(link.label),
+      )
       .every((link) => link.selected === false),
   );
   const byLabel = new Map(navigation.linkCandidates.map((link) => [link.label, link]));
@@ -331,19 +330,19 @@ test("Navigation does not follow marketing utility links as size guides", () => 
   }
 
   assert.ok(
-    byLabel.get("Women")?.rejectionReasons.some((reason) =>
-      reason.includes("explicitly targets women"),
-    ),
+    byLabel
+      .get("Women")
+      ?.rejectionReasons.some((reason) => reason.includes("explicitly targets women")),
   );
   assert.ok(
-    byLabel.get("Boys")?.rejectionReasons.some((reason) =>
-      reason.includes("explicitly targets kids"),
-    ),
+    byLabel
+      .get("Boys")
+      ?.rejectionReasons.some((reason) => reason.includes("explicitly targets kids")),
   );
   assert.ok(
-    byLabel.get("Girls")?.rejectionReasons.some((reason) =>
-      reason.includes("explicitly targets kids"),
-    ),
+    byLabel
+      .get("Girls")
+      ?.rejectionReasons.some((reason) => reason.includes("explicitly targets kids")),
   );
 });
 
@@ -364,9 +363,7 @@ test("Navigation treats same-brand regional domains as internal", () => {
     navigation.selected.map((link) => link.url),
     ["https://www.calvinklein.us/en/men-size-guide.html"],
   );
-  assert.ok(
-    navigation.selected[0]?.reasons.some((reason) => reason.includes("men's context")),
-  );
+  assert.ok(navigation.selected[0]?.reasons.some((reason) => reason.includes("men's context")));
 });
 
 test("Navigation treats Banana Republic gap-hosted guides as same brand", () => {
@@ -386,11 +383,7 @@ test("Navigation treats Banana Republic gap-hosted guides as same brand", () => 
     navigation.selected.map((link) => link.url),
     ["https://bananarepublic.gap.com/customerService/info.do?cid=80743&cs=size_charts"],
   );
-  assert.ok(
-    navigation.selected[0]?.reasons.some((reason) =>
-      reason.includes("same brand domain"),
-    ),
-  );
+  assert.ok(navigation.selected[0]?.reasons.some((reason) => reason.includes("same brand domain")));
 });
 
 test("Navigation rejects same-page anchors, utility links, and image CDN links", () => {
@@ -412,9 +405,7 @@ test("Navigation rejects same-page anchors, utility links, and image CDN links",
     linkCandidates: decathlonLinks,
     requestedCategory,
   });
-  const decathlonByLabel = new Map(
-    decathlonNav.linkCandidates.map((link) => [link.label, link]),
-  );
+  const decathlonByLabel = new Map(decathlonNav.linkCandidates.map((link) => [link.label, link]));
 
   for (const label of ["Voir le contenu", "Accéder au haut de la page", "Rechercher"]) {
     const candidate = decathlonByLabel.get(label);
@@ -496,14 +487,10 @@ On vous aide à le retrouver sur notre site.
   assert.equal(result.report.followedUrl, undefined);
   assert.equal(result.report.linkCandidates.length, 0);
   assert.ok(
-    result.report.validationErrors.some(
-      (issue) => issue.code === "page-not-found-document",
-    ),
+    result.report.validationErrors.some((issue) => issue.code === "page-not-found-document"),
   );
   assert.ok(
-    result.report.documentReasoning.some((reason) =>
-      reason.includes("404/page-not-found"),
-    ),
+    result.report.documentReasoning.some((reason) => reason.includes("404/page-not-found")),
   );
 });
 
@@ -682,9 +669,7 @@ test("Pipeline refetches followed brand fallback pages with Firecrawl rendering"
   assert.equal(result.report.followedUrl, fallbackUrl);
   assert.equal(result.guide.guide.sourceTraceChain[1]?.kind, "brand-fallback");
   assert.ok(
-    result.report.documentReasoning.some((reason) =>
-      reason.includes("Firecrawl rendering"),
-    ),
+    result.report.documentReasoning.some((reason) => reason.includes("Firecrawl rendering")),
   );
 });
 
@@ -719,9 +704,7 @@ test("Pipeline refetches direct official guide URLs with Firecrawl rendering", a
   assert.deepEqual(fetchModes, ["firecrawl"]);
   assert.equal(result.report.resolvedSourceUrl, directUrl);
   assert.ok(
-    result.report.documentReasoning.some((reason) =>
-      reason.includes("Firecrawl rendering"),
-    ),
+    result.report.documentReasoning.some((reason) => reason.includes("Firecrawl rendering")),
   );
 });
 
@@ -749,9 +732,7 @@ test("Pipeline retries a fallback size system after the primary INT target fails
   assert.equal(result.report.requestedSizeSystem, "US");
   assert.equal(result.guide.guide.sizeSystem, "US");
   assert.equal(result.guide.guide.originalSizeLabels[0], "34");
-  assert.ok(
-    result.report.warnings.some((warning) => warning.code === "fallback-size-system-used"),
-  );
+  assert.ok(result.report.warnings.some((warning) => warning.code === "fallback-size-system-used"));
 });
 
 test("Pipeline does not try fallback size system after a category failure", async () => {
@@ -765,15 +746,11 @@ test("Pipeline does not try fallback size system after a category failure", asyn
   assert.equal(result.guide, undefined);
   assert.equal(result.report.requestedSizeSystem, "INT");
   assert.ok(
-    result.report.validationErrors.some(
-      (issue) => issue.code === "no-unique-section-match",
-    ),
+    result.report.validationErrors.some((issue) => issue.code === "no-unique-section-match"),
   );
   assert.equal(
     result.report.warnings.some((warning) =>
-      ["fallback-size-system-used", "fallback-size-system-skipped"].includes(
-        warning.code,
-      ),
+      ["fallback-size-system-used", "fallback-size-system-skipped"].includes(warning.code),
     ),
     false,
   );
@@ -858,11 +835,7 @@ test("Adidas multi-guide page can extract the selected tops table from a mixed c
   assert.ok(result.guide);
   assert.equal(result.guide.guide.sourceSectionTitle, "Men's Shirts & Tops");
   assert.equal(result.guide.guide.garmentCategory, "tshirts");
-  assert.ok(
-    result.report.warnings.some(
-      (issue) => issue.code === "multiple-categories-detected",
-    ),
-  );
+  assert.ok(result.report.warnings.some((issue) => issue.code === "multiple-categories-detected"));
 });
 
 test("Adidas hub follows one-hop tops link before extraction", async () => {
@@ -887,11 +860,7 @@ test("Reebok mixed guide page extracts the tops table without following product 
   assert.ok(result.guide);
   assert.equal(result.guide.guide.sourceSectionTitle, "Men's Tops Size Guide");
   assert.equal(result.guide.guide.garmentCategory, "tshirts");
-  assert.ok(
-    result.report.warnings.some(
-      (issue) => issue.code === "multiple-categories-detected",
-    ),
-  );
+  assert.ok(result.report.warnings.some((issue) => issue.code === "multiple-categories-detected"));
 });
 
 test("Reebok hub follows tops link and preserves extended size breadth through 5XL", async () => {
@@ -915,7 +884,10 @@ test("Under Armour hub follows one internal tops link before extraction", async 
 
   assert.ok(result.guide);
   assert.equal(result.report.documentKind, "direct-guide-page");
-  assert.equal(result.report.followedUrl, "https://www.underarmour.com/en-us/t/size-guide/mens-tops/");
+  assert.equal(
+    result.report.followedUrl,
+    "https://www.underarmour.com/en-us/t/size-guide/mens-tops/",
+  );
   assert.equal(result.guide.guide.sourceTraceChain.length, 2);
 });
 

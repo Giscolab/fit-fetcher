@@ -17,10 +17,7 @@ import { Logs } from "@/components/Logs";
 import { UploadBox } from "@/components/UploadBox";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  scrapeBrandSource,
-  type ScrapeResponse,
-} from "@/lib/server/scrape.functions";
+import { scrapeBrandSource, type ScrapeResponse } from "@/lib/server/scrape.functions";
 import type { BrandResult, BrandSource } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
@@ -83,9 +80,7 @@ function StatPill({
 
   return (
     <div className={`rounded-md border px-3 py-2 ${toneClass}`}>
-      <div className="text-[0.7rem] font-medium uppercase tracking-normal opacity-75">
-        {label}
-      </div>
+      <div className="text-[0.7rem] font-medium uppercase tracking-normal opacity-75">{label}</div>
       <div className="mt-0.5 text-lg font-semibold leading-none">{value}</div>
     </div>
   );
@@ -141,9 +136,7 @@ function HomePage() {
             status: deriveStatus(response),
             guide: response.guide,
             pipeline: response.pipeline,
-            rowsCount:
-              response.guide?.guide.rows.length ??
-              lastExtraction?.rows.length,
+            rowsCount: response.guide?.guide.rows.length ?? lastExtraction?.rows.length,
             message: summarizeRun(response),
             logs: response.logs,
           };
@@ -175,9 +168,7 @@ function HomePage() {
               <Sparkles className="size-5" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold tracking-normal">
-                Fit Fetcher
-              </h1>
+              <h1 className="text-lg font-semibold tracking-normal">Fit Fetcher</h1>
               <p className="text-xs text-muted-foreground">
                 Découverte des guides · extraction contrainte · validation stricte
               </p>
@@ -239,8 +230,7 @@ function HomePage() {
                 </div>
                 <div className="rounded-md border border-warning/35 bg-warning/15 p-3">
                   <div className="flex items-center gap-2 text-xs text-warning-foreground">
-                    <AlertTriangle className="size-3.5" />
-                    À revoir
+                    <AlertTriangle className="size-3.5" />À revoir
                   </div>
                   <div className="mt-2 text-xl font-semibold text-warning-foreground">
                     {reviewCount}

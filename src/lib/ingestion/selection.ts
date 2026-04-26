@@ -89,12 +89,16 @@ function scoreCategoryMatch(
   }
 
   if (requestedCategory === "tshirts" && bodyCandidateCanSupportTops(candidate)) {
-    reasons.push("Generic body measurements were limited to top-compatible fields for this tshirts request.");
+    reasons.push(
+      "Generic body measurements were limited to top-compatible fields for this tshirts request.",
+    );
     return { score: 4, reasons, rejections };
   }
 
   if (candidate.detectedCategory === "generic-body-guide") {
-    rejections.push("Generic body guidance cannot be silently coerced into a garment-specific guide.");
+    rejections.push(
+      "Generic body guidance cannot be silently coerced into a garment-specific guide.",
+    );
     return { score: -3, reasons, rejections };
   }
 
@@ -115,11 +119,10 @@ function scoreSizeSystemMatch(
   const rejections: string[] = [];
 
   if (!requestedSizeSystem) {
-    if (
-      candidate.detectedSizeSystem !== "UNKNOWN" &&
-      candidate.detectedSizeSystem !== "NUMERIC"
-    ) {
-      reasons.push("No requested size system was provided, but this section has a detectable size system.");
+    if (candidate.detectedSizeSystem !== "UNKNOWN" && candidate.detectedSizeSystem !== "NUMERIC") {
+      reasons.push(
+        "No requested size system was provided, but this section has a detectable size system.",
+      );
       return { score: 2, reasons, rejections };
     }
     rejections.push("The source request did not specify a precise size system.");
@@ -133,12 +136,17 @@ function scoreSizeSystemMatch(
   }
 
   // Pour INT, accepter les systèmes numériques convertibles
-  if (requestedSizeSystem === "INT" && ACCEPTABLE_SIZE_SYSTEMS_FOR_INT.has(candidate.detectedSizeSystem)) {
+  if (
+    requestedSizeSystem === "INT" &&
+    ACCEPTABLE_SIZE_SYSTEMS_FOR_INT.has(candidate.detectedSizeSystem)
+  ) {
     if (candidate.detectedSizeSystem === "UNKNOWN") {
       rejections.push("The section does not expose a clear size system.");
       return { score: -0.5, reasons, rejections };
     }
-    reasons.push(`Detected ${candidate.detectedSizeSystem} size system is convertible and compatible with requested INT.`);
+    reasons.push(
+      `Detected ${candidate.detectedSizeSystem} size system is convertible and compatible with requested INT.`,
+    );
     return { score: 2.5, reasons, rejections };
   }
 
@@ -298,8 +306,8 @@ function sameMeasurementShape(left: CandidateSection, right: CandidateSection): 
     leftFields === rightFields &&
     leftSizes === rightSizes &&
     left.originalUnitSystem !== right.originalUnitSystem &&
-    [left.originalUnitSystem, right.originalUnitSystem].every((unit) =>
-      unit === "cm" || unit === "in",
+    [left.originalUnitSystem, right.originalUnitSystem].every(
+      (unit) => unit === "cm" || unit === "in",
     )
   );
 }
@@ -468,8 +476,7 @@ export function selectCandidate(args: {
   const sorted = [...scored].sort((a, b) => b.selectionScore - a.selectionScore);
   const top = sorted[0];
   const runnerUp = sorted[1];
-  const runnerUpIsUnitDuplicate =
-    Boolean(top && runnerUp && sameMeasurementShape(top, runnerUp));
+  const runnerUpIsUnitDuplicate = Boolean(top && runnerUp && sameMeasurementShape(top, runnerUp));
   const selected =
     top &&
     top.selectionScore >= MIN_SELECTION_SCORE &&

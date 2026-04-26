@@ -26,13 +26,7 @@ const TOP_ALLOWED_FIELDS: MeasurementField[] = [
   "shoulder",
 ];
 
-const BOTTOM_ALLOWED_FIELDS: MeasurementField[] = [
-  "waist",
-  "hips",
-  "inseam",
-  "outseam",
-  "height",
-];
+const BOTTOM_ALLOWED_FIELDS: MeasurementField[] = ["waist", "hips", "inseam", "outseam", "height"];
 
 const SHOE_ALLOWED_FIELDS: MeasurementField[] = ["footLength", "footWidth"];
 
@@ -180,10 +174,7 @@ function resolveSizeSystem(args: {
   return null;
 }
 
-function audienceMatches(
-  requestedAudience: Audience | null,
-  sourceAudience: Audience,
-): boolean {
+function audienceMatches(requestedAudience: Audience | null, sourceAudience: Audience): boolean {
   if (!requestedAudience || sourceAudience === "unknown" || sourceAudience === "unisex") {
     return true;
   }
@@ -341,7 +332,9 @@ export function validateExtraction(args: {
     }
   }
 
-  const droppedVariants = missingLabels.filter((label) => /\b(tall|petite|short|long)\b/i.test(label));
+  const droppedVariants = missingLabels.filter((label) =>
+    /\b(tall|petite|short|long)\b/i.test(label),
+  );
   if (droppedVariants.length > 0) {
     validationErrors.push(
       buildIssue(
@@ -474,10 +467,7 @@ export function validateExtraction(args: {
     );
   }
 
-  const ambiguousCodes = new Set([
-    "ambiguous-category",
-    "low-navigation-confidence",
-  ]);
+  const ambiguousCodes = new Set(["ambiguous-category", "low-navigation-confidence"]);
   const validationStatus: ValidationStatus =
     validationErrors.length > 0
       ? validationErrors.some((issue) => ambiguousCodes.has(issue.code))

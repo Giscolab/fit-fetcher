@@ -64,10 +64,7 @@ function deriveInitialIssues(source: BrandSource): ValidationIssue[] {
   return issues;
 }
 
-function statusFromIssues(
-  issues: ValidationIssue[],
-  fallback: ValidationStatus,
-): ValidationStatus {
+function statusFromIssues(issues: ValidationIssue[], fallback: ValidationStatus): ValidationStatus {
   return issues.some((issue) => issue.severity === "error") ? "rejected" : fallback;
 }
 
@@ -111,7 +108,10 @@ export interface FetchDocumentOptions {
   reason?: string;
 }
 
-type FetchDocument = (url: string, options?: FetchDocumentOptions) => Promise<{
+type FetchDocument = (
+  url: string,
+  options?: FetchDocumentOptions,
+) => Promise<{
   sourceUrl: string;
   html: string;
   markdown: string;
@@ -148,7 +148,9 @@ function appendError(
   };
 }
 
-function distinctDetectedFamilies(candidates: IngestionPipelineReport["discoveredCandidates"]): string[] {
+function distinctDetectedFamilies(
+  candidates: IngestionPipelineReport["discoveredCandidates"],
+): string[] {
   return Array.from(
     new Set(
       candidates
@@ -280,11 +282,7 @@ function shouldAttemptFallbackSizeSystem(report: IngestionPipelineReport): boole
   const rejectionTexts = report.discoveredCandidates.flatMap(
     (candidate) => candidate.rejectionReasons,
   );
-  const allTexts = [
-    ...validationTexts,
-    ...report.selectionReasoning,
-    ...rejectionTexts,
-  ];
+  const allTexts = [...validationTexts, ...report.selectionReasoning, ...rejectionTexts];
   const hasSizeSystemFailure = allTexts.some(sizeSystemFailureText);
   const hasCategoryFailure = allTexts.some(categoryFailureText);
   const candidatesRejectedOnlyForSizeSystem =
@@ -370,10 +368,7 @@ function llmErrorIssue(candidateId: string, error: unknown): ValidationIssue {
   };
 }
 
-function reasonForAiAttempt(args: {
-  validation: ExtractionValidation;
-  rowsCount: number;
-}): string {
+function reasonForAiAttempt(args: { validation: ExtractionValidation; rowsCount: number }): string {
   if (isGuideReady(args.validation)) {
     return "Firecrawl LLM fallback returned rows that passed strict validation.";
   }
@@ -514,9 +509,7 @@ async function runAiFallback(args: {
       extractionConfidence: llm.score,
       validationStatus: "warning",
       validationErrors: [],
-      warnings: llm.warnings.map((warning) =>
-        llmWarningIssue(args.candidate.id, warning),
-      ),
+      warnings: llm.warnings.map((warning) => llmWarningIssue(args.candidate.id, warning)),
     };
     const validation = validateExtraction({
       requestedCategory: args.requestedCategory,
@@ -582,8 +575,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
   ) {
     const issue: ValidationIssue = {
       code: "page-not-found-document",
-      message:
-        "NO_VALID_SIZE_GUIDE: fetched document appears to be a 404/page-not-found document.",
+      message: "NO_VALID_SIZE_GUIDE: fetched document appears to be a 404/page-not-found document.",
       severity: "error",
     };
     const reasoning = [
@@ -630,10 +622,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
     sourceUrl: args.currentUrl,
     linkCandidates,
   });
-  const documentReasoning = [
-    ...(args.priorReasoning ?? []),
-    ...classification.reasoning,
-  ];
+  const documentReasoning = [...(args.priorReasoning ?? []), ...classification.reasoning];
 
   if (classification.documentKind === "guide-hub-page") {
     const navigation = selectHubFollowLinks({
@@ -871,8 +860,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
       });
     } else {
       const bestTopsCandidate = selection.candidates.find(
-        (candidate) =>
-          candidate.garmentFamily === "tops" && candidate.selectionScore >= 4,
+        (candidate) => candidate.garmentFamily === "tops" && candidate.selectionScore >= 4,
       );
 
       if (bestTopsCandidate) {
@@ -918,9 +906,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
       report: appendError(
         report,
         {
-          code: selection.selectedCandidateId
-            ? "invalid-request"
-            : "no-unique-section-match",
+          code: selection.selectedCandidateId ? "invalid-request" : "no-unique-section-match",
           message: selection.selectedCandidateId
             ? "NO_VALID_SIZE_GUIDE: source request is invalid for strict extraction."
             : "NO_VALID_SIZE_GUIDE: no single candidate matched tops/tshirts / INT strongly enough.",
@@ -998,8 +984,7 @@ async function processResolvedDocument(args: ProcessResolvedDocumentArgs): Promi
     const candidateExtractions = aiFallback.extraction
       ? [candidateExtraction, aiFallback.extraction]
       : [candidateExtraction];
-    const aiGuideReady =
-      aiFallback.validation != null && isGuideReady(aiFallback.validation);
+    const aiGuideReady = aiFallback.validation != null && isGuideReady(aiFallback.validation);
     const aiReasoning = aiFallback.extraction
       ? aiGuideReady
         ? "Deterministic extraction failed; Firecrawl LLM fallback validated the selected section."
@@ -1144,10 +1129,7 @@ export async function runIngestionPipeline(args: {
     report: {
       ...primaryResult.report,
       warnings: [...primaryResult.report.warnings, fallbackIssue],
-      documentReasoning: [
-        ...primaryResult.report.documentReasoning,
-        fallbackIssue.message,
-      ],
+      documentReasoning: [...primaryResult.report.documentReasoning, fallbackIssue.message],
     },
   };
 }

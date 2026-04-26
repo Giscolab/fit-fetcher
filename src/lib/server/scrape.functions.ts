@@ -25,7 +25,9 @@ export interface ScrapeResponse {
 async function fetchSizeGuideDocument(url: string, options?: FetchDocumentOptions) {
   if (options?.renderer === "firecrawl") {
     const result = await scrapeWithFirecrawl(url);
-    console.log(`[pipeline] Firecrawl rendered ${url}: ${result.html.length} chars HTML, ${result.markdown.length} chars markdown`);
+    console.log(
+      `[pipeline] Firecrawl rendered ${url}: ${result.html.length} chars HTML, ${result.markdown.length} chars markdown`,
+    );
     // Afficher les 500 premiers caractères du markdown pour voir si le tableau est présent
     console.log(`[pipeline] Markdown preview: ${result.markdown.slice(0, 500)}`);
     return result;
@@ -139,15 +141,15 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         fetchDocument: fetchSizeGuideDocument,
       });
 
-      logs.push(
-        `${report.discoveredCandidates.length} section(s) candidate(s) détectée(s).`,
-      );
+      logs.push(`${report.discoveredCandidates.length} section(s) candidate(s) détectée(s).`);
       logs.push(`Type de document: ${report.documentKind}.`);
       const followedSteps = report.sourceTraceChain.filter(
         (step) => step.kind === "followed-link" || step.kind === "brand-fallback",
       );
       if (report.followedUrl || followedSteps.length > 0) {
-        logs.push(`Chaîne de guide suivie jusqu'à ${report.followedUrl ?? followedSteps.at(-1)?.url}.`);
+        logs.push(
+          `Chaîne de guide suivie jusqu'à ${report.followedUrl ?? followedSteps.at(-1)?.url}.`,
+        );
       }
       if (followedSteps.length > 1) {
         logs.push(`Trace: ${followedSteps.map((step) => step.url).join(" -> ")}`);
@@ -161,9 +163,7 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         const selected = report.discoveredCandidates.find(
           (candidate) => candidate.id === report.selectedCandidateId,
         );
-        logs.push(
-          `Selected section ${selected?.sectionTitle ?? report.selectedCandidateId}.`,
-        );
+        logs.push(`Selected section ${selected?.sectionTitle ?? report.selectedCandidateId}.`);
         if (selected) {
           logs.push(
             `Selected orientation ${selected.matrixOrientation} with ${selected.rawSizeAxisLabels.length} visible source sizes.`,
@@ -202,7 +202,9 @@ export const scrapeBrandSource = createServerFn({ method: "POST" })
         };
       }
 
-      logs.push(`Guide accepté ${guide.guide.id} depuis la section ${guide.guide.sourceSectionTitle}.`);
+      logs.push(
+        `Guide accepté ${guide.guide.id} depuis la section ${guide.guide.sourceSectionTitle}.`,
+      );
       if (guide.shoppingAssistantWarnings.length > 0) {
         logs.push(
           `${guide.shoppingAssistantWarnings.length} avertissement(s) de cohabitation avec le logiciel principal.`,

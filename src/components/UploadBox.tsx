@@ -48,11 +48,15 @@ export function UploadBox({ onLoaded }: Props) {
           <Upload className="size-6" />
         </div>
         <div className="max-w-sm">
-          <h3 className="text-base font-semibold tracking-normal">Déposez votre fichier brands.json</h3>
+          <h3 className="text-base font-semibold tracking-normal">
+            Déposez votre fichier brands.json
+          </h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Format:{" "}
             <code className="break-words rounded bg-muted px-1.5 py-0.5 text-[0.72rem] text-foreground">
-              {"{ sources: [{ brand, entry_url, target: { audience, category, sizeSystem, fallbackSizeSystem } }] }"}
+              {
+                "{ sources: [{ brand, entry_url, target: { audience, category, sizeSystem, fallbackSizeSystem } }] }"
+              }
             </code>
           </p>
         </div>

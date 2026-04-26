@@ -28,9 +28,7 @@ function slug(s: string): string {
 }
 
 function uid(): string {
-  return (
-    Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10)
-  );
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
 }
 
 function safeWebsite(url: string): string | null {
@@ -90,9 +88,7 @@ const SHOPPING_ASSISTANT_CATEGORY_MAP: Partial<
   "generic-body-guide": "tshirt",
 };
 
-function shoppingAssistantCategory(
-  category: GarmentCategory,
-): ShoppingAssistantGarmentCategory {
+function shoppingAssistantCategory(category: GarmentCategory): ShoppingAssistantGarmentCategory {
   return SHOPPING_ASSISTANT_CATEGORY_MAP[category] ?? "tshirt";
 }
 
@@ -123,15 +119,12 @@ function mmRangeFromCm(
   max: number | undefined,
   sourceNote: string,
 ): ShoppingAssistantMeasurementRange | null {
-  const toMm = (value: number | undefined) =>
-    value == null ? undefined : Math.round(value * 10);
+  const toMm = (value: number | undefined) => (value == null ? undefined : Math.round(value * 10));
   return range(toMm(min), toMm(max), "mm", sourceNote);
 }
 
 function addDimension(
-  dimensions: Partial<
-    Record<ShoppingAssistantDimension, ShoppingAssistantMeasurementRange>
-  >,
+  dimensions: Partial<Record<ShoppingAssistantDimension, ShoppingAssistantMeasurementRange>>,
   key: ShoppingAssistantDimension,
   value: ShoppingAssistantMeasurementRange | null,
 ) {
@@ -159,7 +152,11 @@ function buildShoppingAssistantGuide(args: {
     addDimension(dimensions, "waistCm", range(row.waistCmMin, row.waistCmMax, "cm", sourceNote));
     addDimension(dimensions, "seatHipsCm", range(row.hipsCmMin, row.hipsCmMax, "cm", sourceNote));
     addDimension(dimensions, "heightCm", range(row.heightCmMin, row.heightCmMax, "cm", sourceNote));
-    addDimension(dimensions, "footLengthMm", mmRangeFromCm(row.footLengthCmMin, row.footLengthCmMax, sourceNote));
+    addDimension(
+      dimensions,
+      "footLengthMm",
+      mmRangeFromCm(row.footLengthCmMin, row.footLengthCmMax, sourceNote),
+    );
 
     const ignoredFields = [
       row.inseamCmMin != null || row.inseamCmMax != null ? "inseam" : null,
@@ -197,8 +194,7 @@ function buildShoppingAssistantGuide(args: {
     };
   });
   const isComplete =
-    rows.length > 0 &&
-    rows.every((row) => Object.keys(row.dimensions).length >= 2);
+    rows.length > 0 && rows.every((row) => Object.keys(row.dimensions).length >= 2);
 
   if (!SHOPPING_ASSISTANT_CATEGORY_MAP[args.guide.garmentCategory]) {
     warnings.push({
@@ -238,10 +234,7 @@ function buildShoppingAssistantGuide(args: {
         sourceUrl: args.guide.sourceUrl,
         isSample: false,
         isComplete,
-        uncertainty: Math.max(
-          0.05,
-          Math.min(0.95, 1 - args.extraction.extractionConfidence),
-        ),
+        uncertainty: Math.max(0.05, Math.min(0.95, 1 - args.extraction.extractionConfidence)),
         rows,
         createdAt: now,
         updatedAt: now,
@@ -301,9 +294,7 @@ export function buildGeneratedGuide(args: {
     validationStatus: args.validationStatus,
     validationErrors: args.validationErrors,
     warnings: args.warnings,
-    fitVariantSupport: Array.from(
-      new Set(args.rows.map((row) => row.fitVariant).filter(Boolean)),
-    ),
+    fitVariantSupport: Array.from(new Set(args.rows.map((row) => row.fitVariant).filter(Boolean))),
     matrixOrientation: args.candidate.matrixOrientation,
     categoryMappingMode: args.candidate.categoryMappingMode,
     categoryMappingReason: args.candidate.categoryMappingReason,

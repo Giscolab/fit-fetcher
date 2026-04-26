@@ -103,9 +103,7 @@ function isUnsupportedFetchTarget(url: string): boolean {
       /(?:^|\.)images?\.|(?:^|\.)media\.|(?:^|\.)static\.|(?:^|\.)assets\.|scene7|\/is\/image|image\/hugobosscsprod|mediadecathlon/i.test(
         url,
       ) ||
-      /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/i.test(
-        url,
-      )
+      /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp|mp4|mpeg|mov|webm|zip|rar|7z)(?:$|[?#])/i.test(url)
     );
   }
 }
@@ -132,10 +130,7 @@ function hasConcreteGuidePathSignal(url: string): boolean {
   }
 }
 
-function collectHeadingPath(
-  $: cheerio.CheerioAPI,
-  element: Element,
-): string[] {
+function collectHeadingPath($: cheerio.CheerioAPI, element: Element): string[] {
   const headings: string[] = [];
   let current = $(element);
 
@@ -151,10 +146,7 @@ function collectHeadingPath(
   return headings.slice(-3);
 }
 
-function collectNearbyText(
-  $: cheerio.CheerioAPI,
-  element: Element,
-): string {
+function collectNearbyText($: cheerio.CheerioAPI, element: Element): string {
   const chunks: string[] = [];
   let previous = $(element).prev();
   while (previous.length && chunks.join(" ").length < 180) {
@@ -179,62 +171,173 @@ function collectNearbyText(
 
 const MEN_KEYWORDS = ["men", "mens", "homme", "hommes", "man", "male"];
 const TOPS_KEYWORDS = [
-  "top", "tops", "haut", "hauts",
-  "shirt", "shirts", "chemise", "chemises",
-  "tee", "tees", "t-shirt", "t-shirts",
-  "tshirt", "tshirts",
+  "top",
+  "tops",
+  "haut",
+  "hauts",
+  "shirt",
+  "shirts",
+  "chemise",
+  "chemises",
+  "tee",
+  "tees",
+  "t-shirt",
+  "t-shirts",
+  "tshirt",
+  "tshirts",
 ];
 const BOTTOMS_KEYWORDS = [
-  "pant", "pants", "trouser", "trousers", "pantalon", "pantalons",
-  "bottom", "bottoms", "bas", "jean", "jeans", "short", "shorts",
-  "inseam", "entrejambe",
+  "pant",
+  "pants",
+  "trouser",
+  "trousers",
+  "pantalon",
+  "pantalons",
+  "bottom",
+  "bottoms",
+  "bas",
+  "jean",
+  "jeans",
+  "short",
+  "shorts",
+  "inseam",
+  "entrejambe",
 ];
 const SIZE_KEYWORDS = [
-  "size", "taille", "tailles", "fit", "guide",
-  "chart", "charts", "alpha", "officiel", "official",
-  "sizing", "measurement", "measurements", "mesure", "mesures",
-  "sizeguide", "sizeguides", "sizechart", "sizecharts",
-  "guide des tailles", "tableau des tailles",
+  "size",
+  "taille",
+  "tailles",
+  "fit",
+  "guide",
+  "chart",
+  "charts",
+  "alpha",
+  "officiel",
+  "official",
+  "sizing",
+  "measurement",
+  "measurements",
+  "mesure",
+  "mesures",
+  "sizeguide",
+  "sizeguides",
+  "sizechart",
+  "sizecharts",
+  "guide des tailles",
+  "tableau des tailles",
 ];
 const FOOTWEAR_KEYWORDS = [
-  "shoe", "shoes", "footwear", "chaussure", "chaussures",
-  "foot length", "foot width",
+  "shoe",
+  "shoes",
+  "footwear",
+  "chaussure",
+  "chaussures",
+  "foot length",
+  "foot width",
 ];
 const KIDS_KEYWORDS = [
-  "kid", "kids", "child", "children", "junior",
-  "baby", "infant", "toddler", "bebe", "bébé", "enfant", "enfants",
-  "boy", "boys", "girl", "girls",
+  "kid",
+  "kids",
+  "child",
+  "children",
+  "junior",
+  "baby",
+  "infant",
+  "toddler",
+  "bebe",
+  "bébé",
+  "enfant",
+  "enfants",
+  "boy",
+  "boys",
+  "girl",
+  "girls",
 ];
-const WOMEN_KEYWORDS = [
-  "women", "womens", "woman", "female",
-  "femme", "femmes", "lady", "ladies",
-];
+const WOMEN_KEYWORDS = ["women", "womens", "woman", "female", "femme", "femmes", "lady", "ladies"];
 const UTILITY_KEYWORDS = [
-  "skip to footer content", "skip to main content", "skip to content",
-  "acceder au contenu principal", "accéder au contenu principal",
-  "main content", "create account", "sign in", "log in", "login",
-  "cart", "bag", "wishlist", "menu", "search",
-  "rechercher", "voir le contenu", "acceder au haut de la page",
-  "accéder au haut de la page", "link to main navigation", "link to search",
-  "link to footer", "skip to search",
-  "send us feedback", "site feedback", "your opinion counts",
-  "contact us", "customer service", "help", "support",
-  "accessibility", "privacy", "terms", "newsletter",
-  "cookie", "cookie settings", "change country", "store locator",
-  "find a store", "storefinder", "select a store", "youre shopping",
-  "you're shopping", "order status", "faq", "imprint",
-  "sitemap", "promotions", "student promotion",
-  "digital greeting card", "authenticity", "payment methods",
-  "saved items", "styling book", "style guide", "gift guide",
+  "skip to footer content",
+  "skip to main content",
+  "skip to content",
+  "acceder au contenu principal",
+  "accéder au contenu principal",
+  "main content",
+  "create account",
+  "sign in",
+  "log in",
+  "login",
+  "cart",
+  "bag",
+  "wishlist",
+  "menu",
+  "search",
+  "rechercher",
+  "voir le contenu",
+  "acceder au haut de la page",
+  "accéder au haut de la page",
+  "link to main navigation",
+  "link to search",
+  "link to footer",
+  "skip to search",
+  "send us feedback",
+  "site feedback",
+  "your opinion counts",
+  "contact us",
+  "customer service",
+  "help",
+  "support",
+  "accessibility",
+  "privacy",
+  "terms",
+  "newsletter",
+  "cookie",
+  "cookie settings",
+  "change country",
+  "store locator",
+  "find a store",
+  "storefinder",
+  "select a store",
+  "youre shopping",
+  "you're shopping",
+  "order status",
+  "faq",
+  "imprint",
+  "sitemap",
+  "promotions",
+  "student promotion",
+  "digital greeting card",
+  "authenticity",
+  "payment methods",
+  "saved items",
+  "styling book",
+  "style guide",
+  "gift guide",
   "denim fit guide",
-  "gifts for him", "gifts for her", "gifts for mom",
-  "spring selection", "summer selection", "new arrivals",
-  "sale", "deals", "uniqlo u",
-  "shop by gender", "gender",
-  "explore", "my account", "account",
-  "premium", "spring summer", "limited time offers", "best sellers",
-  "coming soon", "gift selection", "outdoor guide", "fabric guide",
-  "work office wear", "work and office wear", "top picks", "new in",
+  "gifts for him",
+  "gifts for her",
+  "gifts for mom",
+  "spring selection",
+  "summer selection",
+  "new arrivals",
+  "sale",
+  "deals",
+  "uniqlo u",
+  "shop by gender",
+  "gender",
+  "explore",
+  "my account",
+  "account",
+  "premium",
+  "spring summer",
+  "limited time offers",
+  "best sellers",
+  "coming soon",
+  "gift selection",
+  "outdoor guide",
+  "fabric guide",
+  "work office wear",
+  "work and office wear",
+  "top picks",
+  "new in",
 ];
 
 // ── Fonctions de scoring multilingues ──────────────────────────────────
@@ -263,7 +366,17 @@ function isGuideLikeLink(text: string): boolean {
   const normalized = normalizeToken(text);
   if (containsAny(normalized, SIZE_KEYWORDS)) return true;
   if (containsAny(normalized, TOPS_KEYWORDS)) return true;
-  if (containsAny(normalized, ["apparel", "clothing", "vetement", "vêtement", "vetements", "vêtements"])) return true;
+  if (
+    containsAny(normalized, [
+      "apparel",
+      "clothing",
+      "vetement",
+      "vêtement",
+      "vetements",
+      "vêtements",
+    ])
+  )
+    return true;
   return false;
 }
 
@@ -294,8 +407,7 @@ function isProductPageLink(url: string, text: string): boolean {
     /\/t\/(?!size-guide(?:\/|$))[^/?#]+/i.test(path) ||
     /\/(?:lacoste|homme|femme|men|women)\/.+\/[^/]+\.html$/i.test(path);
   const hasProductQuery =
-    /(?:^|[?&])(?:color|size|sku|pid|productid)=/i.test(search) ||
-    /%22|%27|["']/.test(url);
+    /(?:^|[?&])(?:color|size|sku|pid|productid)=/i.test(search) || /%22|%27|["']/.test(url);
   const hasProductTitle =
     !hasGuideSignal &&
     (/\b(?:nike|adidas|puma|reebok|new balance|under armour)\b.*\b(?:t[\s-]?shirt|tee|shirt|hoodie|pants?|shorts?)\b/i.test(
@@ -379,7 +491,8 @@ function isBadMarketingOrUtilityTarget(url: string, label: string): boolean {
     /cookie|change[-_ ]?country|^#(?:content|footer|main|maincontent|footercontent|header-desktop|header__search--desktop|shopify-section-footer|search-input-header-modal|topnavwrapper|sitewide-footer)$/i.test(
       hash,
     )
-  ) return true;
+  )
+    return true;
   if (/(?:^|[?&])(?:color|size|sku|pid|productid)=/i.test(search)) return true;
 
   return /\/(?:stores?|store-locator|retail|promotions?|gift|gifts|stylingbook|stories|journal|rlmag|wishlist|saved-items|payment-methods|sitemap|privacy|terms|authenticity|student-promotions|digital-card|help|faq)(?:\/|$)/i.test(
@@ -421,13 +534,17 @@ function hasConcreteSizeGuideLinkSignal(url: string, text: string): boolean {
     ...FOOTWEAR_KEYWORDS,
     ...KIDS_KEYWORDS,
     ...BOTTOMS_KEYWORDS,
-    "bra", "bras",
+    "bra",
+    "bras",
   ]);
 
   return guideSignal && !incompatibleSignal;
 }
 
-function scoreOneHopGuideLink(text: string, audienceText = text): {
+function scoreOneHopGuideLink(
+  text: string,
+  audienceText = text,
+): {
   score: number;
   reasons: string[];
   rejections: string[];
@@ -510,7 +627,10 @@ function scoreSizeSystemHint(
   return { score: 0, reasons, rejections };
 }
 
-function scoreBrandFallbackBonus(url: string, text: string): {
+function scoreBrandFallbackBonus(
+  url: string,
+  text: string,
+): {
   score: number;
   reason?: string;
 } {
@@ -518,7 +638,7 @@ function scoreBrandFallbackBonus(url: string, text: string): {
 
   // Bonus de base pour tout brand fallback : +5 pour garantir qu'il passe devant
   // les liens génériques faibles, mais reste derrière un bon lien concret.
-  let baseScore = 5;
+  const baseScore = 5;
 
   if (containsAny(normalized, ["underarmour", "under armour"])) {
     if (containsAny(normalized, TOPS_KEYWORDS)) {
@@ -661,11 +781,7 @@ function createLinkCandidate(args: {
     rejectionReasons.push("Link context points to a different garment family.");
   }
 
-  const sizeSystem = scoreSizeSystemHint(
-    args.requestedSizeSystem,
-    context,
-    detectedSizeSystem,
-  );
+  const sizeSystem = scoreSizeSystemHint(args.requestedSizeSystem, context, detectedSizeSystem);
   score += sizeSystem.score;
   reasons.push(...sizeSystem.reasons);
   rejectionReasons.push(...sizeSystem.rejections);
@@ -752,9 +868,7 @@ function discoverHtmlLinks(args: {
       label.length > 180 ||
       /\b(?:function|const|let|window|document|fetch|queryselector)\b/i.test(label)
     ) {
-      label =
-        cleanText($(node).attr("aria-label") ?? "") ||
-        cleanText($(node).attr("title") ?? "");
+      label = cleanText($(node).attr("aria-label") ?? "") || cleanText($(node).attr("title") ?? "");
     }
     if (!label) return;
     if (label.trim().startsWith("![")) return;
@@ -850,9 +964,7 @@ function officialBrandFallbackUrls(args: {
 
   const category = args.requestedCategory;
   const sizeSystem = args.requestedSizeSystem;
-  const isTop =
-    !category ||
-    ["tshirts", "shirts", "hoodies", "jackets"].includes(category);
+  const isTop = !category || ["tshirts", "shirts", "hoodies", "jackets"].includes(category);
   const isBottom = category && ["pants", "jeans", "shorts", "leggings"].includes(category);
   const isShoe = category === "shoes" || sizeSystem === "FOOTWEAR";
   const providedFallbacks =
@@ -868,7 +980,13 @@ function officialBrandFallbackUrls(args: {
 
   if (host.includes("nike.com")) {
     if (isShoe) {
-      return [...providedFallbacks, { url: "https://www.nike.com/size-fit/mens-footwear", label: "Nike guide officiel chaussures homme" }];
+      return [
+        ...providedFallbacks,
+        {
+          url: "https://www.nike.com/size-fit/mens-footwear",
+          label: "Nike guide officiel chaussures homme",
+        },
+      ];
     }
     if (isBottom) {
       return [
@@ -883,72 +1001,174 @@ function officialBrandFallbackUrls(args: {
       ];
     }
     if (isTop) {
-      return [...providedFallbacks, { url: "https://www.nike.com/size-fit/mens-tops-alpha", label: "Nike guide officiel hauts homme" }];
+      return [
+        ...providedFallbacks,
+        {
+          url: "https://www.nike.com/size-fit/mens-tops-alpha",
+          label: "Nike guide officiel hauts homme",
+        },
+      ];
     }
   }
 
   if (host.includes("adidas.")) {
     if (isShoe) {
-      return [...providedFallbacks, { url: "https://www.adidas.com/us/help/size_charts/men-shoes", label: "adidas guide officiel chaussures homme" }];
+      return [
+        ...providedFallbacks,
+        {
+          url: "https://www.adidas.com/us/help/size_charts/men-shoes",
+          label: "adidas guide officiel chaussures homme",
+        },
+      ];
     }
     if (isBottom) {
-      return [...providedFallbacks, { url: "https://www.adidas.com/us/help/size_charts/men-pants_shorts", label: "adidas guide officiel bas homme" }];
+      return [
+        ...providedFallbacks,
+        {
+          url: "https://www.adidas.com/us/help/size_charts/men-pants_shorts",
+          label: "adidas guide officiel bas homme",
+        },
+      ];
     }
-    return [...providedFallbacks, { url: "https://www.adidas.com/us/help/size_charts/men-shirts_tops", label: "adidas guide officiel hauts homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.adidas.com/us/help/size_charts/men-shirts_tops",
+        label: "adidas guide officiel hauts homme",
+      },
+    ];
   }
 
   if (host.includes("puma.")) {
-    return [...providedFallbacks, { url: "https://eu.puma.com/de/en/size-charts.html", label: "PUMA guide officiel tailles homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://eu.puma.com/de/en/size-charts.html",
+        label: "PUMA guide officiel tailles homme",
+      },
+    ];
   }
 
   if (host.includes("reebok.")) {
     if (isTop) {
-      return [...providedFallbacks, { url: "https://www.reebok.com/us/men-tops-size-chart", label: "Reebok guide officiel hauts homme" }];
+      return [
+        ...providedFallbacks,
+        {
+          url: "https://www.reebok.com/us/men-tops-size-chart",
+          label: "Reebok guide officiel hauts homme",
+        },
+      ];
     }
-    return [...providedFallbacks, { url: "https://www.reebok.com/us/size-chart-men", label: "Reebok guide officiel tailles homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.reebok.com/us/size-chart-men",
+        label: "Reebok guide officiel tailles homme",
+      },
+    ];
   }
 
   if (host.includes("underarmour.") || host.includes("under armour.")) {
     if (isTop) {
-      return [...providedFallbacks, { url: "https://www.underarmour.com/en-us/t/size-guide/mens-tops/", label: "Under Armour guide officiel hauts homme" }];
+      return [
+        ...providedFallbacks,
+        {
+          url: "https://www.underarmour.com/en-us/t/size-guide/mens-tops/",
+          label: "Under Armour guide officiel hauts homme",
+        },
+      ];
     }
-    return [...providedFallbacks, { url: "https://www.underarmour.com/en-us/t/size-guide/mens/", label: "Under Armour guide officiel tailles homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.underarmour.com/en-us/t/size-guide/mens/",
+        label: "Under Armour guide officiel tailles homme",
+      },
+    ];
   }
 
   if (host.includes("newbalance.") || host.includes("new balance.")) {
     return [
       ...providedFallbacks,
-      { url: "https://www.newbalance.com/customercare-sizeguide-apparel.html", label: "New Balance guide officiel vêtements homme" },
-      { url: "https://www.newbalance.com/sizechart-apparel.html", label: "New Balance ancien guide vêtements homme" },
+      {
+        url: "https://www.newbalance.com/customercare-sizeguide-apparel.html",
+        label: "New Balance guide officiel vêtements homme",
+      },
+      {
+        url: "https://www.newbalance.com/sizechart-apparel.html",
+        label: "New Balance ancien guide vêtements homme",
+      },
     ];
   }
 
   if (host.includes("patagonia.")) {
-    return [...providedFallbacks, { url: "https://www.patagonia.com/guides/size-fit/mens/", label: "Patagonia guide officiel tailles homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.patagonia.com/guides/size-fit/mens/",
+        label: "Patagonia guide officiel tailles homme",
+      },
+    ];
   }
 
   if (host.includes("zara.")) {
-    return [...providedFallbacks, { url: "https://www.zara.com/fr/fr/help/size-guide-h38.html", label: "Zara guide officiel tailles" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.zara.com/fr/fr/help/size-guide-h38.html",
+        label: "Zara guide officiel tailles",
+      },
+    ];
   }
 
   if (host.includes("tommy.com") || host.includes("tommyhilfiger.")) {
-    return [...providedFallbacks, { url: "https://usa.tommy.com/en/size-guide-men.html", label: "Tommy Hilfiger guide officiel tailles homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://usa.tommy.com/en/size-guide-men.html",
+        label: "Tommy Hilfiger guide officiel tailles homme",
+      },
+    ];
   }
 
   if (host.includes("calvinklein.")) {
-    return [...providedFallbacks, { url: "https://www.calvinklein.us/en/men-size-guide.html", label: "Calvin Klein guide officiel tailles homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.calvinklein.us/en/men-size-guide.html",
+        label: "Calvin Klein guide officiel tailles homme",
+      },
+    ];
   }
 
   if (host.includes("columbia.")) {
-    return [...providedFallbacks, { url: "https://www.columbia.com/sizefit?isPage=true&r=1", label: "Columbia guide officiel hauts homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.columbia.com/sizefit?isPage=true&r=1",
+        label: "Columbia guide officiel hauts homme",
+      },
+    ];
   }
 
   if (host.includes("thenorthface.")) {
-    return [...providedFallbacks, { url: "https://www.thenorthface.com/en-us/help/size-charts", label: "The North Face guide officiel hauts homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.thenorthface.com/en-us/help/size-charts",
+        label: "The North Face guide officiel hauts homme",
+      },
+    ];
   }
 
   if (host.includes("lacoste.")) {
-    return [...providedFallbacks, { url: "https://www.lacoste.com/ca/fr/sizeguide/", label: "Lacoste guide officiel tailles homme" }];
+    return [
+      ...providedFallbacks,
+      {
+        url: "https://www.lacoste.com/ca/fr/sizeguide/",
+        label: "Lacoste guide officiel tailles homme",
+      },
+    ];
   }
 
   return providedFallbacks;
@@ -1032,14 +1252,16 @@ export function selectHubFollowLinks(args: {
       hasConcreteGuideSignal || candidate.resolver === "brand-fallback";
     const familyRejections =
       args.requestedCategory === "tshirts"
-        ? primaryOneHop.rejections.filter((reason) =>
-            /footwear|bottoms|kids|women/i.test(reason),
-          )
+        ? primaryOneHop.rejections.filter((reason) => /footwear|bottoms|kids|women/i.test(reason))
         : primaryOneHop.rejections.filter((reason) => /kids|women/i.test(reason));
     const hardRejectReasons = [
       ...familyRejections,
       ...(!isInternal ? ["Rejected because one-hop links must stay on the same domain."] : []),
-      ...(!isNewUrl ? ["Rejected because one-hop links must not point to the current page or same-page anchors."] : []),
+      ...(!isNewUrl
+        ? [
+            "Rejected because one-hop links must not point to the current page or same-page anchors.",
+          ]
+        : []),
       ...(isProductPage ? ["Rejected because the link looks like a product page."] : []),
       ...(isUtilityNavigation || isBadMarketingTarget
         ? ["Rejected because the link looks like utility navigation."]
@@ -1058,11 +1280,9 @@ export function selectHubFollowLinks(args: {
     ];
 
     const eligible =
-      hardRejectReasons.length === 0 &&
-      (!args.requireConcreteGuide || effectiveConcreteSignal);
+      hardRejectReasons.length === 0 && (!args.requireConcreteGuide || effectiveConcreteSignal);
 
-    const concreteGenericBonus =
-      candidate.resolver === "generic" && hasConcreteGuideSignal ? 4 : 0;
+    const concreteGenericBonus = candidate.resolver === "generic" && hasConcreteGuideSignal ? 4 : 0;
     const genericApparelGuideBonus =
       candidate.resolver === "generic" &&
       hasConcreteGuideSignal &&
@@ -1070,7 +1290,10 @@ export function selectHubFollowLinks(args: {
         ? 3
         : 0;
     const baseScore = eligible
-      ? oneHop.score + (effectiveConcreteSignal ? 3 : 0) + concreteGenericBonus + genericApparelGuideBonus
+      ? oneHop.score +
+        (effectiveConcreteSignal ? 3 : 0) +
+        concreteGenericBonus +
+        genericApparelGuideBonus
       : -99;
 
     // Bonus additionnel pour les brand fallbacks
@@ -1121,12 +1344,12 @@ export function selectHubFollowLinks(args: {
   const reasoning: string[] = [];
 
   if (eligible.length) {
-    reasoning.push(
-      `Selected ${eligible.length} one-hop internal guide link(s) with score >= 3.`,
-    );
+    reasoning.push(`Selected ${eligible.length} one-hop internal guide link(s) with score >= 3.`);
     for (const link of eligible) {
       reasoning.push(`One-hop candidate "${link.label}" scored ${link.score}.`);
-      reasoning.push(`Selected candidate id=${link.id} resolver=${link.resolver} finalScore=${link.score}.`);
+      reasoning.push(
+        `Selected candidate id=${link.id} resolver=${link.resolver} finalScore=${link.score}.`,
+      );
     }
   } else {
     reasoning.push(
@@ -1148,9 +1371,7 @@ export function selectHubFollowLinks(args: {
     })),
     selected: eligible,
     reasoning,
-    navigationConfidence: eligible.length
-      ? Math.min(0.98, 0.35 + eligible[0]!.score / 10)
-      : 0,
+    navigationConfidence: eligible.length ? Math.min(0.98, 0.35 + eligible[0]!.score / 10) : 0,
   };
 }
 
@@ -1158,8 +1379,7 @@ export function selectHubFollowLinks(args: {
 
 function countTableLikeSignals(html: string, markdown: string): number {
   const tableCount =
-    (html.match(/<table\b/gi) ?? []).length +
-    (html.match(/role=["']table["']/gi) ?? []).length;
+    (html.match(/<table\b/gi) ?? []).length + (html.match(/role=["']table["']/gi) ?? []).length;
   const markdownCount = (markdown.match(/^\|.+\|$/gm) ?? []).length;
   const measurementSignals = (markdown.match(/\b(chest|waist|hips|inseam|foot length)\b/gi) ?? [])
     .length;
@@ -1270,7 +1490,9 @@ export function classifyDocument(args: {
     rawLinkCount === 1 &&
     args.linkCandidates[0]!.score >= 3
   ) {
-    reasoning.push("One strong guide-related link was found, but no table-like guide blocks were present.");
+    reasoning.push(
+      "One strong guide-related link was found, but no table-like guide blocks were present.",
+    );
     return {
       documentKind: "guide-hub-page",
       sourceType: "guide-hub-page",
@@ -1327,7 +1549,9 @@ export function selectNavigableLink(args: {
   const reasoning: string[] = [];
 
   if (selected) {
-    reasoning.push(`Followed internal guide link "${selected.label}" with score ${selected.score}.`);
+    reasoning.push(
+      `Followed internal guide link "${selected.label}" with score ${selected.score}.`,
+    );
     reasoning.push(...selected.reasons.slice(0, 4));
   } else if (top) {
     reasoning.push(

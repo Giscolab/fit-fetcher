@@ -28,10 +28,7 @@ interface Props {
   onPreview: (index: number) => void;
 }
 
-const statusMeta: Record<
-  BrandResult["status"],
-  { label: string; icon: ReactNode; cls: string }
-> = {
+const statusMeta: Record<BrandResult["status"], { label: string; icon: ReactNode; cls: string }> = {
   pending: {
     label: "En attente",
     icon: <Clock className="size-3" />,
@@ -192,10 +189,7 @@ export function BrandTable({ results, onPreview }: Props) {
           })}
           {!results.length && (
             <TableRow>
-              <TableCell
-                colSpan={6}
-                className="px-4 py-10 text-center text-muted-foreground"
-              >
+              <TableCell colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
                 <div className="flex flex-col items-center gap-2">
                   <FileSearch className="size-5 text-muted-foreground/70" />
                   <span>Aucune marque chargée.</span>

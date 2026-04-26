@@ -24,8 +24,7 @@ export const DETECTED_GARMENT_CATEGORIES = [
   "bottoms",
   "unknown",
 ] as const;
-export type DetectedGarmentCategory =
-  (typeof DETECTED_GARMENT_CATEGORIES)[number];
+export type DetectedGarmentCategory = (typeof DETECTED_GARMENT_CATEGORIES)[number];
 
 export const SIZE_SYSTEMS = [
   "FR",
@@ -41,11 +40,7 @@ export const SIZE_SYSTEMS = [
 ] as const;
 export type SizeSystem = (typeof SIZE_SYSTEMS)[number];
 
-export const DETECTED_SIZE_SYSTEMS = [
-  ...SIZE_SYSTEMS,
-  "NUMERIC",
-  "UNKNOWN",
-] as const;
+export const DETECTED_SIZE_SYSTEMS = [...SIZE_SYSTEMS, "NUMERIC", "UNKNOWN"] as const;
 export type DetectedSizeSystem = (typeof DETECTED_SIZE_SYSTEMS)[number];
 
 export const SOURCE_TYPES = [
@@ -68,13 +63,7 @@ export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 export const AUDIENCES = ["men", "women", "kids", "unisex", "unknown"] as const;
 export type Audience = (typeof AUDIENCES)[number];
 
-export const FIT_VARIANTS = [
-  "standard",
-  "regular",
-  "tall",
-  "petite",
-  "unknown",
-] as const;
+export const FIT_VARIANTS = ["standard", "regular", "tall", "petite", "unknown"] as const;
 export type FitVariant = (typeof FIT_VARIANTS)[number];
 
 export const MEASUREMENT_UNITS = ["cm", "in", "mixed", "unknown"] as const;
@@ -121,12 +110,7 @@ export const CATEGORY_MAPPING_MODES = [
 ] as const;
 export type CategoryMappingMode = (typeof CATEGORY_MAPPING_MODES)[number];
 
-export const VALIDATION_STATUSES = [
-  "accepted",
-  "warning",
-  "rejected",
-  "ambiguous",
-] as const;
+export const VALIDATION_STATUSES = ["accepted", "warning", "rejected", "ambiguous"] as const;
 export type ValidationStatus = (typeof VALIDATION_STATUSES)[number];
 
 export interface BrandSource {
@@ -247,8 +231,7 @@ export const SHOPPING_ASSISTANT_DIMENSIONS = [
   "footLengthMm",
   "heightCm",
 ] as const;
-export type ShoppingAssistantDimension =
-  (typeof SHOPPING_ASSISTANT_DIMENSIONS)[number];
+export type ShoppingAssistantDimension = (typeof SHOPPING_ASSISTANT_DIMENSIONS)[number];
 
 export interface ShoppingAssistantMeasurementRange {
   min: number | null;
@@ -263,9 +246,7 @@ export interface ShoppingAssistantSizeGuideRow {
   guideId: string;
   label: string;
   sortOrder: number;
-  dimensions: Partial<
-    Record<ShoppingAssistantDimension, ShoppingAssistantMeasurementRange>
-  >;
+  dimensions: Partial<Record<ShoppingAssistantDimension, ShoppingAssistantMeasurementRange>>;
   notes: string;
 }
 

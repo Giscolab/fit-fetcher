@@ -24,7 +24,10 @@ function textArrayValue(value: unknown): string[] | undefined {
 function normalizeImportedCategory(value: unknown): string | undefined {
   const category = textValue(value);
   if (!category) return undefined;
-  const normalized = category.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const normalized = category
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
   if (normalized === "top" || normalized === "tops") return "tshirts";
   if (normalized === "generic" || normalized === "body" || normalized === "body guide") {
     return "generic-body-guide";

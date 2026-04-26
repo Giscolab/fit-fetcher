@@ -80,11 +80,7 @@ function detectAxisSizeSystem(labels: string[]): DetectedSizeSystem {
 
   if (!normalized.length) return "UNKNOWN";
   if (normalized.some((label) => isInternationalSizeLabel(label))) return "INT";
-  if (
-    normalized.some(
-      (label) => /^w\d+\s*l\d+$/.test(label) || /^\d{2,3}\/\d{2,3}$/.test(label),
-    )
-  ) {
+  if (normalized.some((label) => /^w\d+\s*l\d+$/.test(label) || /^\d{2,3}\/\d{2,3}$/.test(label))) {
     return "WAIST_INSEAM";
   }
 
@@ -200,31 +196,11 @@ export function mapRequestedSizeSystem(raw?: string): SizeSystem | null {
 
 export function detectAudience(text: string) {
   const normalized = normalizeToken(text);
-  if (
-    containsAny(normalized, [
-      "kid",
-      "kids",
-      "child",
-      "children",
-      "junior",
-      "boys",
-      "girls",
-    ])
-  ) {
+  if (containsAny(normalized, ["kid", "kids", "child", "children", "junior", "boys", "girls"])) {
     return "kids";
   }
   if (containsAny(normalized, ["unisex"])) return "unisex";
-  if (
-    containsAny(normalized, [
-      "women",
-      "woman",
-      "female",
-      "femme",
-      "femmes",
-      "lady",
-      "ladies",
-    ])
-  ) {
+  if (containsAny(normalized, ["women", "woman", "female", "femme", "femmes", "lady", "ladies"])) {
     return "women";
   }
   if (containsAny(normalized, ["men", "man", "male", "homme", "hommes"])) {
@@ -343,9 +319,7 @@ export function detectSizeSystem(args: {
     ...(args.sizeAxisLabels ?? []),
   ]
     .map((label) => hasExplicitNumericSystemLabel(label))
-    .find((label): label is Exclude<DetectedSizeSystem, "UNKNOWN" | "NUMERIC"> =>
-      Boolean(label),
-    );
+    .find((label): label is Exclude<DetectedSizeSystem, "UNKNOWN" | "NUMERIC"> => Boolean(label));
   if (explicit) return explicit;
 
   return "UNKNOWN";
@@ -380,8 +354,7 @@ export function detectCategory(args: {
   const reasons: string[] = [];
   const hasChest = args.fields.includes("chest");
   const hasInseam = args.fields.includes("inseam");
-  const hasFoot =
-    args.fields.includes("footLength") || args.fields.includes("footWidth");
+  const hasFoot = args.fields.includes("footLength") || args.fields.includes("footWidth");
 
   if (hasChest && hasInseam) {
     reasons.push("Section mixes chest and inseam fields, which suggests a broad body guide.");
@@ -587,12 +560,9 @@ export function detectCategoryMapping(args: {
   reason?: string;
 } {
   const text = normalizeToken(
-    [
-      args.detectedCategoryLabel,
-      args.sectionTitle,
-      args.subheading ?? "",
-      args.nearbyText,
-    ].join(" "),
+    [args.detectedCategoryLabel, args.sectionTitle, args.subheading ?? "", args.nearbyText].join(
+      " ",
+    ),
   );
   const paddedText = ` ${text} `;
   const hasOuterwear = containsAny(text, OUTERWEAR_KEYWORDS);
@@ -623,7 +593,12 @@ export function detectCategoryMapping(args: {
     };
   }
 
-  if (containsAny(paddedText, [" top ", " tops ", " haut ", " hauts "]) && !hasOuterwear && !hasBottoms && topOnlyFields) {
+  if (
+    containsAny(paddedText, [" top ", " tops ", " haut ", " hauts "]) &&
+    !hasOuterwear &&
+    !hasBottoms &&
+    topOnlyFields
+  ) {
     return {
       mode: "curated-broad-top",
       reason: `Mapped broad top label "${args.detectedCategoryLabel}" into tshirts because only top fields were present.`,
@@ -711,9 +686,6 @@ export function isTopCategory(category: GarmentCategory): boolean {
 
 export function isBottomCategory(category: GarmentCategory): boolean {
   return (
-    category === "pants" ||
-    category === "jeans" ||
-    category === "shorts" ||
-    category === "leggings"
+    category === "pants" || category === "jeans" || category === "shorts" || category === "leggings"
   );
 }

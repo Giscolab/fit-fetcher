@@ -77,8 +77,12 @@ function inferMatrixOrientation(matrix: string[][]): {
     (headerSizeLabels.length >= 2 && stubSizeLabels.length >= 2)
   ) {
     matrixOrientation = "conversion-grid";
-    rawSizeAxisLabels = stubSizeLabels.length >= headerSizeLabels.length ? stubSizeLabels : headerSizeLabels;
-  } else if (stubSizeLabels.length >= 2 && (headerFieldCount > 0 || headerSizeLabels.length === 0)) {
+    rawSizeAxisLabels =
+      stubSizeLabels.length >= headerSizeLabels.length ? stubSizeLabels : headerSizeLabels;
+  } else if (
+    stubSizeLabels.length >= 2 &&
+    (headerFieldCount > 0 || headerSizeLabels.length === 0)
+  ) {
     matrixOrientation = "size-rows";
     rawSizeAxisLabels = stubSizeLabels;
   } else if (headerSizeLabels.length >= 2 && (stubFieldCount > 0 || stubSizeLabels.length === 0)) {
@@ -146,10 +150,7 @@ function shouldPreferImplicitUnit(args: {
   return args.contextUnit === "cm" && args.implicitUnit === "in";
 }
 
-function extractHtmlTableMatrix(
-  $: cheerio.CheerioAPI,
-  table: Element,
-): string[][] {
+function extractHtmlTableMatrix($: cheerio.CheerioAPI, table: Element): string[][] {
   return normalizeMatrix(
     $(table)
       .find("tr")
@@ -163,10 +164,7 @@ function extractHtmlTableMatrix(
   );
 }
 
-function extractAriaGridMatrix(
-  $: cheerio.CheerioAPI,
-  grid: Element,
-): string[][] {
+function extractAriaGridMatrix($: cheerio.CheerioAPI, grid: Element): string[][] {
   return normalizeMatrix(
     $(grid)
       .find('[role="row"]')
@@ -185,17 +183,20 @@ function splitLooseRow(text: string): string[] {
   const compact = cleanText(text);
   if (!compact) return [];
   if (raw.includes("\t")) {
-    return raw.split(/\t+/).map((cell) => cleanText(cell)).filter(Boolean);
+    return raw
+      .split(/\t+/)
+      .map((cell) => cleanText(cell))
+      .filter(Boolean);
   }
-  const byLargeWhitespace = raw.split(/\s{2,}/).map((cell) => cleanText(cell)).filter(Boolean);
+  const byLargeWhitespace = raw
+    .split(/\s{2,}/)
+    .map((cell) => cleanText(cell))
+    .filter(Boolean);
   if (byLargeWhitespace.length >= 2) return byLargeWhitespace;
   return [];
 }
 
-function extractDivGridMatrix(
-  $: cheerio.CheerioAPI,
-  container: Element,
-): string[][] {
+function extractDivGridMatrix($: cheerio.CheerioAPI, container: Element): string[][] {
   const rows: string[][] = [];
   const children = $(container)
     .children()
@@ -234,10 +235,7 @@ function extractDivGridMatrix(
   return normalized;
 }
 
-function collectHeadingPath(
-  $: cheerio.CheerioAPI,
-  element: Element,
-): string[] {
+function collectHeadingPath($: cheerio.CheerioAPI, element: Element): string[] {
   const headings: string[] = [];
   let current = $(element);
 
@@ -253,10 +251,7 @@ function collectHeadingPath(
   return headings.slice(-3);
 }
 
-function collectSubheading(
-  $: cheerio.CheerioAPI,
-  element: Element,
-): string | undefined {
+function collectSubheading($: cheerio.CheerioAPI, element: Element): string | undefined {
   const parent = $(element).parent();
   const sibling = parent
     .children("p, strong, span, div")
@@ -266,10 +261,7 @@ function collectSubheading(
   return sibling || undefined;
 }
 
-function collectNearbyText(
-  $: cheerio.CheerioAPI,
-  element: Element,
-): string {
+function collectNearbyText($: cheerio.CheerioAPI, element: Element): string {
   const chunks: string[] = [];
   let previous = $(element).prev();
   while (previous.length && chunks.join(" ").length < 260) {
@@ -374,7 +366,9 @@ function createCandidate(args: {
     args.sectionTitle,
     args.subheading,
     matrixMeta.rawHeaders.length ? `Headers: ${matrixMeta.rawHeaders.join(", ")}` : "",
-    matrixMeta.rawStubColumn.length ? `Stub: ${matrixMeta.rawStubColumn.slice(0, 8).join(", ")}` : "",
+    matrixMeta.rawStubColumn.length
+      ? `Stub: ${matrixMeta.rawStubColumn.slice(0, 8).join(", ")}`
+      : "",
     matrixMeta.rawSizeAxisLabels.length
       ? `Sizes: ${matrixMeta.rawSizeAxisLabels.slice(0, 12).join(", ")}`
       : "",
@@ -390,9 +384,7 @@ function createCandidate(args: {
     isTabular: args.kind !== "advisory-text",
     sourceUrl: args.sourceUrl,
     sourceType:
-      category.detectedCategory === "generic-body-guide"
-        ? "generic-body-guide"
-        : args.sourceType,
+      category.detectedCategory === "generic-body-guide" ? "generic-body-guide" : args.sourceType,
     documentKind: args.documentKind,
     sourceTraceChain: args.sourceTraceChain,
     linkOriginId: args.linkOriginId,
@@ -456,9 +448,7 @@ function isPipedMarkdownTableCandidate(matrix: string[][]): boolean {
   if (width < 3) return false;
 
   const meta = inferMatrixOrientation(normalized);
-  const fieldCount = normalized
-    .flat()
-    .filter((cell) => Boolean(fieldFromHeader(cell))).length;
+  const fieldCount = normalized.flat().filter((cell) => Boolean(fieldFromHeader(cell))).length;
 
   return fieldCount > 0 && meta.rawSizeAxisLabels.length >= 2;
 }
@@ -562,8 +552,9 @@ function discoverDelimitedMarkdownGrids(args: {
 
     const normalized = normalizeMatrix(matrix);
     const flat = normalized.flat().map((cell) => normalizeToken(cell));
-    const signalCount =
-      flat.filter((cell) => isSizeLikeLabel(cell) || Boolean(fieldFromHeader(cell))).length;
+    const signalCount = flat.filter(
+      (cell) => isSizeLikeLabel(cell) || Boolean(fieldFromHeader(cell)),
+    ).length;
     if (normalized.length < 2 || signalCount < 3) continue;
 
     const sectionTitle = headingPath[headingPath.length - 1] ?? "Markdown grid";
@@ -580,9 +571,7 @@ function discoverDelimitedMarkdownGrids(args: {
         matrix: normalized,
         headingPath,
         sectionTitle,
-        nearbyAdvisoryText: cleanText(
-          `${lines[i - 1] ?? ""} ${lines[j] ?? ""}`.slice(0, 300),
-        ),
+        nearbyAdvisoryText: cleanText(`${lines[i - 1] ?? ""} ${lines[j] ?? ""}`.slice(0, 300)),
       }),
     );
 
@@ -860,8 +849,7 @@ export function discoverCandidateSections(args: {
       ...advisoryCandidates,
     ].filter(
       (candidate) =>
-        candidate.matrix.length >= 2 &&
-        candidate.matrix.some((row) => row.some(Boolean)),
+        candidate.matrix.length >= 2 && candidate.matrix.some((row) => row.some(Boolean)),
     ),
   );
 }
